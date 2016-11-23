@@ -1,0 +1,5 @@
+name="Quiz Reports"
+description="Quiz reports for every user"
+core="7.x"
+package="Custom"
+

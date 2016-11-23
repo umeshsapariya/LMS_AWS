@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the franchisee_data_feature feature.
+ */
+
+include_once 'franchisee_data_feature.features.inc';

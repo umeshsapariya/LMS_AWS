@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>Title</th><th>First Name</th><th>Middle Name</th><th>Last Name</th><th>Date Of Birth</th><th>Image</th><th>Address 1</th><th>Address 2</th><th>City</th><th>PIN Code</th><th>Mobile 1</th><th>Mobile 2</th><th>Landline No</th><th>Email</th><th>Current Occupation</th><th>Current Occupation Other</th><th>Business Sector</th><th>Business Sector Other</th><th>Doing Business Since</th><th>Operating from</th><th>Leader of any society, committee or group</th><th>If Yes, Specify</th><th>Education Qualification</th><th>Education Qualification Other</th><th>Jurisdiction of police station </th><th>Applicant type</th><th>Name of Establishment</th><th>Address line 1</th><th>Address line 2</th><th>Shop in City</th><th>Shop PIN Code</th><th>Shop Landline No</th><th>Shop Mobile 1</th><th>Shop Mobile 2</th><th>Shop Email</th><th>Area</th><th>Property Type</th><th>Other, Specify</th><th>NEON/FLEX Board</th><th>If Yes, Specify Dimensions</th><th>Bank Name</th><th>PAN No</th><th>Application Status</th><th>Transaction Id </th></tr></thead>    <tbody> <tr class="odd"><td>PRASHANT DHUPPE</td><td>PRASHANT</td><td>WILSON</td><td>DHUPPE</td><td>Sunday, February 3, 1980</td><td></td><td>240,FRIENDS COLONY,KATOL ROAD ,NAGPUR-440013</td><td></td><td>Nagpur</td><td>440013</td><td>9049980705</td><td>9049503882</td><td>712 257 398</td><td>dhuppeprashant@yahoo.com</td><td>Self Employed</td><td></td><td>Retail</td><td></td><td>Less than 1 Year</td><td>Door To Door</td><td>No</td><td></td><td>Post Graduate</td><td></td><td>GITTIKHADAN</td><td>Individual</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>AXIS BANK</td><td>AJSPD9905C</td><td>(Payment Received Online)</td><td>88</td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

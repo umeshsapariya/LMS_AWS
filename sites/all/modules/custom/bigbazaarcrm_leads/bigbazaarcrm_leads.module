@@ -1,0 +1,801 @@
+<?php
+/*
+ * @file
+ * Module file to manage enquiries
+ */
+
+/**
+ * Implements hook_permission().
+ */
+function bigbazaarcrm_leads_permission() {
+  return array(
+    'bbd center' => array(
+      'title' => t('Access content for BBD Center'),
+    ),
+		'Resend Pdf' => array(
+      'title' => t('Permission to resend Pdf'),
+    )
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function bigbazaarcrm_leads_menu() {
+	$items['user/%user/bbd-centre/search'] =  array(
+	'title' => 'BBD Centre search',
+	'page callback' => 'drupal_get_form', 
+	'page arguments' => array('bbd_centre_search_record'), 
+	'access arguments' => array('bbd center'),
+	'type' => MENU_LOCAL_TASK,
+	);
+	$items['bbd-centre/enquiry'] =  array(
+	'title' => 'BBD Centre enquiry',
+	'page callback' => 'bbd_centre_enquiry_form', 
+	'access arguments' => array('bbd center'),
+	'type' => MENU_NORMAL_ITEM,
+	);
+	$items['bbd-centre/enquiry/%'] =  array(
+	'title' => 'BBD Centre enquiry edit',
+	'page callback' => 'drupal_get_form', 
+	'page arguments' => array('bbd_centre_enquiry_edit_form'), 
+	'access arguments' => array('bbd center'),
+	);
+	$items['resend_pdf'] =  array(
+	'page callback' => 'resend_pdf', 
+	'access arguments' => array('Resend Pdf'),
+	'type' => MENU_NORMAL_ITEM,
+	);
+	return $items;
+}
+
+/* *
+ * Resend pdf
+ */
+function resend_pdf() {
+	$app_nid = get_application_reference_id($_GET['nid']);
+	if(isset($_GET['new_id'])) {
+		$to = trim($_GET['new_id']);
+	}else {
+		$to = node_load_replace($_GET['nid'],'enquiry','field_email');
+	}
+	$application_id = node_load_replace($app_nid,'application','field_application_number');
+	$trasaction_id = db_select('field_data_field_receipt_number','rep')
+				->fields('rep',array('field_receipt_number_value'))
+				->condition('bundle','application')
+				->condition('deleted',0)
+				->condition('entity_id',$app_nid)
+				->execute()->fetchField();
+	$name = node_load_replace($_GET['nid'],'enquiry','field_first_name').' '. node_load_replace($_GET['nid'],'enquiry','field_last_name');
+	$email_cc = '';
+	//$email_cc = variable_get('site_mail');
+	$date = date('M j, Y',time());
+$template = '
+			<table style="width:650px;" class="recipt">
+				<tr>
+					<td><img alt="logo" src="http://www.bigbazaardirect.com/sites/default/files/logo.jpg"/> </td>
+					<td class="transaction" style="text-align:right; padding-right:6%;font-weight:bold;" >Transaction No. '.$trasaction_id.' </td>
+				</tr>
+				<tr>
+					<td colspan="2" style=" color: #00284C; font-size: 21px;">Thank you !</td>
+						 </tr>
+							<tr>
+							 <td colspan="2">Dear '.$name.' ,</td>
+						 </tr>
+						<tr>
+							 <td colspan="2">We have received your payment and your application form number is '.$application_id.' </td>
+						 </tr>
+
+						 <tr style="background: none repeat scroll 0 0 #E9EEF2;border-top: 1px solid white;">
+								<td colspan="2">
+								<table style=" background-color: white;border: 1px solid #D7E0E5;border-radius: 8px 8px 8px 8px;float: left;margin: 20px; padding: 20px;width: 650px;">
+									<tr>
+										<td><h2 style="text-align: center;padding-left:40px;font-family: tahoma;font-size: 15px;font-weight: bold;">APPLICATION RECEIPT</h2><hr style="color: #D7E0E5;"/></td>
+									</tr>
+									<tr>
+										<td colspan="2" style="padding:0px 17%;">
+											<span class="address-header" style="font-weight: bold;padding-left: 35%;font-family: tahoma;font-size: 14px;">Future Value Retail Ltd.</span><br />
+											<span class="address-content" style="text-align: center;float:left;width:102%;font-size: 12px;font-family: tahoma;">Future Retail Home Office, Tower C, 4th Floor, 247 Park, LBS Marg, Vikhroli West, Mumbai - 400083</span>
+										</td>
+									</tr>
+									<tr class="payment_block" style="background-color: #FFFAF7;padding: 0px 20px;float:left;border: 1px solid #FCDED3;">
+										<td style="float: left;padding: 10px;width: 414px;">
+											<span style="font-family: tahoma;font-size: 13px;" class="date">Date: '.$date.'</span><br />
+											<span style="font-family: tahoma;font-size: 13px;" class="form-app-no">Form Application No: '.$application_id.'</span><br /><br />
+											<span style="font-family: tahoma;font-size: 13px;" class="user-name">Name: <span style="font-weight:bold;font-family: tahoma;font-size: 13px;">'.$name.'</span></span><br /><br />
+											<span style="font-family: tahoma;font-size: 13px;" class="amount">Amount* (In words): </span>
+											<span style="font-family: tahoma;font-size: 13px;font-weight: bold;">One Thousand Only /-</span><br />
+											<span style="font-family: tahoma;font-size: 13px;" class="amount-condition" style="font-size: 12px;">*(Non refundable franchisee application fees)</span><br /><br />
+											<span style="font-family: tahoma;font-size: 13px;" class="payment-mode">Payment Mode: </span>
+											<span style="font-weight: bold;font-family: tahoma;font-size: 13px;">Online Payment</span>
+										</td>
+										<td style="padding-top: 20px;float:left;"><div class="payment_amount" style="font-family: tahoma;font-size: 18px;background-color: white;font-weight:bold;padding: 10px;width: 104px;border: 1px solid #FCDED3;">RS. 1,000/-</div></td>
+								 </tr>
+								 <tr>
+									 <td colspan="2">
+										<br /><span style="font-family: tahoma;font-size:11px;">I agree that Future Value Retail Ltd. has the right to reject my application form on any ground without any reason and I understand that INR 1,000/- paid towards the application form is non refundable.</span><br /><br />
+										<span class="header" style="font-weight: bold;font-family: tahoma;font-size:11px;">If your application gets selected you will be called for interview kindly carry the KYC Documents (Original & 2 photocopies)</span>
+													<ul>
+														<li style="font-family: tahoma;font-size:11px;" >2 passport size photographs</li>
+														<li style="font-family: tahoma;font-size:11px;" >1 Cancelled cheque</li>
+														<li style="font-family: tahoma;font-size:11px;" >PAN card (Permanent Account Number) </li>
+														<li style="font-family: tahoma;font-size:11px;" >Photo ID proof (Any one - Aadhaar card/ Driving License/ Passport/ Voter ID) </li>
+														<li style="font-family: tahoma;font-size:11px;" >Address proof (Any one - Aadhaar card/ Driving License/ Passport/ Voter ID/ Telephone Bill/ Electricity Bill) </li>
+													</ul>
+													<span class="header" style="font-weight: bold;font-family: tahoma;font-size:11px;">If you are selected as a Big Bazaar Franchisee, you have to make a small investment of INR 3,00,000/- as given below </span>
+													<ul>
+														<li style="font-family: tahoma;font-size:11px;" >INR 1,00,000/- Non interest bearing refundable security deposit.</li>
+														<li style="font-family: tahoma;font-size:11px;" >INR 1,00,000/- as initial advance which is to be used for placing order.</li>
+														<li style="font-family: tahoma;font-size:11px;" >INR 1,00,000/- Set Up charges for Big Bazaar Direct Tablet, initial branding, one year training, launch material etc.</li>
+													</ul>
+										</td>
+									</tr>
+
+								</table>
+						 </td>
+						</tr>
+						<tr>
+							<td colspan="2" class="copy" style="font-size:11px;font-family: tahoma; padding:8px 30px; background-color: #00284C; color:#FFFFFF;">COPYRIGHT &copy; 2013 BIG BAZAAR DIRECT.</td>
+						</tr>
+			</table>';
+	$from =  '"Big Bazaar Direct" <support@bigbazaardirect.com>';
+	$body[0] = $template;
+	$params = array(
+	'body' => $body,
+	'subject' => 'Big Bazaar Direct Online Application',
+	'nid' => $app_nid,
+	'title' => get_node_title($app_nid),
+	'headers' => array('Cc' => $email_cc, 'Bcc' => $email_cc),
+	);
+	if (drupal_mail('bigbazaarcrm_application', 'bigbazaar_notification',$to , language_default(), $params, $from, TRUE)) {
+		drupal_set_message(t("Email Sent Successfully to @email.",array('@email' => $to)));
+	}
+	drupal_goto('node/'.$_GET['nid'].'/edit');
+}
+
+/*
+ * Implements function hook_views_bulk_operations_form_alter().
+ */
+function bigbazaarcrm_leads_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
+  
+  // form alter for supervisor
+  if ($form['#form_id'] == 'views_form_manage_enquiries_page') {
+  if (isset($form['select'])) {
+    global $user;
+    $users_list = array();
+	$query = db_select('users', 'u');
+	  $query->fields('u',array('uid','name'));
+	  $query->condition('u.status', 1);
+	  $query->join('users_roles', 'ur', 'u.uid = ur.uid');
+      if (in_array('Call Center Agent', $user->roles)) {
+	    $query->condition('ur.rid', 11);
+      }
+	  elseif (in_array('Call Center Supervisor', $user->roles)) {
+	    $query->condition('ur.rid', 4);
+	  }
+	$result = $query->execute()->fetchAll();
+	foreach ($result as $row) {
+	  $users_list[$row->uid] = $row->name;
+	}
+    $inserted['users_values'] = array(
+      '#type' => 'select',
+      '#title' => t('Assign'),
+      '#options' => $users_list,
+      '#required' => TRUE,
+    );
+    array_splice($form['select'], 4, 0, $inserted );
+	$form['select']['action::views_bulk_operations_modify_action']['#value'] = t("Assign");
+  }
+
+  if (isset($form_state['values'][0]) && $form_state['values'][0]) {
+    $form['bundle_enquiry']['field_assign_status']['und']['#default_value'] = array($form_state['values'][0]);    
+	drupal_add_js('jQuery(document).ready(function () { jQuery("#views-form-manage-enquiries-page").submit(); jQuery("#views-form-manage-enquiries-page-1").submit(); jQuery("#block-system-main").attr("style", "display: none;"); });',
+    array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+  }
+  }
+
+  // alter for agent.
+  if ($form['#form_id'] == 'views_form_manage_enquiries_agent_page') {
+    $form['select']['action::views_bulk_operations_modify_action']['#value'] = t('Close');
+    $form['bundle_enquiry']['field_enquiry_status']['und']['#options'] = array('Close' => 'Close');
+    $form['bundle_enquiry']['field_comment']['und'][0]['value']['#title'] = t('Add Note');
+
+	drupal_add_js('jQuery(document).ready(function () { 
+jQuery("#edit-bundle-enquiry-show-value-field-enquiry-status").attr("checked", true);
+jQuery("#edit-bundle-enquiry-show-value-field-enquiry-close-reason").attr("checked", true);
+jQuery("#edit-bundle-enquiry-show-value-field-comment").attr("checked", true);
+
+jQuery(".form-item-bundle-enquiry-show-value-field-enquiry-status").attr("style", "display: none;"); 
+jQuery(".form-item-bundle-enquiry-show-value-field-enquiry-close-reason").attr("style", "display: none;"); 
+jQuery(".form-item-bundle-enquiry-show-value-field-comment").attr("style", "display: none;"); 
+
+jQuery("#edit-bundle-enquiry-field-enquiry-status").attr("style", "display:block;"); 
+jQuery("#edit-bundle-enquiry-field-enquiry-close-reason").attr("style", "display:block;");
+jQuery("#edit-bundle-enquiry-field-comment").attr("style", "display:block;");
+ });',array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+  }
+}
+
+/*
+ * Implements hook_form_alter().
+ */
+function bigbazaarcrm_leads_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+  if ($form_id == 'enquiry_node_form') {
+    $form['field_assign_status']['und']['#options'][0] = 'None';
+    $form['title']['#access'] = FALSE;
+    $form['field_assign_status']['#access'] = FALSE;
+    if (isset($form['nid']['#value']) && $form['nid']['#value']) {
+			$name = array();
+			if (isset($form['field_first_name']['und'][0]['value']['#default_value']) && !empty($form['field_first_name']['und'][0]['value']['#default_value'])) {
+				$name[] = $form['field_first_name']['und'][0]['value']['#default_value'];
+			}
+			if (isset($form['field_last_name']['und'][0]['value']['#default_value']) && !empty($form['field_last_name']['und'][0]['value']['#default_value'])) {
+				$name[] = $form['field_last_name']['und'][0]['value']['#default_value'];
+			}
+			$phone_no = isset($form['field_tel_no']['und'][0]['value']['#default_value']) && !empty($form['field_tel_no']['und'][0]['value']['#default_value']) ? $form['field_tel_no']['und'][0]['value']['#default_value'] : '';
+			$city = isset($form['field_city']['und'][0]['value']['#default_value']) && !empty($form['field_city']['und'][0]['value']['#default_value']) ? $form['field_city']['und'][0]['value']['#default_value'] : '';
+			$state = isset($form['field_state_list']['und']['#default_value'][0]) && !empty($form['field_state_list']['und']['#default_value'][0]) ? $form['field_state_list']['und']['#default_value'][0] : '';
+			$pin_no = isset($form['field_pin_number']['und'][0]['value']['#default_value']) && !empty($form['field_pin_number']['und'][0]['value']['#default_value']) ? $form['field_pin_number']['und'][0]['value']['#default_value']: '';
+			$entity_source = isset($form['field_source_enquiry']['und']['#default_value'][0]) ? $form['field_source_enquiry']['und']['#default_value'][0] : '';
+			$table = "<table>
+			<tr><td>Name</td><td>". implode(" ", $name) ."</td></tr>
+			<tr><td>Mobile</td><td>". $phone_no ."</td></tr>
+			<tr><td>City</td><td>". $city ."</td></tr>
+			<tr><td>State</td><td>". $state ."</td></tr>
+			<tr><td>Pin</td><td>".$pin_no."</td></tr>
+			<tr><td>Source</td><td>".$entity_source."</td></tr>
+			<tr><td>Created</td><td>".date('j F Y g:i:s A', $form['created']['#value'])."</td></tr>
+			</table>";
+			$form['enquiry_information'] = array(
+			  '#type' => 'fieldset',
+				'#weight' => 11,
+				'#collapsible' => FALSE,
+				'#collapsed' => FALSE,
+			);
+			$form['enquiry_information']['enquiry_information_data'] = array(
+			'#markup' => $table,
+			'#weight' => 0,
+			);
+
+			// application field alteration.
+			$application_id = "";
+			$form['field_application_refrenced']['#access'] = FALSE;
+			if (!empty($form['field_application_refrenced']['und'][0]['target_id']['#default_value'])) {
+				drupal_add_js(drupal_get_path('theme','rubik').'/js/send_email.js');
+				$application_id = $form['field_application_refrenced']['und'][0]['target_id']['#entity']->field_application_refrenced['und'][0]['target_id'];
+				$current_workflow = workflow_get_workflow_node_by_nid($application_id);
+				$workflow = workflow_get_workflow_states_by_sid($current_workflow->sid);
+				$workflow_state = $workflow->state;
+				$form['application_status'] = array(
+					'#type' => 'fieldset',
+					'#title' => t('Application'),
+					'#weight' => 15,
+					'#collapsible' => FALSE,
+					'#collapsed' => FALSE,
+				);
+				
+				$form['application_status']['application_information'] = array(
+					'#markup' => '<div class="applicaiton-status">Status: '.$workflow_state.'</div><div class="application-link">'. l(t('View Application'), 'node/'. $application_id, array('attributes' => array('target' => '_blank'))) .'</div>',
+					'#weight' => 16,
+				);
+				if (isset($user->roles[11])) {
+					$form['application_status']['application_information']['#markup'] .= '<div class="application-link">'. l(t('Edit Status'), 'node/'. $application_id . '/workflow', array('attributes' => array('target' => '_blank'))) .'</div>';
+				}
+				if($current_workflow->sid == 10) {
+					$form['application_status_email'] = array(
+						'#type' => 'fieldset',
+						'#title' => t('Email receipt '),
+						'#collapsible' => FALSE,
+						'#collapsed' => FALSE,
+						'#weight' => 17,
+					);
+					$form['application_status_email']['send_me_again'] = array(
+						'#type' => 'checkbox',
+						'#title' => t('Use different email ID'),
+						'#attributes' => array('class' =>array('diff_email_id')),
+						'#default_value' => 0, 
+					);
+					$form['application_status_email']['application_emailid'] = array(
+						'#type' => 'textfield',
+						'#attributes' => array('class' =>array('diff_email')),
+					);
+					//$link = l("Send PDF again", "node/". $form['#node']->nid ."/edit", array('query' => array('send_email' => 1)));
+					$link = l("Resend receipt", "resend_pdf", array('query' => array('nid' => arg(1))));
+					$form['application_status_email']['application_sendemail'] = array(
+						'#markup' => '<div class="send-email-agian">'. $link .'</div>',
+					);
+				}
+			}
+    } else { // city drop down at enquiry page
+			//$form['field_city_list']['und']['#options'] = enquiry_city_dropdown_get_values();
+			//$form['field_city_list']['und']['#validated'] = TRUE ;
+		}
+  }			
+								
+	if ($form_id == 'views_exposed_form' && $form['#id'] == 'views-exposed-form-manage-enquiries-page') {
+		// Setting Call Center Agent Users Select list.
+		$users_list = array('All' => '- Any -', '0' => 'None',);
+		$query = db_select('users', 'u');
+		$query->fields('u',array('uid','name'));
+		$query->condition('u.status', 1);
+		$query->join('users_roles', 'ur', 'u.uid = ur.uid');
+		$query->condition('ur.rid', array(4,11), 'IN');
+		$result = $query->execute()->fetchAll();
+		foreach ($result as $row) {
+			$users_list[$row->uid] = $row->name;
+		}
+		$form['field_assign_status_target_id']['#options'] = $users_list;
+
+		// Setting BBD Center User Select List.
+		$query = db_select('users', 'u');
+		$query->fields('u',array('uid','name'));
+		$query->condition('u.status', 1);
+		$query->join('users_roles', 'ur', 'u.uid = ur.uid');
+		$query->condition('ur.rid', array(6), 'IN');
+		$result = $query->execute()->fetchAll();
+		$users_list = array('' => '- Any -',);
+		foreach ($result as $row) {
+			$users_list[$row->name] = $row->name;
+		}
+
+				//Created Date field format
+		$form['date_filter']['value']['#date_format'] = 'd-m-Y';
+
+		unset($form['uid']['#autocomplete_path']);
+		$form['uid']['#description'] = t('Select BBD Center User.');
+		$form['uid']['#type'] = 'select';
+		$form['uid']['#options'] = $users_list;
+	}
+	
+	//BBD Center add lead alter add Application Number and Payment Receipt Number
+	if($form_id == 'enquiry_node_form' && arg(0) == 'bbd-centre' && arg(1) == 'enquiry' && !arg(2) && isset($user->roles[6])) {
+		drupal_add_css(drupal_get_path('module','bigbazaarcrm_leads').'/bbd_lead.css');
+		variable_set('application_no',1);
+		$mob = explode('=',$_SERVER['QUERY_STRING']);
+		$form['field_interested']['#access'] = FALSE;
+		$form['field_source']['#access'] = FALSE;
+		$form['field_follow_up_date']['#access'] = FALSE;
+		$form['field_comment']['#access'] = FALSE;
+		$form['field_application_refrenced']['#access'] = FALSE;
+		$form['field_enquiry_status']['#access'] = FALSE;
+		$form['field_enquiry_close_reason']['#access'] = FALSE;
+		$form['field_tel_no']['und'][0]['value']['#default_value'] = $mob[1];
+		$form['pay_wrap'] = array(
+			'#type' => 'fieldset',
+			'#weight' => 25,
+			'#attributes' => array('class' => array('pay_wrap')),
+		);
+	  $max_value = variable_get("application_id_counter_bbd", 0);
+    $max_value = $max_value + 1;
+		variable_set("application_id_counter_bbd", $max_value);
+		$form['pay_wrap']['application'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Application Number'),
+			'#required' => TRUE,
+			'#default_value' => 300000 + $max_value,
+			'#attributes' => array('readonly' => 'readonly'),
+		);
+		$form['pay_wrap']['pay_recpt_no'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Payment Receipt Number'),
+			'#required' => TRUE,
+		);
+		$form['actions']['submit']['#submit'][] = 'bbd_enquiry_add_submit';
+	}
+
+	// Make Application Number and Payment Receipt Number non editable for data entry operator
+	if($form_id == 'application_node_form' && isset($user->roles[13])) {
+		$form['field_application_number']['und'][0]['value']['#attributes']['disabled'] = TRUE;
+		$form['field_receipt_number']['und'][0]['value']['#attributes']['disabled'] = TRUE;
+	}
+	
+	// Make Application Number and Payment Receipt Number non editable for data entry operator
+	if($form_id == 'application_node_form' && isset($user->roles[7])) {
+		$form['field_application_number']['und'][0]['value']['#attributes']['disabled'] = TRUE;
+		$form['field_receipt_number']['und'][0]['value']['#attributes']['disabled'] = TRUE;
+	}
+
+	//Group Enquiry form - theming
+	if($form_id == 'enquiry_node_form' && $form['nid']['#value'] !=NULL) {
+		$form['#group_children']['field_source'] =  'group_enq_right_grp';
+		$form['#group_children']['field_follow_up_date'] =  'group_enq_right_grp';
+		$form['#group_children']['field_enquiry_status'] =  'group_enq_right_grp';
+		$form['#group_children']['field_comment'] =  'group_enq_right_grp';
+		$form['#group_children']['field_enquiry_close_reason'] =  'group_enq_right_grp';
+		$form['#group_children']['enquiry_information'] =  'group_enq_left_grp';
+		if(is_array($form['application_status'])){
+			$form['#group_children']['application_status'] =  'group_enq_left_grp';
+			$form['#group_children']['application_status_email'] =  'group_enq_left_grp';
+		}
+	}
+	//Hide default title field @ apply-online
+	if($form_id == 'application_node_form' && $form['nid']['#value'] == NULL) {
+		$form['title']['#access'] = FALSE;
+	}
+
+	// Form validatation for data_operator to check workflow status- data_operator role is 13
+	if($form_id == 'application_node_form' && $form['nid']['#value'] != NULL && isset($user->roles[13])) {
+		$form['#validate'][] = 'bigbazaarcrm_leads_data_entry_workflow_validate';
+	}
+}
+
+/**
+ * Work flow status should not be Payment received at BBD for data operator
+ */
+function bigbazaarcrm_leads_data_entry_workflow_validate($form, &$form_state) {
+	$wrk = workflow_get_workflow_states_by_sid($form_state['values']['workflow']);
+	if($wrk->state  == '(Payment Received at BBD Center)' && $form_state['values']['workflow'] == 3) {
+		form_set_error("workflow", t("Work flow staus should not be (Payment Received at BBD Center)"));
+	}
+}
+ 
+function bigbazaarcrm_leads_preprocess_views_view_field(&$vars) {
+	if ($vars['view']->name == 'manage_enquiries' && $vars['output'] == 'Anonymous') {
+		$vars['output'] = 'None';
+	}
+	if ($vars['view']->name == 'enquiry_history' && $vars['output'] == 'Anonymous') {
+		$vars['output'] = 'N/A';
+	}
+}
+
+/**
+ * BBD Centre enquiry
+ */
+function bbd_centre_enquiry_form() {
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/form_validate.js');
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/jquery.validate.min.js');
+  global $user;
+  $node_type = 'enquiry';
+  $node = (object) array(
+    'uid' => $user->uid,
+    'name' => (isset($user->name) ? $user->name : ''),
+    'type' => $node_type,
+    'language' => LANGUAGE_NONE
+  );
+  $form_state['build_info']['args'] = array($node);
+  form_load_include($form_state, 'inc', 'node', 'node.pages');
+  return drupal_build_form($node_type . '_node_form', $form_state);
+}
+
+/**
+ * BBD create lead 
+ */
+function bbd_enquiry_add_submit($form, &$form_state) {
+	global $user;
+	$enq_nid = $form_state['values']['nid']; 
+	$application = $form_state['values']['application']; 
+	$rept_no = $form_state['values']['pay_recpt_no']; 
+	$mobile_no = $form_state['values']['field_tel_no']['und'][0]['value']; 	
+	$node = new stdClass();
+  $node->type = 'application';
+  $node->title = $form_state['values']['field_first_name']['und'][0]['value'].'-'.$form_state['values']['field_last_name']['und'][0]['value'];
+	$node->field_first_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_first_name']['und'][0]['value'];
+	$node->field_last_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_last_name']['und'][0]['value'];
+  $node->language = LANGUAGE_NONE;
+  $node->field_application_number[LANGUAGE_NONE][0]['value'] = $application;
+  $node->field_receipt_number[LANGUAGE_NONE][0]['value'] = $rept_no;
+	$node->field_mobile_1[LANGUAGE_NONE][0]['value'] = $mobile_no;
+  $node->uid = $user->uid;
+  node_object_prepare($node);
+  $node->status = 1;
+  $node->promote = 1;
+  $node = node_submit($node);
+  node_save($node);
+	
+	$node_ins = db_insert('field_data_field_application_refrenced')
+	->fields(array(
+	'entity_type' => 'node',
+	'bundle' => 'enquiry',
+	'deleted' => 0,
+	'entity_id' => $enq_nid,
+	'revision_id' => $enq_nid,
+	'language' => 'und',
+	'delta' => 0,
+	'field_application_refrenced_target_id' => $node->nid,
+	))
+	->execute();
+	field_cache_clear();
+	drupal_goto('user/'.$user->uid.'/bbd-centre/search');
+}
+
+/**
+ * BBD Centre enquiry
+ */
+function bbd_centre_enquiry_edit_form() {
+	if(is_numeric(arg(2))) {
+		$node = node_load(arg(2));
+		$app_no = '';
+		$app_no = $node->field_application_refrenced['und'][0]['target_id'];
+		$node_val = '<table>
+		<tr>
+		<td>First Name :</td>
+		<td>'.$node->field_first_name['und'][0]['value'].'</td>
+		</tr>
+		<tr>
+		<td>Last Name :</td>
+		<td>'.$node->field_last_name['und'][0]['value'].'</td>
+		</tr>
+		<tr>
+		<td>Email :</td>
+		<td>'.$node->field_email['und'][0]['value'].'</td>
+		</tr>
+		<tr>
+		<td>Mobile Number :</td>
+		<td>'.$node->field_tel_no['und'][0]['value'].'</td>
+		</tr>
+		<tr>
+		<td>City :</td>
+		<td>'.$node->field_city['und'][0]['value'].'</td>
+		</tr>
+		<tr>
+		<td>State :</td>
+		<td>'.$node->field_state_list['und'][0]['value'].'</td>
+		</tr>
+		<tr>
+		<td>Pin Code :</td>
+		<td>'.$node->field_pin_number['und'][0]['value'].'</td>
+		</tr>
+		</table>';
+		$form['node_val'] = array(
+			'#markup' => $node_val,
+		);
+		if($app_no) { 
+			$app_node = node_load($app_no);
+			$current_workflow = workflow_get_workflow_node_by_nid($app_no);
+			$workflow = workflow_get_workflow_states_by_sid($current_workflow->sid);
+			$workflow_state = $workflow->state;
+			$form['application_status'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('Application'),
+			'#weight' => 15,
+			'#size' => 150,
+			'#collapsible' => FALSE,
+			'#collapsed' => FALSE,
+			);
+			$form['application_status']['application_information'] = array(
+			'#markup' => '<div class="applicaiton-status">Status: '.$workflow_state.'</div><div> Application Number : '.$app_node->field_application_number['und'][0]['value'].'</div><div class="application-link">'. l(t('View Application'), 'node/'. $app_no, array('attributes' => array('target' => '_blank'))) .'</div>',
+			'#weight' => 16,
+			);
+		}else {
+			$form['application'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Application Number'),
+				'#default_value' => get_unique_application_number()+1,
+				'#attributes' => array('readonly' => 'readonly'),
+				'#required' => TRUE,
+			);
+			$form['pay_recpt_no'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Payment Receipt Number'),
+				'#required' => TRUE,
+			);
+			$form['mob'] = array(
+				'#type' => 'hidden',
+				'#value' => $node->field_tel_no['und'][0]['value'],
+			);
+			$form['tit'] = array(
+				'#type' => 'hidden',
+				'#value' => $node->field_first_name['und'][0]['value'].'-'.$node->field_last_name['und'][0]['value'],
+			);
+			$form['fn'] = array(
+				'#type' => 'hidden',
+				'#value' => $node->field_first_name['und'][0]['value'],
+			);
+			$form['ln'] = array(
+				'#type' => 'hidden',
+				'#value' => $node->field_last_name['und'][0]['value'],
+			);
+			$form['submit'] = array(
+				'#type' => 'submit',
+				'#value' => t('Save'),
+			);
+		}
+
+		return $form;
+	}else {
+		return drupal_set_message('Node ID is not valid :(','error');
+	}
+}
+
+/**
+ * Implements the hook form submit
+ */
+function bbd_centre_enquiry_edit_form_submit($form_id,&$form_state) {
+	global $user;
+	$enq_nid = arg(2); 
+	$mobile_no = $form_state['values']['mob'];
+	$title_val = $form_state['values']['tit'];
+	$application = $form_state['values']['application']; 
+	$rept_no = $form_state['values']['pay_recpt_no'];
+	
+	$node = new stdClass();
+  $node->type = 'application';
+  $node->title = $title_val;
+	$node->field_first_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['fn'];
+	$node->field_last_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['ln'];
+  $node->language = LANGUAGE_NONE;
+	$node->field_application_number[LANGUAGE_NONE][0]['value'] = $application;
+  $node->field_receipt_number[LANGUAGE_NONE][0]['value'] = $rept_no;
+	$node->field_mobile_1[LANGUAGE_NONE][0]['value'] = $mobile_no;
+  $node->uid = $user->uid;
+  node_object_prepare($node);
+  $node->status = 1;
+  $node->promote = 1;
+  $node = node_submit($node);
+  node_save($node);
+	
+	$node_ins = db_insert('field_data_field_application_refrenced')
+	->fields(array(
+	'entity_type' => 'node',
+	'bundle' => 'enquiry',
+	'deleted' => 0,
+	'entity_id' => $enq_nid,
+	'revision_id' => $enq_nid,
+	'language' => 'und',
+	'delta' => 0,
+	'field_application_refrenced_target_id' => $node->nid,
+	))
+	->execute();
+	assign_unique_application_number($mobile_no);
+	field_cache_clear();
+	drupal_set_message('Application Created');
+	drupal_goto('user/'.$user->uid.'/bbd-centre/search');
+}
+
+/**
+ * BBD Centre search specific record
+ */
+function bbd_centre_search_record() {
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/form_validate.js');
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/jquery.validate.min.js');
+	$form['search'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Enter your mobile number'),
+		'#required' => TRUE,
+		'#maxlength' => 10,
+	);
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Search'),
+	);
+	return $form;
+}
+
+/**
+ * Implements the form submit
+ */
+function bbd_centre_search_record_submit($form_id,&$form_state) { 
+	$nid = bbd_center_chk_tel_no($form_state['values']['search']);
+	if($nid) {
+		drupal_goto('bbd-centre/enquiry/'.$nid);
+	}else {
+		drupal_goto('bbd-centre/enquiry',array('query' => array('mob'=>$form_state['values']['search'])));
+	}
+}
+
+/**
+ * Check mobile number entry from enquiry content type 
+ */
+function bbd_center_chk_tel_no($node_id) {
+	$nid = db_select('field_data_field_tel_no','tel')
+	->fields('tel',array('entity_id'))
+	->condition('field_tel_no_value',$node_id)
+	->condition('bundle','enquiry')
+	->condition('deleted ',0)
+	->condition('entity_type','node')
+	->range(0,1)
+	->execute()->fetchField();
+	return $nid;
+}
+
+/**
+ * Collect city values for enquiry city drop down
+ */
+function enquiry_city_dropdown_get_values() {
+	$city_list = db_select('pincode_from_edabba','pin')
+							->fields('pin',array('city'))
+							->distinct()
+							->orderBy('city')
+							->execute()->fetchAll();
+	$city = array();						
+	foreach($city_list as $k=> $v)
+	{
+		$city[$v->city] = $v->city;
+	}
+	//$new = array_merge(array(' ' => '- Select a City -'),$city);
+	return $city;
+}
+
+/**
+ * City list from Maxmind
+ */
+function city_list_from_maxmind() {
+	$city_list = db_select('city_list_from_maxmind','max')
+							->fields('max',array('city'))
+							->distinct()
+							->orderBy('city')
+							->execute()->fetchAll();
+	$city = array();						
+	foreach($city_list as $k=> $v)
+	{
+		$city[$v->city] = $v->city;
+	}
+	return $city;
+}
+
+/**
+ * get unique application number
+ */
+function get_unique_application_number() {
+	$count = db_select('lms_unique_application_number','app')->fields('app',array('appl_no'))->execute()->rowCount();
+	return $count;
+}
+
+/**
+ * Assign unique application number to particular user
+ */
+function assign_unique_application_number($mobile = 0) {
+	$nid = db_insert('lms_unique_application_number') 
+		->fields(array(
+		'mobile' => trim($mobile),
+		))
+		->execute();
+	return TRUE;
+}
+
+/**
+ * Check unique application number 
+ */
+function check_unique_application_number($uno,$mobile) {
+	$appl_no = db_select('lms_unique_application_number','app')
+				->fields('app',array('appl_no'))
+				->condition('appl_no',$uno)
+				->condition('mobile',$mobile)
+				->execute()->fetchField();
+	return $appl_no;
+}
+
+/**
+ * Fetch application reference ID to resend Pdf.
+ */
+function get_application_reference_id($nid) {
+	$app_refrenced = db_select('field_data_field_application_refrenced','app')
+				->fields('app',array('field_application_refrenced_target_id'))
+				->condition('deleted',0)
+				->condition('bundle','enquiry')
+				->condition('entity_type','node')
+				->condition('entity_id',$nid)
+				->execute()->fetchField();
+	return $app_refrenced;
+}
+
+/**
+ * Node load replace
+ * @nid - Node ID
+ * @type - Node type
+ * @name - cck field name
+ */
+function node_load_replace($nid,$type,$name) {
+	$table_name = 'field_data_'.$name;
+	$clmn = $name.'_value';
+	$result = db_select($table_name,'n')
+				->fields('n',array($clmn))
+				->condition('deleted',0)
+				->condition('bundle',$type)
+				->condition('entity_type','node')
+				->condition('entity_id',$nid)
+				->execute()->fetchField();
+	return $result;
+}
+
+/**
+ * Get Node title 
+ */
+function get_node_title($nid) {
+	$title = db_select('node','t')
+				->fields('t',array('title'))
+				->condition('nid',$nid)
+				->execute()->fetchField();
+	return $title;
+}

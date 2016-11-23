@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>Title</th><th>First Name</th><th>Middle Name</th><th>Last Name</th><th>Date Of Birth</th><th>Image</th><th>Address 1</th><th>Address 2</th><th>City</th><th>PIN Code</th><th>Mobile 1</th><th>Mobile 2</th><th>Landline No</th><th>Email</th><th>Current Occupation</th><th>Current Occupation Other</th><th>Business Sector</th><th>Business Sector Other</th><th>Doing Business Since</th><th>Operating from</th><th>Leader of any society, committee or group</th><th>If Yes, Specify</th><th>Education Qualification</th><th>Education Qualification Other</th><th>Jurisdiction of police station </th><th>Applicant type</th><th>Name of Establishment</th><th>Address line 1</th><th>Address line 2</th><th>Shop in City</th><th>Shop PIN Code</th><th>Shop Landline No</th><th>Shop Mobile 1</th><th>Shop Mobile 2</th><th>Shop Email</th><th>Area</th><th>Property Type</th><th>Other, Specify</th><th>NEON/FLEX Board</th><th>If Yes, Specify Dimensions</th><th>Bank Name</th><th>PAN No</th><th>Application Status</th><th>Transaction Id </th></tr></thead>    <tbody> <tr class="odd"><td>RAVIKIRAN PANPALIYA</td><td>RAVIKIRAN</td><td>RADHESHYAM</td><td>PANPALIYA</td><td>Sunday, May 19, 1985</td><td><img src="http://bigbazaardirect.com/sites/default/files/styles/thumbnail/public/Ravi%20Panpaliya.jpg?itok=YoXmA_LR" width="77" height="100" alt="" /></td><td>C/O RADHESHYAM F PANPALIYA</td><td>RATHI NAGAR, DHAMANGAON RLY</td><td>Amravati</td><td>444709</td><td>9421737835</td><td></td><td></td><td>panpaliya@yahoo.co.in</td><td>Job/Service</td><td></td><td>Other</td><td></td><td>Not Started as yet</td><td>Not Applicable</td><td>No</td><td></td><td>Post Graduate</td><td></td><td>DHAMANGAON RLY</td><td>Individual</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>ICICI</td><td>BGWPP8268C</td><td>(Payment Received Online)</td><td></td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

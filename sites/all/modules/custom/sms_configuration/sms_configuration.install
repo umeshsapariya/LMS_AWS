@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * Implements hook_schema()
+ * 
+ * Creates a database table for storing SMS logs
+ */
+function sms_configuration_schema() {
+  $schema['sms_logs'] = array(
+    'description' => 'The  table for logging SMS responses',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Unique Id',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'mobile_number' => array(
+        'description' => 'Mobile number',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'message_body' => array(
+        'description' => 'Message body',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'response' => array(
+        'description' => 'Message response stored in serialized format',
+        'type' => 'blob',
+        'size' => 'big',
+        'serialize' => TRUE,
+        'not null' => TRUE,
+      ),
+      'transaction_id' => array(
+        'description' => 'Transaction ID',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}

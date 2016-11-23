@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Sms Configuration feature feature.
+ */
+
+include_once 'sms_configuration_feature.features.inc';

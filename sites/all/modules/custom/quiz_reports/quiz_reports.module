@@ -1,0 +1,288 @@
+<?php
+
+/**
+ * 
+ */
+
+function quiz_reports_permission() {
+  return array(
+    'access quiz reports' => array(
+      'title' => t('Access Quiz reports'),
+      'description' => t('Access Quiz reports')
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function quiz_reports_menu() {
+  $items['user/%user_uid_optional/quiz-reports'] = array(
+    'title' => 'Questionnaire reports',
+    'description' => '',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('quiz_reports_form'),
+    'access arguments' => array('access quiz reports'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/quiz-reports/export'] = array(
+    'title' => 'Quiz reports export',
+    'description' => 'Quiz reports export',
+    'page callback' => 'quiz_reports_helper_query',
+    'access arguments' => array('access quiz reports'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form()
+ */
+function quiz_reports_form($form, &$form_state) {
+
+  global $user;
+
+  $form['filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Filter'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['filter']['application'] = array(
+    '#title' => t('Application no.'),
+    '#type' => 'textfield',
+    '#default_value' => (isset($_GET['application']) ? $_GET['application'] : ''),
+  );
+
+  $form['filter']['date'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['filter']['date']['from'] = array(
+    '#title' => t('From'),
+    '#type' => 'date_popup',
+    '#size' => 30,
+    '#date_type' => DATE_DATETIME,
+    '#date_timezone' => date_default_timezone(),
+    '#date_format' => 'Y-m-d',
+    '#date_increment' => 1,
+    '#date_year_range' => '-3:+3',
+    '#default_value' => (isset($_GET['from']) ? $_GET['from'] : ''),
+  );
+  $form['filter']['date']['to'] = array(
+    '#title' => t('To'),
+    '#type' => 'date_popup',
+    '#size' => 30,
+    '#date_type' => DATE_DATETIME,
+    '#date_timezone' => date_default_timezone(),
+    '#date_format' => 'Y-m-d',
+    '#date_increment' => 1,
+    '#date_year_range' => '-3:+3',
+    '#default_value' => (isset($_GET['to']) ? $_GET['to'] : ''),
+  );
+  $form['filter']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  );
+  
+  $form['filter']['reset'] = array(
+    //'#type' => 'button',
+    '#markup' => l('Reset', 'user/' . $user->uid . '/quiz-reports'),
+    //'#value' => l('Reset', 'user/' . $user->uid . '/quiz-reports')
+    '#prefix' => '<div>',
+     '#suffix' => '</div>',
+  );
+
+  $form['report_data'] = array(
+    '#type' => 'item',
+    '#markup' => quiz_reports_helper_query(),
+  );
+
+  return $form;
+}
+
+/**
+ * Validate callback for form
+ */
+function quiz_reports_form_validate($form, &$form_state) {
+  $application_no = $form_state['values']['application'];
+
+  if (!empty($application_no)) {
+    $query = db_select('field_data_field_application_number', 'fa');
+    $query->fields('fa', array('entity_id'));
+    $query->condition('fa.field_application_number_value', $application_no);
+    $nid = $query->execute()->fetchField();
+
+    if (empty($nid)) {
+      form_set_error('application', 'Please enter valid application number');
+    }
+  }
+}
+
+/**
+ * Submit callback for form
+ */
+function quiz_reports_form_submit($form, &$form_state) {
+  $query_param = array();
+
+  global $user;
+
+  if (!empty($form_state['values']['application'])) {
+    $query_param['application'] = $form_state['values']['application'];
+  }
+
+  if (!empty($form_state['values']['from']) && !empty($form_state['values']['to'])) {
+    $query_param['from'] = $form_state['values']['from'];
+    $query_param['to'] = $form_state['values']['to'];
+  }
+
+  drupal_goto('user/' . $user->uid . '/quiz-reports', array('query' => $query_param));
+}
+
+/**
+ * Function to generate table for reports
+ */
+function quiz_reports_helper_query() {
+
+  $header = array('Application no.', 'Lead name', 'Question', 'Answer', 'Created');
+  $rows = array();
+
+  if (isset($_GET['from']) && isset($_GET['to'])) {
+    $from = strtotime($_GET['from']);
+    $to = strtotime($_GET['to']);
+  }
+
+  $is_export = arg(2);
+  if ($is_export == 'export') {
+    $res = db_select('quiz_multichoice_user_answers', 'q');
+  }
+  else {
+    $res = db_select('quiz_multichoice_user_answers', 'q')->extend('PagerDefault');
+  }
+  $res->join('quiz_node_results', 'qr', 'qr.result_id = q.result_id');
+  $res->join('users', 'u', 'u.uid = qr.uid');
+  $res->join('node', 'na', 'na.uid = u.uid');
+  $res->join('field_data_field_application_number', 'fa', 'fa.entity_id = na.nid');
+  $res->join('quiz_multichoice_user_answer_multi', 'c', 'q.id = c.user_answer_id');
+  $res->join('quiz_multichoice_answers', 'a', 'a.id = c.answer_id');
+  $res->join('node', 'n', 'n.nid = a.question_nid');
+  $res->fields('fa', array('field_application_number_value'));
+  $res->fields('na', array('title', 'created'));
+  $res->fields('a', array('answer'));
+  $res->fields('n', array('title'));
+  $res->condition('qr.uid', 0, '!=');
+  if (isset($_GET['application'])) {
+    $res->condition('fa.field_application_number_value', check_plain($_GET['application']));
+  }
+
+  if (isset($_GET['from']) && isset($_GET['to'])) {
+    $db_and = db_and();
+    $db_and->condition('na.created', check_plain($from), '>=');
+    $db_and->condition('na.created', check_plain($to), '<=');
+    $res->condition($db_and);
+  }
+  $res->orderBy('fa.field_application_number_value', 'DESC');
+  $op = $res->execute()->fetchAll();
+
+  foreach ($op as $row) {
+    $rows[] = array(
+      $row->field_application_number_value,
+      $row->title,
+      $row->n_title,
+      $row->answer,
+      date('Y-m-d', $row->created),
+    );
+  }
+
+  if ($is_export == 'export') {
+    quiz_reports_form_export($header, $rows);
+  }
+
+  $output = '';
+  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No data available.')));
+
+  if ($is_export != 'export') {
+    $output .= theme('pager');
+    $param = $_GET;
+    unset($param['q']);
+    $output .= l('CSV', 'admin/quiz-reports/export', array('query' => array($param)));
+  }
+
+  return $output;
+}
+
+/*
+ * Function to export the data
+ */
+
+function quiz_reports_form_export($column_titles, $row_array) {
+  drupal_add_http_header('Content-Type', 'text/csv; charset=utf-8');
+  drupal_add_http_header('Content-Disposition', 'attachment; filename=Questionnaire_reports.csv');
+
+  foreach ($column_titles as $key => $value) {
+    $keys[] = $value;
+  }
+
+  if ($keys) {
+    print implode(',', $keys) . "\r\n";
+  }
+  unset($keys);
+
+  //fetching the field values
+  foreach ($row_array as $key => $value) {
+    print implode(',', $value) . "\r\n";
+  }
+  unset($values);
+  exit;
+
+//  $batch = array(
+//    'operations' => array(
+//      array('batch_quiz_export', array()),
+//    ),
+//    'finished' => 'batch_export_finished',
+//    'title' => t('Processing Export'),
+//    'init_message' => t('Export is starting.'),
+//    'progress_message' => t('Processed @current out of @total.'),
+//    'error_message' => t('Export has encountered an error.'),
+//  );
+//  batch_set($batch);
+//  batch_process('admin/quiz-reports');
+}
+
+/*
+function batch_quiz_export(&$context) {
+
+  // Start working on a set of results.
+  $limit = 50;
+  $context['finished'] = 0;
+
+  // Create the CSV file with the appropriate column headers for this
+  // list/network if it hasn't been created yet, and store the file path and
+  // field data in the $context for later retrieval.
+  if (!isset($context['sandbox']['file'])) {
+
+    $field_labels = array('Application no.', 'Lead name', 'Question', 'Answer');
+
+    // Create the file and print the labels in the header row.
+    $filename = 'Test_export.csv';
+    $file_path = file_directory_temp() . '/' . $filename;
+    $handle = fopen($file_path, 'w'); // Create the file.
+    fputcsv($handle, $field_labels); // Write the labels to the header row.
+    fclose($handle);
+
+    // Store file path, fields, subscribers, and network in $context.
+    $context['sandbox']['file'] = $file_path;
+    //$context['sandbox']['fields'] = $fields;
+    //$context['sandbox']['subscribers'] = MYMODULE_retrieve_list_subscribers($list->nid, TRUE);
+    //$context['sandbox']['subscribers_total'] = count($context['sandbox']['subscribers']) - 1;
+    // Store some values in the results array for processing when finshed.
+    $context['results']['filename'] = $filename;
+    $context['results']['file'] = $file_path;
+  }
+}
+ */ 

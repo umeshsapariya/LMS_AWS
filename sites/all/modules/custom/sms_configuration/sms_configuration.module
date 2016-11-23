@@ -1,0 +1,558 @@
+<?php
+
+define('SMS_CONF', 61);
+
+/*
+ * Implements hook_menu().
+ */
+
+function sms_configuration_menu() {
+
+  $items['admin/sms/config'] = array(
+    'title' => 'SMS cofiguration',
+    'description' => 'SMS cofiguration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sms_configuration_sms_config'),
+    'access arguments' => array('access sms conf'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/sms/config/status'] = array(
+    'title' => 'SMS cofiguration',
+    'access arguments' => array('access sms conf'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/sms/config/trigger'] = array(
+    'title' => 'SMS trigger',
+    'description' => 'SMS trigger',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sms_configuration_sms_trigger'),
+    'access arguments' => array('access sms conf'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/sms/config/add/template'] = array(
+    'title' => 'Add SMS template',
+    'description' => 'Add SMS template',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sms_configuration_sms_add_template'),
+    'access arguments' => array('access sms conf'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/sms/config/logs'] = array(
+    'title' => 'SMS logs',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sms_configuration_table_logs'),
+    'access arguments' => array('access sms conf'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  
+  $items['admin/sms/config/logs/%'] = array(
+    'title' => 'SMS response ',
+    'page callback' => 'sms_configuration_table_logs_response',
+    'page arguments' => array(4),
+    'access arguments' => array('access sms conf'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/*
+ *  Implements hook_permission()
+ */
+
+function sms_configuration_permission() {
+  return array(
+    'access sms conf' => array(
+      'title' => t('Administrator sms configuration'),
+      'description' => t('Administrator sms configuration')
+    ),
+  );
+}
+
+function sms_configuration_sms_config($form, &$form_state) {
+  $get_terms = get_taxonomy_term_by_vid(SMS_CONF);
+  $form_state['get_terms'] = $get_terms;
+  $header = array(
+    'type' => array('data' => t('SMS Type')),
+    'template' => array('data' => t('SMS Template')),
+  );
+  $options = array();
+
+  $status = array();
+  foreach ($get_terms as $key => $val) {
+    $options[$key] = array('type' => str_replace("_", " ", $key), 'template' => sms_configuration_helper_to_bold_tokens($val['message'], $val['tokens']));
+    $status[$key] = $val['enabled'];
+  }
+
+  $form['sms_template'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#default_value' => $status,
+    '#empty' => t('No content available.'),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('submit'),
+  );
+
+  return $form;
+}
+
+/*
+ * 
+ */
+
+function sms_configuration_sms_config_submit($form, &$form_state) {
+  $get_terms = $form_state['get_terms'];
+
+  foreach ($get_terms as $key => $val) {
+    $original = $form['sms_template']['#default_value'][$key];
+    $new = $form_state['values']['sms_template'][$key];
+    if (($original == '1' && empty($new)) || ($original == '0' && !empty($new))) {
+
+      $value = taxonomy_get_term_by_name($key);
+      $value = array_shift(taxonomy_get_term_by_name($key));
+
+      if ($value->field_enabled['und'][0]['value'] == '1') {
+        $value->field_enabled['und'][0]['value'] = '0';
+      }
+      else {
+        $value->field_enabled['und'][0]['value'] = '1';
+      }
+      taxonomy_term_save($value);
+    }
+  }
+  drupal_set_message(check_plain("successfully updated sms template"));
+}
+
+/*
+ * Drupal form to trigger sms
+ */
+
+function sms_configuration_sms_trigger($form, &$form_state) {
+  $status = $options = array();
+  $get_terms = get_taxonomy_term_by_vid(SMS_CONF);
+  $form_state['sms_conf']['get_terms'] = $get_terms;
+
+  $header = array(
+    'type' => array('data' => t('SMS Type')),
+    'template' => array('data' => t('SMS Template')),
+  );
+
+  foreach ($get_terms as $key => $val) {
+    $options[$key] = array('type' => str_replace("_", " ", $key), 'template' => sms_configuration_helper_to_bold_tokens($val['message'], $val['tokens']));
+    $tokens[$key] = $val['tokens'];
+  }
+
+
+  $form['sms_template'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#default_value' => $status,
+    '#empty' => t('No content available.'),
+    '#ajax' => array(
+      'callback' => 'sms_trigger_for_template',
+      'wrapper' => 'sms_trigger',
+      'method' => 'replace',
+      'keypress' => TRUE,
+    ),
+    '#multiple' => FALSE,
+  );
+
+  $form['sms_trigger'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('SMS trigger'),
+    '#prefix' => '<div id="sms_trigger">',
+    '#suffix' => '</div>',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+
+  if (isset($form_state['values']['sms_template'])) {
+    $sms_template = $form_state['values']['sms_template'];
+    $form['sms_trigger']['to_phone_no'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Phone number')
+    );
+
+    $form['sms_trigger']['template'] = array(
+      '#type' => 'markup',
+      '#markup' => "<b>TEMPLATE -> </b>" . $options[$sms_template]['template'],
+    );
+
+    foreach ($tokens[$sms_template] as $key => $val) {
+      $form['sms_trigger'][$val] = array(
+        '#type' => 'textfield',
+        '#title' => t(str_replace("_", " ", $val))
+      );
+    }
+  }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('submit'),
+  );
+
+  return $form;
+}
+
+function sms_trigger_for_template($form, &$form_state) {
+  return $form['sms_trigger'];
+}
+
+/*
+ *  Submit handler for trigger sms
+ */
+
+function sms_configuration_sms_trigger_submit($form, &$form_state) {
+  $get_terms = $form_state['sms_conf']['get_terms'];
+
+  $phone_no = $form_state['values']['to_phone_no'];
+  $template = $form_state['values']['sms_template'];
+  $var = array();
+
+  //$get_name = array_shift(taxonomy_get_term_by_name($template, 'sms_configuration'));
+  $get_name = taxonomy_term_load($get_terms[$template]['tid']);
+  
+  foreach ($get_name->field_tokens['und'] as $key => $val) {
+    $value = $val['value'];
+    $var[$value] = $form_state['values'][$value];
+  }
+  $status = sms_configuration_helper_for_sms_template($phone_no, $template, $var);
+  
+  if ($status) {
+    drupal_set_message(check_plain("Message successfuly send for template " . $template . " on mobile number " . $phone_no));
+  }
+}
+
+/*
+ * Drupal form to add new template
+ */
+
+function sms_configuration_sms_add_template($form, &$form_state) {
+  // to insert to sms tempalte
+  $form['template_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Unique template name'),
+    '#required' => TRUE,
+  );
+
+  $form['message'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Message'),
+    '#suffix' => t('Add all tokens in the template start with "~" sign and name without space. eg -> ~order_id</br>'),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('submit'),
+  );
+
+  return $form;
+}
+
+function sms_configuration_sms_add_template_validate($form, &$form_state) {
+  $template = str_replace(" ", "_", trim(strtolower($form_state['values']['template_name'])));
+  $query = db_select('taxonomy_term_data', 't');
+  $query->leftjoin('field_data_field_machine_name', 'mn', 't.tid = mn.entity_id');
+  $query->fields('mn', array('field_machine_name_value'));
+  $query->fields('t');
+  $query->condition('mn.field_machine_name_value', $template);
+  $query->condition('vid', SMS_CONF);
+  $res = $query->execute()->fetchAll();
+
+  if (!empty($res)) {
+    form_set_error('template_name', 'Template with the given name already exist');
+  }
+}
+
+/*
+ * Submit handler for sms add template
+ */
+
+function sms_configuration_sms_add_template_submit($form, &$form_state) {
+  //$template = str_replace(" ", "_", trim($form_state['values']['template_name']));
+  $template = $form_state['values']['template_name'];
+  $message = $form_state['values']['message'];
+  $tokens = array();
+  preg_match_all("/~[a-zA-Z0-9._-]+/", $message, $matches);
+  $tokens = $matches[0];
+  foreach ($tokens as $key => $val) {
+    $tokens[$key] = str_replace('~', '', $val);
+  }
+
+  create_taxonomy_term(SMS_CONF, $template, $tokens, 0, $message);
+}
+
+/*
+ * helper function to send sms to mobile
+ */
+
+function send_message_notification_for_order($mobile_num, $body) {
+  $mobile_num = trim($mobile_num);
+  if (strlen($mobile_num) > 9) {
+    $to = $mobile_num;
+    $text = rawurlencode($body);
+
+    $data = array('mobile' => $mobile_num, 'text' => $body);
+    //watchdog("message_sent", '<pre>%array</pre>', array('%array' => print_r($data, true)));
+    $url = 'https://push3.maccesssmspush.com/servlet/com.aclwireless.pushconnectivity.listeners.TextListener?userId=fvralt3&pass=fvralt3&appid=fvralt3&subappid=fvralt3&msgtype=1&contenttype=1&selfid=true&to=91' . $to . '&from=56767&dlrreq=true&text=' . $text . '&alert=1';
+
+    $options = array(
+      'method' => 'POST',
+    );
+    $result = drupal_http_request($url, $options);
+    //watchdog("message_response", '<pre>%array</pre>', array('%array' => print_r($result, true)));
+    $data = array(
+      'mobile_number' => $mobile_num,
+      'message_body' => $body,
+      'response' => serialize($result),
+    );
+
+    $data['transaction_id'] = 'Error in response';
+    if (!isset($result->error)) {
+      $data['transaction_id'] = $result->data;
+    }
+    
+    $query = db_insert('sms_logs')->fields($data)->execute();
+
+    if (strlen(strchr($result->data, "fvralt3")) > 0) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+}
+
+/*
+ * helper function to replace all tokens
+ */
+
+function sms_configuration_helper_to_replace_token($body, $var) {
+  foreach ($var as $key => $val) {
+    $body = str_replace("~" . $key, $val, $body);
+  }
+  return $body;
+}
+
+/*
+ * helper function to bold tokens
+ */
+
+function sms_configuration_helper_to_bold_tokens($body, $var) {
+  foreach ($var as $key => $val) {
+    $body = str_replace("~" . $val, "<b>~" . $val . "</b>", $body);
+  }
+  return $body;
+}
+
+/*
+ * List of template to send in sms 
+ */
+
+function sms_configuration_helper_for_sms_template($mobile_num, $template_key, $var) {
+  $status = FALSE;
+  $get_terms = get_taxonomy_term_by_vid(SMS_CONF, $template_key);
+  
+  if (isset($get_terms[$template_key]) && ($get_terms[$template_key]['enabled'])) {
+    $tokens = $get_terms[$template_key]['tokens'];
+    $tokens = array_flip($tokens);
+    $diff = array_diff_key($tokens, $var);
+    $empty = 0;
+    if (empty($diff)) {
+      foreach ($var as $key => $val) {
+        $data = trim($var[$key]);
+        if (empty($data)) {
+          //Commenting as some times variables have empty values eg: mobile no.
+          //$empty = empty($data);
+        }
+      }
+      if (!$empty) {
+        $body = sms_configuration_helper_to_replace_token($get_terms[$template_key]['message'], $var);
+        $status = send_message_notification_for_order($mobile_num, $body);
+      }
+    }
+  }
+
+  return $status;
+}
+
+/**
+ * Creates a taxonomy term
+ */
+function create_taxonomy_term($vid, $name, $tokens, $enabled, $message) {
+  $term = new stdClass();
+  $template = str_replace(" ", "_", trim(strtolower($name)));
+  $term->vid = $vid;
+  $term->name = $name;
+  foreach ($tokens as $k => $v) {
+    $term->field_tokens['und'][$k]['value'] = $v;
+  }
+  $term->field_machine_name['und']['0']['value'] = $template;
+  $term->field_enabled['und']['0']['value'] = $enabled;
+  $term->field_message['und']['0']['value'] = $message;
+  taxonomy_term_save($term);
+}
+
+/**
+ * Returns list of taxonomy_terms of vocabulary sms_configuration
+ */
+function get_taxonomy_term_by_vid($vid, $machine_name = '') {
+  $query = db_select('taxonomy_term_data', 't');
+  $query->condition('vid', $vid);
+  $query->leftjoin('field_data_field_machine_name', 'mn', 't.tid = mn.entity_id');
+  $query->leftjoin('field_data_field_message', 'fm', 't.tid = fm.entity_id');
+  $query->leftjoin('field_data_field_enabled', 'fe', 't.tid = fe.entity_id');
+  $query->leftjoin('field_data_field_tokens', 'ft', 't.tid = ft.entity_id');
+  $query->fields('t', array('tid'));
+  $query->fields('mn', array('field_machine_name_value'));
+  $query->fields('fm', array('field_message_value'));
+  $query->fields('fe', array('field_enabled_value'));
+  $query->fields('ft', array('field_tokens_value'));
+  
+  if(!empty($machine_name)){
+    $query->condition('mn.field_machine_name_value', $machine_name);
+  }
+  $res = $query->execute()->fetchAll();
+  $var = array();
+  foreach ($res as $k => $v) {
+    $var[$v->field_machine_name_value]['message'] = $v->field_message_value;
+    $var[$v->field_machine_name_value]['tokens'][] = $v->field_tokens_value;
+    $var[$v->field_machine_name_value]['enabled'] = $v->field_enabled_value;
+    $var[$v->field_machine_name_value]['tid'] = $v->tid;
+  }
+  return($var);
+}
+
+
+function sms_configuration_table_logs($form, &$form_state){
+  $fields = array('mobile_number', 'transaction_id');
+  $tablename = 'sms_logs';
+  $limit = 100;
+  $serialize_field['response'] = array('Response', 'admin/sms/config/logs/%', 'id');
+  $redirect = 'admin/sms/config/logs';
+
+  $form = helper_for_list_data_with_filters($form, $form_state, $tablename, $limit, $fields, $serialize_field, $redirect);
+  
+  return $form;
+}
+
+function helper_for_list_data_with_filters($form, &$form_state, $tablename, $limit, $fields, $serialize_field, $redirect) {
+  $form['filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Filter ' . $tablename),
+    '#collapsible' => TRUE,
+    '#collapsed' => False,
+  );
+
+  foreach ($fields as $field) {
+    $get_data = isset($_GET[$field]) ? $_GET[$field] : '';
+    $form['filter'][$field] = array(
+      '#title' => t($field),
+      '#type' => 'textfield',
+      '#size' => 30,
+      '#default_value' => $get_data,
+    );
+  }
+  
+  $form_state['sms_conf']['redirect'] = $redirect;
+
+  $form['reset'] = array(
+    '#markup' => l('Reset', $redirect),
+    '#prefix' => '<div>',
+    '#suffix' => '</div>',
+  );
+
+  $form_state['custum_filters'] = $fields;
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+    '#submit' => array('helper_for_custom_submit_handler'),
+  );
+
+  $form['listing_data'] = array(
+    '#type' => 'fieldset',
+    '#title' => t( $tablename . ' data'),
+    '#collapsible' => TRUE,
+    '#collapsed' => False,
+  );
+  
+  //$output .= '<div>Result count : ' . count($rows) . '</div>';
+
+  $form['listing_data']['logs'] = array(
+    '#type' => 'item',
+    '#markup' => helper_for_table_related_data($tablename, $limit, $fields, $serialize_field),
+  );
+  return $form;
+}
+
+function helper_for_custom_submit_handler($form, &$form_state) {
+  $fields = $form_state['custum_filters'];
+  foreach ($fields as $field) {
+    $param[$field] = isset($form_state['values'][$field]) ? $form_state['values'][$field] : '';
+  }
+  $param = array_filter($param);
+
+  drupal_goto($form_state['sms_conf']['redirect'], array('query' => $param));
+}
+
+function helper_for_table_related_data($tablename, $limit, $fields = array(), $serialize_field = array()) {
+  $schema = drupal_get_schema($tablename);
+  $header = $rows = array();
+  $output = '';
+  foreach ($schema['fields'] as $key => $val) {
+    if ($key == 'id') {
+      $header[] = array('data' => $key, 'field' => $key, 'sort' => 'desc');
+    }
+    else {
+    $header[] = array('data' => $key, 'field' => $key);
+  }
+  }
+  $query = db_select($tablename, 'tn')->fields('tn')->extend('pagerDefault')->limit($limit)->extend('TableSort')->orderByHeader($header);
+  foreach ($fields as $field) {
+    if (isset($_GET[$field]) && !empty($_GET[$field])) {
+      $query->condition('tn.' . $field, '%' . check_plain($_GET[$field]) . '%', 'LIKE');
+    }
+  }
+  $results = $query->execute()->fetchAll();
+  foreach ($results as $result) {
+    $col = array();
+    foreach ($header as $head) {
+      if(isset($serialize_field[$head['field']])){
+        $info = $serialize_field[$head['field']];
+        $col[] = array('data' => l($info[0], str_replace("%",$result->$info[2], $info[1])));
+      }
+      else{
+        $col[] = array('data' => $result->$head['field']); 
+      }
+    }
+    $rows[] = array('data' => $col);
+  }
+
+  $output .= theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('width' => '100%')
+  ));
+
+  $output .= theme('pager');
+  return $output;
+}
+
+function sms_configuration_table_logs_response($id){
+  $query = db_select('sms_logs','sl');
+  $query->fields('sl', array('response'));
+  $query->condition('sl.id', $id);
+  $result = $query->execute()->fetchField();
+  return '<pre>' . print_r(unserialize($result), 1) . '</pre>';
+}

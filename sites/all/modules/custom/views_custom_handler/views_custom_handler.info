@@ -1,0 +1,12 @@
+name = Views custom handler
+description = Help in adding views custom handler
+package = Custom
+core = 7.x
+files[] = includes/views_handler_payment_type.inc
+files[] = includes/views_handler_payment_user.inc
+files[] = includes/views_handler_payment_bank.inc
+files[] = includes/views_handler_remaining_payment.inc
+files[] = includes/views_handler_payment_amount.inc
+files[] = includes/views_handler_event_calendar.inc
+files[] = includes/views_handler_sales_manager_schedule.inc
+files[] = includes/views_handler_documents_upload.inc

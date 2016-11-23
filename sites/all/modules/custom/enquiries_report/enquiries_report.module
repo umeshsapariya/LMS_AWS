@@ -1,0 +1,192 @@
+<?php
+
+
+function enquiries_report_form(){
+	$form = array();
+	$form['assign_filter'] = array(
+		'#type'  => 'select',
+		'#title' => t('Assign'),	
+		'#options' => array('one' => 1, 'two' => 2),
+	);
+	$form['status_filter'] = array(
+		'#type'  => 'select',
+		'#title' => t('Assign'),	
+		'#options' => array('one' => 1, 'two' => 2),
+	);
+	$form['name'] = array(
+		'#type'  => 'textfield',
+		'#title' => t('Name'),
+	);
+	return $form;
+}
+
+function enquiries_report_menu(){
+	$items = array();
+	$items['user/%/enquiries-report2'] = array(
+		'title' => 'Enquiries Report',
+		'page callback' => 'drup',
+		'access arguments' => array('access content'),
+		'description' => t('Enquiries Report'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+	$items['user/%/enquiries-report/download'] = array(
+		'page callback' => 'drup',
+		'access arguments' => array('access content'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+
+return $items;
+}
+
+function drup(){
+	$a = strtotime($_GET['date_filter_min__date_'], Y-m-d);
+	$b = strtotime($_GET['date_filter_max__date_'].' +1 day', Y-m-d);
+	$output = "";
+
+	$query = db_select('node','a');
+	$query->leftjoin('field_data_field_last_name', 'b', 'a.nid = b.entity_id');
+	$query->leftjoin('field_data_field_tel_no', 'c', 'a.nid = c.entity_id');
+	$query->leftjoin('field_data_field_enquiry_status', 'd', 'a.nid = d.entity_id');
+	$query->leftjoin('field_data_field_city', 'cl', 'a.nid = cl.entity_id');
+	$query->leftjoin('field_data_field_application_refrenced', 'e', 'a.nid = e.entity_id');
+	$query->leftjoin('workflow_node', 'f', 'f.nid = e.field_application_refrenced_target_id');
+	$query->leftjoin('workflow_states', 'g', 'g.sid = f.sid');
+	$query->leftjoin('field_data_field_first_name', 'h', 'h.entity_id = a.nid');
+	$query->leftjoin('field_data_field_email', 'i', 'a.nid = i.entity_id');
+	$query->leftjoin('field_data_field_pin_number', 'j', 'a.nid = j.entity_id');
+	$query->leftjoin('field_data_field_comment', 'k', 'a.nid = k.entity_id');
+	$query->leftjoin('field_data_field_assign_status', 'm', 'a.nid = m.entity_id');
+	$query->leftjoin('field_data_field_application_number', 'n', 'a.nid = n.entity_id');
+	$query->leftjoin('field_data_field_source_enquiry', 'o', 'a.nid = o.entity_id');
+	
+	
+	$query->fields('a',array('created','nid'));
+	$query->fields('b',array('field_last_name_value'));
+	$query->fields('c',array('field_tel_no_value'));
+	$query->fields('d',array('field_enquiry_status_value'));
+	$query->fields('g',array('state'));
+	$query->fields('h',array('field_first_name_value'));
+	$query->fields('i',array('field_email_value'));
+	$query->fields('j',array('field_pin_number_value'));
+	$query->fields('k',array('field_comment_value'));
+	//$query->fields('l',array('field_transaction_id_value'));
+	$query->fields('cl',array('field_city_value'));
+	$query->fields('m',array('field_assign_status_target_id'));
+	$query->fields('n',array('field_application_number_value'));
+	$query->fields('o',array('field_source_enquiry_value'));
+
+	
+	if($_GET['field_assign_status_target_id'] != 'All' && $_GET['field_assign_status_target_id'] != '') {
+	$query->condition('m.field_assign_status_target_id', $_GET['field_assign_status_target_id'], '=');
+}
+	elseif($_GET['field_assign_status_target_id'] == '') {
+	$query->condition('m.field_assign_status_target_id', '0', '=');
+}
+	if($_GET['field_enquiry_status_value'] != 'All' && $_GET['field_enquiry_status_value'] != '') {
+	$query->condition('d.field_enquiry_status_value', $_GET['field_enquiry_status_value'], '=');
+}
+	elseif($_GET['field_enquiry_status_value'] == '') {
+	$query->condition('d.field_enquiry_status_value', 'Open', '=');
+}
+
+	if($_GET['field_first_name_value'] != '') {
+	$query->condition('h.field_first_name_value', $_GET['field_first_name_value'], '=');
+}
+	if($_GET['field_last_name_value'] != '') {
+	$query->condition('b.field_last_name_value', $_GET['field_last_name_value'], '=');
+}
+	if($_GET['field_tel_no_value'] != '') {
+	$query->condition('c.field_tel_no_value', $_GET['field_tel_no_value'], '=');
+}
+	if($_GET['field_application_number_value'] != '') {
+	$query->condition('n.field_application_number_value', $_GET['field_application_number_value'], '=');
+}
+
+	if($_GET['sid'] != '' && $_GET['sid'] != 'All') {
+	$query->condition('g.sid', $_GET['sid'], '=');
+}
+	if($_GET['uid'] != '') {
+	$query->condition('f.uid', $_GET['uid'], '=');
+}
+	if($_GET['field_source_enquiry_value'] != '' && $_GET['field_source_enquiry_value'] != 'All') {
+	$query->condition('o.field_source_enquiry_value', $_GET['field_source_enquiry_value'], '=');
+}
+
+	if($_GET['date_filter_min__date_'] != '' && $_GET['date_filter_max__date_'] != '') {
+	$query->condition('a.created', array($a,$b),'BETWEEN');
+}
+ 	
+	$output = $query->execute();
+	$header = array('First Name', 'Last Name', 	'Mobile No.',  'Status', 	'Application State', 'Created On', 	'Email', 'Pin Code', 	'Query', 	'Transaction - Order ID' );
+	$rows = array();
+//dpr($output);die;
+
+//dpr($output->fetchAll());exit;
+
+
+$header = "First Name \t Last Name \t Mobile No. \t City \t Status \t Application State \t Created On \t Email \t Pin Code \t Query \tTransaction - Order ID \n";
+    $rows1 = $header;
+    while($data = $output->fetchObject()){
+      $rows1 .= trim(str_replace("\n", "",$data->field_first_name_value))."\t";
+      $rows1 .= trim(str_replace("\n", "",$data->field_last_name_value))."\t";
+      $rows1 .= trim($data->field_tel_no_value)."\t";
+      $rows1 .= $data->field_city_value."\t";
+      $rows1 .= trim($data->field_enquiry_status_value)."\t";
+      $rows1 .= $data->state."\t";
+      $rows1 .= date('l, jS F Y, h:i:s A',$data->created)."\t";
+      $rows1 .= trim($data->field_email_value)."\t";
+      $rows1 .= trim($data->field_pin_number_value)."\t";
+      $rows1 .= trim($data->field_comment_value)."\t";
+      $rows1 .= bigbazaarcrm_enquiry_get_transaction_id($data->nid +1)."\n";
+     
+
+    }
+
+	$date = date('d-m-Y', time());
+    header("Expires: 0");
+    header("Pragma: public");
+    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+    header('Content-type: application/ms-excel');
+    header('Content-Disposition: attachment; filename=Enquiries_report_'.$date.'.xls');
+    echo $rows1;
+    exit();
+
+
+/*	$count = 0;
+while($data = $output->fetchObject()){
+	// Fill the table rows
+	$rows[] = array(
+		$data->field_first_name_value,
+		$data->field_last_name_value,
+		$data->field_tel_no_value,
+		$data->field_enquiry_status_value,
+		$data->state,
+		$data->created,
+		$data->field_email_value,
+		$data->field_pin_code_value,
+		$data->field_comment_value,
+		$data->field_transaction_id_value,
+		
+    	);
+}
+//dpr($rows);die;
+global $base_url;
+  // Output of table with the paging
+$a = $base_url.$_SERVER[REQUEST_URI].'/download';
+$result=l(t('My Page'),$a);
+$result.= drupal_render(drupal_get_form(enquiries_report_form));
+$result.= theme('table', array("header" => $header,"rows" => $rows));
+*/
+$a = $base_url.$_SERVER[REQUEST_URI].'/download';
+$result=l(t('My Page'),$a);
+ return $result;
+
+
+}
+
+function download(){
+
+
+
+	}

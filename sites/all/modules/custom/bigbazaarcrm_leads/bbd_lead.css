@@ -1,0 +1,13 @@
+.flL {
+	float:left;
+}
+.flR  {
+	float:right;
+}
+.pay_wrap {
+	clear:both;
+}
+.txt_field {
+	float:left;
+	margin-right:30px;
+}

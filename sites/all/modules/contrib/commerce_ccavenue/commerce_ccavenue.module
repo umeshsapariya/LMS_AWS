@@ -1,0 +1,380 @@
+<?php
+/**
+ * @file
+ * Administration forms form payment method
+ */
+function ccavenue_settings_form($settings = NULL) {
+  $form = array();
+  $settings = (array) $settings + array(
+    'merchant_id' => '',
+    'working_key' => '',
+  );
+  $form['merchant_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Merchant id'),
+    '#default_value' => $settings['merchant_id'],
+  );
+  $form['working_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('CCavenue Working key'),
+    '#default_value' => $settings['working_key'],
+  );
+  
+  $form['partial_amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Partial Amount'),
+    '#default_value' => $settings['partial_amount'],
+    '#description' => t('Enter Partial amount to pay'),
+  );
+  return $form;
+}
+// register payment method
+function commerce_ccavenue_commerce_payment_method_info() {
+  $payment_methods = array();
+  $payment_methods['ccavenue'] = array(
+    'title' => t("CCavenue"),
+    'display_title' => 'Pay <span class="orng">Rs 5,000</span> By Netbanking & reserve seat for 48 Hrs and Meet us at Registration centre',
+    'short_title' => 'CCavenue',
+    'description' => t("Payment method for CCavenue"),
+    'terminal' => FALSE,
+    'offsite' => TRUE,
+    'offsite_autoredirect' => TRUE,
+  );
+  return $payment_methods;
+}
+
+// Ask for CCavenue redirect form
+function ccavenue_redirect_form($form, &$form_state, $order, $payment_method, $pane_values) {
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $billing_address = $wrapper->commerce_customer_billing->commerce_customer_address->value();
+  $application = _get_application_no_and_nid_from_order_id($order->order_id);
+  // Get financial info
+  $email = _get_email_from_application($application[0]->field_application_number_value);
+  $currency_code = $wrapper->commerce_order_total->currency_code->value();
+  $amount = $payment_method['settings']['partial_amount'];
+  $return_url = url('checkout/' . $order->order_id . '/payment/return/' . $order->data['payment_redirect_key'], array('absolute' => TRUE));
+  $merchant_id = $payment_method['settings']['merchant_id'];
+  $working_key = $payment_method['settings']['working_key'];
+  $order_id = $order->order_id;
+  $bank = 'ccavenue';
+  $txid = get_transaction_id($order_id, $amount, $bank);
+  $checksum = _commerce_ccavenue_getchecksum($merchant_id, $amount, $txid, $return_url, $working_key);
+  $form['Merchant_Id'] = array(
+    '#type' => 'hidden',
+    '#value' => $merchant_id,
+    );
+  $form['Amount'] = array(
+    '#type' => 'hidden',
+    '#value' => $amount ,
+    );
+  $form['Order_Id'] = array(
+    '#type' => 'hidden',
+    '#value' => $txid,
+    );
+  $form['Redirect_Url'] = array(
+    '#type' => 'hidden',
+    '#value' => $return_url,
+    );
+  $form['Checksum'] = array(
+    '#type' => 'hidden',
+    '#value' => $checksum,
+    );
+   /*$form['Merchant_Param'] = array(
+      '#type' => 'hidden',
+      '#value' => '',
+      );*/
+    $form['cardOption'] = array(
+      '#type' => 'hidden',
+      '#value' => 'netBanking',
+      );
+    /*$form['NonMotoCardType'] = array(
+      '#type' => 'hidden',
+      '#value' => '',
+      );*/
+    $form['netBankingCards'] = array(
+      '#type' => 'hidden',
+      '#value' => $order->field_net_banking[LANGUAGE_NONE][0]['value'],
+      );
+    
+  $form['billing_cust_name'] = array(
+    '#type' => 'hidden',
+    '#value' => $billing_address['name_line'],
+  );
+  $form['billing_cust_address'] = array(
+    '#type' => 'hidden',
+    '#value' => $billing_address['thoroughfare']. ' ' . $billing_address['premise'] . ' ' . $billing_address['sub_premise'] ,
+  );
+  $form['billing_cust_city'] = array(
+    '#type' => 'hidden',
+    '#value' => $billing_address['locality'],
+  );
+  $form['billing_cust_state'] = array(
+    '#type' => 'hidden',
+    '#value' => $billing_address['administrative_area'],
+  );
+  $form['billing_zip_code'] = array(
+    '#type' => 'hidden',
+    '#value' => $billing_address['postal_code'] ,
+  );
+  $form['billing_cust_country'] = array(
+    '#type' => 'hidden',
+    '#value' => 'India',
+  );
+  $form['billing_cust_tel'] = array(
+    '#type' => 'hidden',
+    '#value' => $billing_address['mobile_number'],
+  );
+  $form['billing_cust_email'] = array(
+    '#type' => 'hidden',
+    '#value' => $email ,
+  );
+  $form['billing_cust_notes'] = array(
+    '#type' => 'hidden',
+    '#value' => 'Commerce_CC',
+  );
+  
+  //$form['#action'] = 'https://www.ccavenue.com/shopzone/cc_details.jsp';
+  $form['#action'] = 'https://www.ccavenue.com/servlet/new_txn.PaymentIntegration';
+  return $form;
+}
+/**
+ * Implements hook_redirect_form_validate().
+ */
+// validate payment
+function ccavenue_redirect_form_validate($order, $payment_method) {
+  $authdesc = $_REQUEST['AuthDesc'];
+  $txn_id = $_REQUEST['Order_Id'];
+  $checksum = _commerce_ccavenue_verify($payment_method);
+  $message = t('Security error ip Address was: @ip', array('@ip' => ip_address()));
+  if ( $checksum == "true" && $authdesc == "Y" ) {
+    $pincode = _get_pincode_from_order_id($order->order_id);
+    _pincode_hardcommit_and_ledger_entry($pincode, $order->order_id, -1);
+    $pay_txn = commerce_ccavenue_transaction($order, $payment_method, $authdesc, $txn_id);
+    $data['pay_txn'] = $pay_txn;
+    $data['transaction_id'] = $txn_id;
+    database_entry_for_icici_transaction('update', $data);
+    return drupal_set_message(t('Thank you Your account has been charged and your transaction is successful.'));
+    //return drupal_set_message(t('Thank you for shopping with us. Your account has been charged and your transaction is successful.'));
+    //Here you need to put in the routines for a successful 
+    //transaction such as sending an email to customer,
+    //setting database status, informing logistics etc etc
+  } 
+  elseif ( $checksum == "true" && $authdesc == "B" ) {
+    commerce_ccavenue_transaction($order, $payment_method, $authdesc);
+    //return drupal_set_message(('Thank you for shopping with us.We will keep you posted regarding the status of your order through e-mail'));
+    //Here you need to put in the routines/e-mail for a  "Batch Processing" order
+    //This is only if payment for this transaction has been made by an American Express Card
+    //since American Express authorisation status is available only after 5-6 hours by mail from ccavenue and at the "View Pending Orders"
+  } 
+  elseif ( $checksum == "true" && $authdesc == "N" ) {
+    drupal_set_message(check_plain(t("You transaction could not be completed")), 'error');
+    $order->status = 'checkout_review';
+    commerce_order_save($order);
+    $url = $base_url . 'checkout/' . $order->order_id . '/review';
+    $redirect_flag = TRUE;
+    commerce_ccavenue_transaction($order, $payment_method, $authdesc);
+    //return drupal_set_message(t('The transaction was declined'),'error');
+    //Here you need to put in the routines for a failed
+    //transaction such as sending an email to customer
+    //setting database status etc etc
+  } 
+  else {
+    watchdog('commerce_ccavenue', $message, NULL, WATCHDOG_ERROR);
+    return drupal_set_message(t('Security Error. Illegal access detected. We will store your IP address.'), ERROR );
+    //Here you need to simply ignore this and dont need
+    //to perform any operation in this condition
+  }
+  if($redirect_flag){
+    drupal_goto($url);    
+  }
+}
+/**
+ * Creates an example payment transaction for the specified charge amount.
+ *
+ * @param $payment_method
+ * The payment method instance object used to charge this payment.
+ * @param $order
+ * The order object the payment applies to.
+ * @param $charge
+ * An array indicating the amount and currency code to charge.
+ * @param $name
+ * The name entered on the submission form.
+ */
+function commerce_ccavenue_transaction($order, $payment_method, $authdesc, $txn_id = 0) {
+// ask results from verify function
+  if(_commerce_ccavenue_verify($payment_method) == 'false') {
+    return;
+  };
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $currency = $wrapper->commerce_order_total->currency_code->value();
+  $amount = $wrapper->commerce_order_total->amount->value();
+  $transaction = commerce_payment_transaction_new('ccavenue', $order->order_id);
+  $transaction->instance_id = $payment_method['instance_id'];
+  $transaction->amount = $amount;
+  $transaction->currency_code = $currency;
+  $transaction->remote_id = $txn_id;
+  // Succeessful.
+  if($authdesc == "Y") {
+    $transaction->remote_status = t('Success');
+    $transaction->message = t('Payment received at') . ' ' . date("d-m-Y H:i:s", REQUEST_TIME);
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    
+  }elseif($authdesc == "B"){
+    // Batch process - Pending orders.
+    $transaction->remote_status = t('Pending');
+    $transaction->message = t('Payment pending at') . ' ' . date("d-m-Y H:i:s", REQUEST_TIME);
+    $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+  }elseif($authdesc == "N"){
+    // Failed transaction.
+    $transaction->remote_status = t('Failure');
+    $transaction->message = t('Payment failed at') . ' ' . date("d-m-Y H:i:s", REQUEST_TIME);
+    $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+  }
+  commerce_payment_transaction_save($transaction);
+  return $transaction->transaction_id;
+}
+
+
+// helper functions.. 
+function _commerce_ccavenue_verify($payment_method) {
+  $working_key = $payment_method['settings']['working_key'];
+  $authdesc = $_REQUEST['AuthDesc'];
+  $merchant_id = $_REQUEST['Merchant_Id'];
+  $order_id =  $_REQUEST['Order_Id'];
+  $amount  = $_REQUEST['Amount'];
+  $checksum = $_REQUEST['Checksum'];
+  $data['transaction_id'] = $order_id;
+  $data['response'] = serialize($_REQUEST);
+  $data['status'] = 1;
+  database_entry_for_icici_transaction('update', $data);
+  return _commerce_ccavenue_verify_checksum($merchant_id, $order_id, $amount, $authdesc, $checksum, $working_key);
+}
+
+function _commerce_ccavenue_getchecksum($merchantid, $amount, $orderid, $url, $workingkey) { 
+  $str = "$merchantid|$orderid|$amount|$url|$workingkey"; 
+  $adler = 1; 
+  $adler = _commerce_ccavenue_adler32($adler, $str); 
+  return $adler; 
+} 
+
+function _commerce_ccavenue_verify_checksum($merchantid, $orderid, $amount, $authdesc, $checksum, $workingkey) { 
+  $str = "$merchantid|$orderid|$amount|$authdesc|$workingkey"; 
+  $adler = 1; 
+  $adler = _commerce_ccavenue_adler32($adler, $str); 
+
+  if ( $adler == $checksum ) 
+  return "true" ; 
+  else 
+  return "false" ; 
+}
+
+function _commerce_ccavenue_adler32($adler, $str) { 
+  $base = 65521; 
+  $s1 = $adler & 0xffff; 
+  $s2 = ($adler >> 16) & 0xffff; 
+  for ( $i = 0 ; $i < strlen($str) ; $i++ )  { 
+    $s1 = ($s1 + Ord($str[$i])) % $base ; 
+    $s2 = ($s2 + $s1) % $base ; 
+    //echo "s1 : $s1 <BR> s2 : $s2 <BR>"; 
+   } 
+  return _commerce_ccavenue_leftshift($s2 , 16) + $s1; 
+}
+
+function _commerce_ccavenue_leftshift($str, $num) { 
+ $str = decbin($str);
+  for ( $i = 0 ; $i < (64 - strlen($str)); $i++ ) 
+  $str = "0" . $str ; 
+  for ( $i = 0 ; $i < $num ; $i++ ) { 
+    $str = $str . "0";
+    $str = substr($str , 1 ); 
+    //echo "str : $str <BR>";
+   } 
+  return _commerce_ccavenue_cdec($str); 
+}
+
+function _commerce_ccavenue_cdec($num) { 
+  $dec = '';
+  for ($n = 0 ; $n < strlen($num); $n++ ) { 
+    $temp = $num[$n] ; 
+    $dec = $dec + $temp*pow(2 , strlen($num) - $n - 1); 
+  }
+  return $dec; 
+}
+
+function ccavenue_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+ 
+  $form = array();
+  $option = array(
+    'AND_N' => t('Andhra Bank'),
+    'UTI_N' => t('AXIS Bank'),
+    'BBK_N' => t('Bank of Bahrain & Kuwait'),
+    'BOBCO_N' => t('Bank of Baroda Corporate Accounts'),
+    'BOB_N' => t('Bank of Baroda Retail Accounts'),
+    'BOI_N' => t('Bank of India'),
+    'BOM_N' => t('Bank of Maharashtra'),
+    'CAN_N' => t('Canara Bank'),
+    'CSB_N' => t('Catholic Syrian Bank'),
+    'CEN_N' => t('Central Bank of India'),
+    'CBIBAN_N' => t('Citibank Bank Account Online'),
+    'COP_N' => t('Corporation Bank'),
+    'DBS_N' => t('DBS Bank Ltd'),
+    'DCB_N' => t('DCB Bank ( Development Credit Bank )'),
+    'DEUNB_N' => t('Deutsche Bank'),
+    'DLB_N' => t('Dhanlaxmi Bank'),
+    'FDEB_N' => t('Federal Bank'),
+    'HDEB_N' => t('HDFC Bank'),
+    'IDEB_N' => t('ICICI Bank'),
+    'IDBI_N' => t('IDBI Bank'),
+    'INB_N' => t('Indian Bank'),
+    'IOB_N' => t('Indian Overseas Bank'),
+    'ING_N' => t('ING Vysya Bank'),
+    'JKB_N' => t('Jammu and Kashmir Bank'),
+    'KTKB_N' => t('Karnataka Bank'),
+    'KVB_N' => t('Karur Vysya Bank'),
+    'NKMB_N' => t('Kotak Mahindra Bank'),
+    'LVB_N' => t('Lakshmi Vilas Bank NetBanking'),
+    'OBPRF_N' => t('Oriental Bank of Commerce'),
+    'PNBCO_N' => t('Punjab National Bank Corporate Accounts'),
+    'NPNB_N' => t('Punjab National Bank Retail Accounts'),
+    'RBS_N' => t('RBS (The Royal Bank of Scotland)'),
+    'SIB_N' => t('South Indian Bank'),
+    'SCB_N' => t('Standard Chartered Bank'),
+    'SBJ_N' => t('State Bank of Bikaner and Jaipur'),
+    'SBH_N' => t('State Bank of Hyderabad'),
+    'SBI_N' => t('State Bank of India'),
+    'SBM_N' => t('State Bank of Mysore'),
+    'SBP_N' => t('State Bank of Patiala'),
+    'SBT_N' => t('State Bank of Travancore'),
+    'SYNBK_N' => t('Syndicate Bank'),
+    'TNMB_N' => t('Tamilnad Mercantile Bank'),
+    'UNI_N' => t('Union Bank of India'),
+    'UBI_N' => t('United Bank of India'),
+    'VJYA_N' => t('Vijaya Bank'),
+    'YES_N' => t('YES Bank'),
+  
+  );
+  $form['select_bank'] = array(
+    '#type' => 'select',
+    '#title' => t('Select Bank'),
+    '#options' => $option,
+  );
+
+  return $form;
+}
+
+
+function ccavenue_submit_form_submit($payment_method, $pane_values, $checkout_pane, $order) {
+  //$bank = $pane_values['select_bank']['#value'];
+  $order = commerce_order_load($order->order_number);
+  $order->field_net_banking[LANGUAGE_NONE][0]['value'] = $pane_values['select_bank']['#value'];
+  commerce_order_save($order);  
+}
+
+function _get_email_from_application($application){
+  $query = db_select('field_data_field_application_number','t');
+  $query->join('field_data_field_email','n','t.entity_id = n.entity_id');
+  $query->fields('n',array('field_email_value'));
+  $query->condition('t.field_application_number_value', $application);
+  $email = $query->execute()->fetchField();
+  return $email;
+}

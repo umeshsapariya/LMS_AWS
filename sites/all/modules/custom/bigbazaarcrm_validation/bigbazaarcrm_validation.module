@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * hook_form_alter
+ */
+function bigbazaarcrm_validation_form_alter(&$form, &$form_state, $form_id){
+
+  if($form_id == 'enquiry_node_form'){
+    $form['#validate'][] = 'bigbazaarcrm_validation_enquiry_node_form_validate';
+  }
+}
+
+function bigbazaarcrm_validation_enquiry_node_form_validate($form, &$form_state) {
+  $email = $form_state['values']['field_email'][LANGUAGE_NONE][0]['value'];
+  $tel_no = $form_state['values']['field_tel_no'][LANGUAGE_NONE][0]['value'];
+  if(!empty($email)){
+    if (!(filter_var($email, FILTER_VALIDATE_EMAIL)))
+      form_set_error('email', t('Invalid Email Address!'));  
+  }
+  if (!preg_match("/^\d{10}$/" ,$tel_no))
+    form_set_error('mobile_no', t('Invalid Tel no'));
+}

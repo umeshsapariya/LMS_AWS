@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>Application No</th><th>Post date</th><th>Title</th><th>First Name</th><th>Middle Name</th><th>Last Name</th><th>Date Of Birth</th><th>Image</th><th>Address 1</th><th>Address 2</th><th>City</th><th>PIN Code</th><th>Mobile 1</th><th>Mobile 2</th><th>Landline No</th><th>Email</th><th>Current Occupation</th><th>Current Occupation Other</th><th>Business Sector</th><th>Business Sector Other</th><th>Doing Business Since</th><th>Operating from</th><th>Leader of any society, committee or group</th><th>If Yes, Specify</th><th>Education Qualification</th><th>Education Qualification Other</th><th>Jurisdiction of police station </th><th>Applicant type</th><th>Name of Establishment</th><th>Address line 1</th><th>Address line 2</th><th>Shop in City</th><th>Shop PIN Code</th><th>Shop Landline No</th><th>Shop Mobile 1</th><th>Shop Mobile 2</th><th>Shop Email</th><th>Area</th><th>Property Type</th><th>Other, Specify</th><th>NEON/FLEX Board</th><th>If Yes, Specify Dimensions</th><th>Bank Name</th><th>PAN No</th><th>Application number</th><th>Receipt Number / Order Id</th><th>Application Status</th><th>Transaction Id </th><th>Assign Status</th></tr></thead>    <tbody> <tr class="odd"><td>203906</td><td>Tuesday, October 1, 2013 - 12:00</td><td>Amit Gupta</td><td>Amit</td><td></td><td>Gupta</td><td>Monday, September 15, 1986</td><td></td><td>#49, Sector 2, 31st Main, 18th Cross</td><td>HSR Layout</td><td>Bangalore Urban District</td><td>560102</td><td>9742890256</td><td></td><td></td><td>amitguptaddn@gmail.com</td><td>Job/Service</td><td></td><td>Other</td><td></td><td>Not Started as yet</td><td>Not Applicable</td><td>No</td><td></td><td>Graduate</td><td></td><td>HSR Police Station, Bangalore</td><td>Individual</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>Royal Bank of Scotland</td><td>AJIPG8468R</td><td>203906</td><td></td><td>(Application Submitted Online)</td><td></td><td>Mareshlinga Kattimani</td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

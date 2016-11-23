@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>First Name</th><th>Last Name</th><th>Mobile No.</th><th>City</th><th>Status</th><th>Application State</th><th>Created On</th><th>Email</th><th>Pin Code</th><th>Query</th></tr></thead>    <tbody> <tr class="odd"><td>Amit</td><td>Yenurkar</td><td>9823119802</td><td>Nagpur</td><td>Open</td><td>(Payment Received Online)</td><td>Friday, June 14, 2013 - 10:53</td><td>yenamit@gmail.com</td><td>440010</td><td>Deatils of Big bazar Direct</td> </tr>
+ <tr class="even"><td>Pankaj</td><td>Chowksey</td><td>9423610240</td><td>Amravati</td><td>Open</td><td>(Payment Received Online)</td><td>Tuesday, June 11, 2013 - 22:19</td><td>chowkseypankaj@gmail.com</td><td>444702</td><td>payment received in CCAV,hence application status changed to payment received online.</td> </tr>
+ <tr class="odd"><td>Abdul Nazir</td><td>Qureshi</td><td>9970196833</td><td>Bhandara</td><td>Open</td><td>(Payment Received Online)</td><td>Tuesday, June 11, 2013 - 20:27</td><td>abdnazir@gmail.com</td><td>441904</td><td>Payment received in CCAV hence change the application status</td> </tr>
+ <tr class="even"><td>Rahul</td><td>Bangadkar</td><td>9890443770</td><td>Nagpur</td><td>Open</td><td>(Payment Received Online)</td><td>Tuesday, June 11, 2013 - 12:42</td><td>bangadkartc@gmail.com</td><td>440034</td><td>Payment is received in CCAV hence application status changed to Payment received online.</td> </tr>
+ <tr class="odd"><td>sanjay</td><td>r</td><td>9422140222</td><td>Wardha</td><td>Open</td><td>(Payment Received Online)</td><td>Sunday, June 9, 2013 - 12:27</td><td>sanjayragrawal@yahoo.com</td><td>442001</td><td>About detail of big bazar direct concept</td> </tr>
+ <tr class="even"><td>Sarika </td><td>Gupta</td><td>8793963075</td><td>Akola</td><td>Open</td><td>(Payment Received Online)</td><td>Sunday, June 9, 2013 - 09:25</td><td>sarikagupta6@gmail.com</td><td>444001</td><td>Payment was not successful on PG, however customer has made the payment in cash at the seminar.</td> </tr>
+ <tr class="odd"><td>anand</td><td>Gadre</td><td>9225225121</td><td>Nagpur</td><td>Open</td><td>(Payment Received Online)</td><td>Saturday, June 8, 2013 - 00:29</td><td>anandgadrengp@rediffmail.com</td><td>440015</td><td>Corrected  email id and surname</td> </tr>
+ <tr class="even"><td>Jitesh </td><td>Shahare</td><td>8600359528</td><td>Nagpur</td><td>Open</td><td>(Payment Received Online)</td><td>Friday, June 7, 2013 - 20:58</td><td>jitesh0923@gmail.com</td><td>440023</td><td>Payment received at seminar Receipt number 000151</td> </tr>
+ <tr class="odd"><td>Sanjeev</td><td>Roy</td><td>9028050260</td><td>Nagpur</td><td>Open</td><td>(Payment Received Online)</td><td>Friday, June 7, 2013 - 17:54</td><td>sroynagpur@gmail.com</td><td>441108</td><td>customer wants to BBD details cust will visit BBD center for form collection</td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

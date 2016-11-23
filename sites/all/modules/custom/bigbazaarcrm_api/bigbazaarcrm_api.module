@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * @author Umesh
+ * @copyright 2013
+ */
+
+
+/**
+ * Implements hook_permission
+ */
+function bigbazaarcrm_api_permission() {
+  return array(
+    'access bigbazaar apis' => array(
+      'title' => t('Access Bigbazaar API'),
+      'description' => t('Access Bigbazaar API')
+    ),
+  );
+}
+
+
+/**
+ * hook_menu()
+*/
+require_once('nusoap.php');
+function bigbazaarcrm_api_menu(){
+  $items['brands_details'] = array(
+    'title' => 'Brand Details',
+    'page callback' => 'bigbazaarcrm_api_get_brand_details',
+    'access arguments' => array('access bigbazaar apis'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ *  Implements API Call Handling
+ */
+
+function bigbazaarcrm_api_get_brand_details(){
+
+  $wsdl_path = 'http://beta.bigbazaardirect.com/soap-server.php?wsdl';
+  // Create the client instance
+  $client = new nusoap_client($wsdl_path, true);
+
+  // Check for an error
+  $err = $client->getError();
+
+  if ($err) {
+    // Display the error
+    echo ' <h2>Constructor error</h2><pre>' . $err . ' ';
+    // At this point, you know the call that follows will fail
+  }
+  // Create the proxy
+ // $proxy = $client->getProxy();
+
+watchdog('proxy', '<pre> @array </pre>', array('@array' => print_r($proxy, TRUE)));
+  $term_id = $_REQUEST['brand'];
+  $param = array('brand_tid'=>$term_id);
+
+  watchdog('param', '<pre> @array </pre>', array('@array' => print_r($param, TRUE)));
+ // $result = $proxy->getCompanyData($param);
+   $result = $client->call('getCompanyData', $param);
+  watchdog('result', '<pre> @array </pre>', array('@array' => print_r($result, TRUE)));
+     // if ($proxy->fault) {
+    //   echo '<h2>Fault</h2><pre>';
+    //   print_r($result,true);
+    //   echo '</pre>';
+    // } else {
+        // Check for errors
+    //    $err = $proxy->getError();
+    //    if ($err) {
+   //         // Display the error
+   //         echo '<h2>Error</h2><pre>' . $err . '</pre>';
+   //     } else {
+            $output = "";
+            $output .= "<pre>";
+            $output .= "RESPONSE: ";
+            $output .= print_r($result, true);
+            $output .= "</pre>";
+            $response_msg=200;
+   //       }
+  //  }
+   //
+   if($response_msg=="200")
+   {
+    print $output;
+  //  $res_resp=wapr_api_auto_login($email);
+    //print_r($res_resp); die;
+    if($res_resp->uid>1)
+    {
+      //  drupal_goto("home");
+    }
+   }
+
+}
+
+
+/**
+ *  Get Taxonomy tree
+ */
+ function bigbazaarcrm_api_get_term_details_from_tid($tid){
+  $term = taxonomy_term_load($tid);
+  return $term;
+ }

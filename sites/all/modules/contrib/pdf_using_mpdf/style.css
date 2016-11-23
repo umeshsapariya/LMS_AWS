@@ -1,0 +1,12 @@
+.field .field-label {
+	font-weight: bold;
+	float: left;
+	width: 42%;
+}
+.field {
+	margin: 0 0 15px;
+}
+.pdf-details {
+        color: #063363;
+        font-size: 12px;
+}

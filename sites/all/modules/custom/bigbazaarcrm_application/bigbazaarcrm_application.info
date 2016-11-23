@@ -1,0 +1,4 @@
+name = Application Custom
+description = Alteration to application form.
+package = Custom
+core = 7.x

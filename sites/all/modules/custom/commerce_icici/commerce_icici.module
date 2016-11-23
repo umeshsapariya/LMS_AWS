@@ -1,0 +1,160 @@
+<?php
+/**
+ * @file
+ * Code for icici payment integration using Drupal Commerce.
+ */
+
+
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+
+function commerce_icici_commerce_payment_method_info() {
+  $payment_methods['commerce_icici_payment'] = array(
+    'title' => t('Credit/Debit card'),
+    'display_title' => t('Pay <span class="orng">Rs 25,000</span> by credit/debit card and get your agency now'),
+    'short_title' => 'ICICI Payment',
+    'description' => t("Payment method for ICICI"),
+    'offsite' => TRUE,
+    'offsite_autoredirect' => TRUE,
+  );
+  return $payment_methods;
+  
+}
+
+/**
+ * Implements hook_settings_form().
+ */
+function commerce_icici_payment_settings_form($settings = NULL) {
+  $form = array();
+  $settings = (array) $settings + array(
+    'key_file_name' => '',
+  );
+  $form['key_file_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Key Name'),
+    '#default_value' => $settings['key_file_name'],
+    '#description' => t('Enter Merchant key name here provided by ICICI bank e.g 0000XXXX'),
+  );
+  return $form;
+}
+
+/**
+ * Implements hook_redirect_form
+ */
+function commerce_icici_payment_redirect_form($form, &$form_state, $order, $payment_method) {
+  $gateway_redirect_url = _partial_payment_online_get_redirection_url($order, $payment_method);
+  $form['#action'] = $gateway_redirect_url;
+  return $form;
+}
+
+function commerce_icici_payment_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+ $profile_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
+ $pincode = cheque_payment_get_pincode_from_profile_id($profile_id);
+ $vacancy = bigbazaarcrm_application_get_pincode_status($pincode);
+ if(!$vacancy[0]){
+   watchdog('failed','no vacancy');
+   form_set_error('dummy','sorry Vacancy is completed for your pincode');
+   return FALSE;
+ }
+}
+
+/**
+ * Implements hook_redirect_form_validate().
+ */
+function commerce_icici_payment_redirect_form_validate($order, $payment_method) {
+  _common_icici_validate_function($order, $payment_method);
+}
+
+/**
+ * Implements hook_get_redirection_url()
+ */
+//function _commerce_icici_get_redirection_url($order, $payment_method) {
+//
+//  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+//  $amount = $wrapper->commerce_order_total->amount->value() / 100;
+//  $key_path = $payment_method['settings']['key_file_name'];
+//
+//  // Include ICICI Payment Gateway Required Files.
+//  include "Sfa/BillToAddress.php";
+//  include "Sfa/CardInfo.php";
+//  include "Sfa/Merchant.php";
+//  include "Sfa/MPIData.php";
+//  include "Sfa/ShipToAddress.php";
+//  include "Sfa/PGResponse.php";
+//  include "Sfa/PostLibPHP.php";
+//  include "Sfa/PGReserveData.php";
+//
+//  // Initialize the classes.
+//  $o_mpi = new MPIData();
+//  $o_ci  = new CardInfo();
+//  $o_post_libphp = new PostLibPHP();
+//  $o_merchant = new Merchant();
+//  $o_bta = new BillToAddress();
+//  $o_sta = new ShipToAddress();
+//  $o_pgresp = new PGResponse();
+//  $o_pgreserve_data = new PGReserveData();
+//  $myip = ip_address();
+//  $txid = $order->order_number;
+//  $return_url = url('checkout/' . $order->order_id . '/payment/return/' . $order->data['payment_redirect_key'], array('absolute' => TRUE));
+//  $o_merchant->setMerchantDetails($key_path, $key_path, $key_path, $myip, $txid, 'Order' . $txid, $return_url, "POST", "INR", "INV123", "req.Sale", $amount, "", "", "true", "", "", "");
+//
+//  $o_pgresp = $o_post_libphp->postSSL($o_bta, $o_sta, $o_merchant, $o_mpi, $o_pgreserve_data);
+//
+//  $url = $o_pgresp->mstrRedirectionUrl;
+//  return $url;
+//}
+//
+///**
+// * Implements hook_transaction()
+// */
+//function commerce_icici_transaction($order, $payment_method) {
+//
+//  // Ask results from verify function.
+//  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+//  $currency_code = $wrapper->commerce_order_total->currency_code->value();
+//  $amount = $wrapper->commerce_order_total->amount->value();
+//  $transaction = commerce_payment_transaction_new('commerce_icici_payment', $order->order_id);
+//  $transaction->instance_id = $payment_method['instance_id'];
+//  $transaction->amount = $amount;
+//  $transaction->currency_code = $currency_code;
+//  $transaction->remote_status = COMMERCE_PAYMENT_STATUS_PENDING;
+//  $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+//  $transaction->message = t('Payment recieved at %date', array("%date" => date("d-m-Y H:i:s", REQUEST_TIME)));
+//  commerce_payment_transaction_save($transaction);
+//
+//}
+
+function commerce_icici_payment_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  $form = array();
+
+  $output = '<div class="payment-pg-block">
+<p>This is the fastest way to become our agent as we have limited seats per pincode. All you need to do is make the payment online and send the documents.</p> 
+<p>Big Bazaar will send you the agreement and welcome kit. A relationship manager will be assigned to help you do business.</p>    
+<p>After paying you need to upload the below KYC scanned copies or courier it. </p>
+<p>KYC documents (IMP:Mention applicaiton number behind all documents</p>
+<ul class="inner-pg-lst">
+  <li>ID Proof</li>
+  <li>2 Photographs</li>
+  <li>Pan card</li>
+ </ul>
+<p>Cancelled cheque  with your name</p>
+<p>Once you have made the online we shall display to you the complete address of the nearest Registration Office </p>
+<p>Address Proof: (Copy of any one of the following)</p>
+<p>Voter’s Id/ Driving License/  Adhar Card/ Passport / Electricity Bill / Telephone Bill / Rent agreement</p>
+<p><b>Kindly courier the above documents to:</b></p>
+<p>Commercial Team, Big bazaar.Com</p>
+<p>Future Retail Limited</p>
+<p>4th Floor, Tower C,</p>
+<p>247 Park, LBS Marg, Vikhroli (West),</p>
+<p>Mumbai – 400083</p>
+
+</div>';
+  $form['dummy'] = array(
+    '#markup' => $output,
+  );
+
+
+  return $form;
+}

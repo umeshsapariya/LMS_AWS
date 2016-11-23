@@ -1,0 +1,10 @@
+name = Cheque Payment
+description = Adds a "Pay by cheque" payment method
+package = Big bazaaar CRM Payment Gateway
+dependencies[] = commerce
+dependencies[] = commerce_payment
+version = "7.x-1.1"
+core = "7.x"
+project = "cheque_payment"
+datestamp = "1370882151"
+

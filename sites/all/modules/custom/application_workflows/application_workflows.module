@@ -1,0 +1,140 @@
+<?php
+
+/**
+ * @file
+ * Code for partial payment integration using Drupal Commerce.
+ */
+
+/*
+ * Implement hook_permission()
+ */
+
+function application_workflows_permission() {
+  return array(
+      'kyc status' => array(
+          'title' => t('kyc status'),
+          'description' => t('kyc status')
+      ),
+      'kyc verified' => array(
+            'title' => t('kyc verified'),
+            'description' => t('kyc verified')
+        ),
+      'device provision' => array(
+          'title' => t('device provision'),
+          'description' => t('device provision'),
+      ),
+      'start up kit' => array(
+          'title' => t('start up kit'),
+          'description' => t('start up kit')
+      ),
+      
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function application_workflows_menu() {
+  $items['application/%node/states'] = array(
+    'title' => 'Application states',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('application_workflows_form', 1),
+    'access arguments' => array('access content'),
+    'file' => 'application_workflows.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+function application_workflows_attach_status_as_per_type($application_id, $data = array()) {
+  $application = node_load($application_id);
+
+  if (isset($application->field_application_workflows['und'])) {
+    $field_collection_value = array_shift(entity_load('field_collection_item', array($application->field_application_workflows['und'][0]['value'])));
+  }
+  else {
+    $field_collection_value = entity_create('field_collection_item', array('field_name' => 'field_application_workflows'));
+    $field_collection_value->setHostEntity('node', $application);
+  }
+  // Attach to the line_item
+  foreach ($data as $key => $val) {
+    if (!empty($val['status'])) {
+      switch ($val['type']) {
+        case 'field_kyc_state':
+          $field_collection_value->field_kyc_state[LANGUAGE_NONE][0]['value'] = $val['status'];
+          break;
+        case 'field_device_state':
+          $field_collection_value->field_device_state[LANGUAGE_NONE][0]['value'] = $val['status'];
+          break;
+        case 'field_startup_kit_state':
+          $field_collection_value->field_startup_kit_state[LANGUAGE_NONE][0]['value'] = $val['status'];
+          break;
+      }
+    }
+  }
+
+  $response = $field_collection_value->save();
+
+  if ($response) {
+    application_workflows_trigger_notification($application, $data);
+  }
+  return $response;
+}
+
+function application_workflows_trigger_notification($application, $data = array()) {
+  //$mobile_no = $application->field_mobile_1['und'][0]['value'];
+  $email = $application->field_email['und'][0]['value'];
+  $app_no = $application->field_application_number['und'][0]['value'];
+  foreach ($data as $key => $val) {
+    if (!empty($val['status'])) {
+      switch ($val['type']) {
+        case 'field_kyc_state':
+          switch ($val['status']) {
+            case 'kyc_pending_courier':
+              $tokens = array('application_id' => $app_no);
+              sms_configuration_helper_for_sms_template(9819490958, 'kyc_pending', $tokens);
+              $params = array(
+                'mail_to' => $email,
+                'dynamic' => array('application_id' => $app_no),
+              );
+              entity_email_send('kyc_pending', $params);
+              break;
+            case 'kyc_pending_upload':
+              $tokens = array('application_id' => $app_no);
+              sms_configuration_helper_for_sms_template(9819490958, 'kyc_pending', $tokens);
+              $params = array(
+                'mail_to' => $email,
+                'dynamic' => array('application_id' => $app_no),
+              );
+              entity_email_send('kyc_pending', $params);
+              break;
+            case 'kyc_discrepancy':
+              $tokens = array('application_id' => $app_no);
+              sms_configuration_helper_for_sms_template(9819490958, 'kyc_discrepant', $tokens);
+              $params = array(
+                'mail_to' => $email,
+                'dynamic' => array('application_id' => $app_no),
+              );
+              entity_email_send('kyc_discrepant', $params);
+              break;
+            case 'kyc_received';
+              $tokens = array('application_id' => $app_no);
+              sms_configuration_helper_for_sms_template(9819490958, 'kyc_received', $tokens);
+              $params = array(
+                'mail_to' => $email,
+                'dynamic' => array('application_id' => $app_no),
+              );
+              entity_email_send('kyc_received', $params);
+              break;
+            case 'kyc_verified';
+              break;
+          }
+          break;
+        case 'field_device_state':
+          break;
+        case 'field_startup_kit_state':
+          break;
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+<?php
+
+/*
+ * Create table to generate auto-incremental Application ID's
+ */
+
+/*
+ * Implements hook_schema()
+ */
+function bigbazaarcrm_application_schema() {
+  $schema['application_id_counter'] = array(
+    'description' => 'The  table for generating auto-incremental Application IDs',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Application Id',
+        'type' => 'serial',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'mobile' => array(
+        'description' => 'Mobile',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  
+  return $schema;
+}
+
+/*
+ * Implements hook_update_N().
+ * 
+ * Used to stored lead data that is already exit.
+ */
+function bigbazaarcrm_application_update_7001() {
+    $schema['application_existing_lead_source'] = array(
+    'description' => 'The table for storing lead data coming from source that is already exit',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Id',
+        'type' => 'serial',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Name',
+        'type' => 'varchar',
+        'length' => 250,
+        'not null' => TRUE,
+      ),
+      'mobile' => array(
+        'description' => 'Mobile',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'pincode' => array(
+        'description' => 'Pincode',
+        'type' => 'varchar',
+        'length' => 6,
+        'not null' => TRUE,
+      ),
+      'source' => array(
+        'description' => 'souce from where data coming',
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  
+  db_create_table('application_existing_lead_source', $schema['application_existing_lead_source']);
+}

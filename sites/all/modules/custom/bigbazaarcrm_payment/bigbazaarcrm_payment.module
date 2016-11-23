@@ -1,0 +1,501 @@
+<?php
+
+/**
+ * @author kashmira
+ * @copyright 2013
+ */
+
+function bigbazaarcrm_payment_menu(){
+  $items['apply-online'] = array(
+    'title' => 'Apply Online',
+    'page callback' => 'bigbazaarcrm_payment_apply_online',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['make-payment'] = array(
+    'title' => 'Make Payment',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bigbazaarcrm_payment_confirm_payment'),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['confirm'] = array(
+    'title' => 'Confirmation',
+    'page callback' => 'bigbazaarcrm_payment_thankyou',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+
+
+function bigbazaarcrm_payment_apply_online() {
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/form_validate.js');
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/jquery.validate.min.js');
+  if(isset($_COOKIE['nidcookie']))  {
+    $nid = $_COOKIE['nidcookie'];
+    $node = node_load($nid);
+    $status = workflow_node_current_state($node);
+    if($status == 14 || $status == 15) {
+      drupal_set_message('It seems that your payment process was not completed.<br/>Please try again.<br/><br/>For any payment related queries, contact our customer support.');
+      drupal_goto('make-payment');
+    }
+    if($status == 1){
+      setcookie("nidcookie", "", time()-3600);
+    }
+  }
+  module_load_include('inc', 'node', 'node.pages');
+  $new_node = new stdClass;
+  $new_node->type = 'application';
+  $new_node->language = LANGUAGE_NONE;
+  $form = drupal_get_form('application_node_form', $new_node);
+  return $form;
+}
+
+/**
+ * form alter for Big bazaar crm icici payment
+*/
+
+function bigbazaarcrm_payment_form_alter(&$form, &$form_state, $form_id) {
+ drupal_add_js(drupal_get_path('module','bigbazaarcrm_common') .'/common.js');
+  if($form_id == 'application_node_form')
+  { 
+      $form['actions']['submit']['#submit'][1] = 'bigbazaarcrm_payment_call';
+      $form['application_header'] = array(
+        '#type' => 'item',
+        '#prefix'=> '<div id = "application_header" style="margin-left:-28px;"><img src="'.base_path().path_to_theme().'/images/application_header.png"/>',
+        '#suffix'=> '</div>',
+      );
+  
+  }
+
+}
+
+/**
+ * extra submit handler for calling payment gateway url
+ */
+
+function bigbazaarcrm_payment_call($form, &$form_state)
+{
+  $nid = $form_state['values']['nid'];
+
+
+  db_insert('bigbazaarcrm_payment')
+      ->fields(array(
+        'nid' => $nid,
+        'status' => 0,
+
+      ))
+      ->execute();
+
+   db_insert('bigbazaarcrm_applications')
+      ->fields(array(
+        'nid' => $nid,
+      ))
+      ->execute();
+
+   $app_id = db_select("bigbazaarcrm_applications", "ba")
+          ->fields("ba", array("app_id"))
+          ->condition("nid", $nid)
+          ->execute()
+          ->fetchField();
+
+  setcookie("nidcookie", $nid, time()+600);
+  $sid = 4;
+  $node = node_load($nid);
+  workflow_execute_transition($node, $sid, $comment = NULL, $force = FALSE);
+  drupal_goto('make-payment');
+ // drupal_goto(urlencode('node') . '/'.$nid.'/pdf');
+}
+
+/**
+ * Application content type form validate.
+ */
+function bigbazaarcrm_payment_node_validate($node, $form, &$form_state) {
+  if ($node->type == 'application') {
+    $firstname = $node->title;
+    $Lastname = $node->field_last_name[LANGUAGE_NONE][0]['value'];
+    $email = $node->field_email[LANGUAGE_NONE][0]['value'];
+    $pincode = $node->field_pin_code[LANGUAGE_NONE][0]['value'];
+    $mobile = $node->field_mobile_1[LANGUAGE_NONE][0]['value'];
+    $shop_pin_code = $node->field_shop_pin_code[LANGUAGE_NONE][0]['value'];
+    $shop_shop_mobile_1 = $node->field_shop_mobile_1[LANGUAGE_NONE][0]['value'];
+    $shop_email = $node->field_shop_email[LANGUAGE_NONE][0]['value'];
+    $pan_no = $node->field_pan_no[LANGUAGE_NONE][0]['value'];
+    
+    if (!empty($email)) {
+      if (!valid_email_address($email)) {
+        form_set_error('field_email','Please enter valid email id');
+      }
+    }
+
+    if (!empty($shop_email)) {
+      if (!valid_email_address($shop_email)) {
+        form_set_error('field_shop_email','Please enter valid email id for Shop');
+      }
+    }
+
+    if (!empty($pincode) && !preg_match("/^\d{6}$/", $pincode)) {
+      form_set_error('field_pin_code', t('Please enter valid PIN code '));
+    }
+    
+    if (!empty($shop_pin_code) && !preg_match("/^\d{6}$/", $shop_pin_code)) {
+      form_set_error('field_shop_pin_code', t('Please enter valid PIN code for Shop '));
+    }
+    
+    if (!empty($mobile) && !preg_match("/^\d{10}$/", $mobile)) {
+      form_set_error('field_mobile_1', t('Please enter valid mobile number'));
+    }
+    
+    if (!empty($shop_shop_mobile_1) && !preg_match("/^\d{10}$/", $shop_shop_mobile_1)) {
+      form_set_error('field_shop_mobile_1', t('Please enter valid mobile number for shop'));
+    }
+    
+    if (!empty($pan_no) && !preg_match("/^([a-zA-Z]){5}([0-9]){4}([a-zA-Z]){1}?$/", $pan_no)) {
+      form_set_error('field_pan_no', t('Please enter valid pan number'));
+    }
+  }
+}
+
+
+/**
+ * Confirm payment function
+*/
+
+function bigbazaarcrm_payment_confirm_payment()
+{
+  if(isset($_COOKIE['nidcookie']))
+  {
+    $nid = $_COOKIE['nidcookie'];
+    $node = node_load($nid);
+    $status = workflow_node_current_state($node);
+    if($status == 14 || $status == 15)
+    {
+      drupal_set_message('It seems that your payment process was not completed.<br/>Please try again.<br/><br/>For any payment related queries, contact our customer support.');
+      $form['payment_header'] = array(
+        '#type' => 'item',
+        '#prefix'=> '<div id = "payment_header" style="margin-left:-28px;"><img src="'.base_path().path_to_theme().'/images/payment.png"/>',
+        '#suffix'=> '</div><div>&nbsp;</div><div>&nbsp;</div><div>Please click below button to make online payment<div>&nbsp;</div><div>&nbsp;</div></div>',
+        '#weight'=> -10,
+  
+     );
+  
+     $form['make-payment'] = array(
+       '#type' =>'submit',
+       '#value' => 'Make Payment',
+     );
+     return $form;
+    }
+    if($status == 1){
+        setcookie("nidcookie", "", time()-3600);
+    }
+  }
+  else{
+    drupal_goto('apply-online');
+  }
+ 
+}
+
+
+/**
+ * Confirm payment function submit handler
+*/
+function bigbazaarcrm_payment_confirm_payment_submit($form,&$form_state)
+{
+ $nid = $_COOKIE['nidcookie'];
+
+  /*include("Sfa/BillToAddress.php");
+  include("Sfa/CardInfo.php");
+  include("Sfa/Merchant.php");
+  include("Sfa/MPIData.php");
+  include("Sfa/ShipToAddress.php");
+  include("Sfa/PGResponse.php");
+  include("Sfa/PostLibPHP.php");
+  include("Sfa/PGReserveData.php");*/
+
+ 	$oMPI 			= 	new MPIData();
+	$oCI			=	new	CardInfo();
+	$oPostLibphp	=	new	PostLibPHP();
+	$oMerchant		=	new	Merchant();
+	$oBTA			=	new	BillToAddress();
+	$oSTA			=	new	ShipToAddress();
+	$oPGResp		=	new	PGResponse();
+	$oPGReserveData = 	new PGReserveData();
+
+
+  /*$nid = db_select("bigbazaarcrm_applications", "ba")
+          ->fields("ba", array("nid"))
+          ->condition("app_id", $app_id)
+          ->execute()
+          ->fetchField();
+          */
+  $node = node_load($nid);
+
+  /*$name = "Tester";
+  $bill_addr_line1 = "Aline1";
+  $bill_addr_line2 = "Aline2";
+  $bill_addr_landmark = "Aline3";
+  $bill_addr_city = "Pune";
+  $bill_addr_state = "A.P";
+  $bill_pincode = "400059";
+  $bill_country = "IND";
+  $bill_email_id = "tester@soft.com";
+
+
+  $shipping_addr_line1 =  "Aline1";;
+  $shipping_addr_line2 = "Aline2";
+  $shipping_addr_landmark = "Aline3";
+  $shipping_addr_city = "Pune";
+  $shipping_addr_state = "A.P";
+  $shipping_pincode = "400059";
+  $shipping_country = "IND";
+  $shipping_email_id =  "tester@soft.com";
+  */
+  $name = $node->title;
+  $bill_addr_line1 = $node->field_address_line_1[LANGUAGE_NONE][0]['value'];
+  $bill_addr_line2 = $node->field_address_line_2[LANGUAGE_NONE][0]['value'];
+  $bill_addr_landmark = $node->field_shop_landmark[LANGUAGE_NONE][0]['value'];
+  $bill_addr_city = $node->field_shop_in_city[LANGUAGE_NONE][0]['value'];
+  $bill_addr_state = $node->field_shop_in_city[LANGUAGE_NONE][0]['value'];
+  $bill_pincode = $node->field_shop_pin_code[LANGUAGE_NONE][0]['value'];
+  $bill_country = "IND";
+  $bill_email_id = $node->field_shop_email[LANGUAGE_NONE][0]['value'];
+
+
+  $shipping_addr_line1 = $node->field_address_1[LANGUAGE_NONE][0]['value'];
+  $shipping_addr_line2 = $node->field_address_2[LANGUAGE_NONE][0]['value'];
+  $shipping_addr_landmark = $node->field_landmark[LANGUAGE_NONE][0]['value'];
+  $shipping_addr_city = $node->field_city[LANGUAGE_NONE][0]['value'];
+  $shipping_addr_state = $node->field_city[LANGUAGE_NONE][0]['value'];
+  $shipping_pincode = $node->field_pin_code[LANGUAGE_NONE][0]['value'];
+  $shipping_country = "IND";
+  $shipping_email_id = $node->field_email[LANGUAGE_NONE][0]['value'];
+
+
+  $oMerchant->setMerchantDetails("00003145","00003145","00003145","193.545.34.33",rand()."",$nid,"http://beta.bigbazaardirect.com/confirm","POST","INR","INV123","req.Sale","1","","Ext1","true","Ext3","Ext4","Ext5");
+
+  $oBTA->setAddressDetails ("CID",$name,$bill_addr_line1,$bill_addr_line2,$bill_addr_landmark,$bill_addr_city,$bill_addr_state,$bill_pincode,$bill_country,$bill_email_id);
+
+  $oSTA->setAddressDetails ($shipping_addr_line1,$shipping_addr_line2,$shipping_addr_landmark,$shipping_addr_city,$shipping_addr_state,$shipping_pincode,$shipping_country,$shipping_email_id);
+
+$oPGReserveData->setReserveObj("1","2","3","4","5","6","7","8","9","10");
+$oPGResp=$oPostLibphp->postSSL($oBTA,$oSTA,$oMerchant,$oMPI,$oPGReserveData);
+
+if($oPGResp->getRespCode() == '000'){
+  	 $url	=$oPGResp->getRedirectionUrl();
+
+      drupal_goto($url);
+
+    }else{
+      print "Error Occured.<br>";
+  		print "Error Code:".$oPGResp->getRespCode()."<br>";
+  		print "Error Message:".$oPGResp->getRespMessage()."<br>";
+
+  }
+}
+
+
+function bigbazaarcrm_payment_thankyou()
+{
+/* if(isset($_COOKIE['nidcookie']))
+  {
+    $nid = $_COOKIE['nidcookie'];
+    $node = node_load($nid);
+    $status = workflow_node_current_state($node);
+    if($status == 14 || $status == 15)
+    {
+      drupal_set_message('It seems that your payment process was not completed.<br/>Please try again.<br/><br/>For any payment related queries, contact our customer support.');
+      drupal_goto('make-payment');
+    }
+    if($status == 1){
+        setcookie("nidcookie", "", time()-3600);
+    }
+  }
+*/
+ $nid = $_COOKIE['nidcookie'];
+  include("Sfa/EncryptionUtil.php");
+
+
+		 $strMerchantId="00003145";
+		 $astrFileName="/home/inhouse/domains/bigbazaarcrm.iksuladev.com/public_html/sites/all/modules/custom/bigbazaarcrm_payment/key/00003145.key";
+		 $astrClearData;
+		 $ResponseCode = "";
+		 $Message = "";
+		 $TxnID = "";
+		 $ePGTxnID = "";
+     $AuthIdCode = "";
+		 $RRN = "";
+		 $CVRespCode = "";
+		 $Reserve1 = "";
+		 $Reserve2 = "";
+		 $Reserve3 = "";
+		 $Reserve4 = "";
+		 $Reserve5 = "";
+		 $Reserve6 = "";
+		 $Reserve7 = "";
+		 $Reserve8 = "";
+		 $Reserve9 = "";
+		 $Reserve10 = "";
+
+
+		 if($_POST){
+
+			if($_POST['DATA']==null){
+				print "null is the value";
+			}
+			 $astrResponseData=$_POST['DATA'];
+			 $astrDigest = $_POST['EncryptedData'];
+			 $oEncryptionUtilenc = 	new 	EncryptionUtil();
+			 $astrsfaDigest  = $oEncryptionUtilenc->getHMAC($astrResponseData,$astrFileName,$strMerchantId);
+
+			if (strcasecmp($astrDigest, $astrsfaDigest) == 0) {
+			 parse_str($astrResponseData, $output);
+			 if( array_key_exists('RespCode', $output) == 1) {
+			 	$ResponseCode = $output['RespCode'];
+			 }
+			 if( array_key_exists('Message', $output) == 1) {
+			 	$Message = $output['Message'];
+			 }
+			 if( array_key_exists('TxnID', $output) == 1) {
+			 	$TxnID=$output['TxnID'];
+			 }
+			 if( array_key_exists('ePGTxnID', $output) == 1) {
+			 	$ePGTxnID=$output['ePGTxnID'];
+			 }
+			 if( array_key_exists('AuthIdCode', $output) == 1) {
+			 	$AuthIdCode=$output['AuthIdCode'];
+			 }
+			 if( array_key_exists('RRN', $output) == 1) {
+			 	$RRN = $output['RRN'];
+			 }
+			 if( array_key_exists('CVRespCode', $output) == 1) {
+			 	$CVRespCode=$output['CVRespCode'];
+			 }
+			 if( array_key_exists('Reserve1', $output) == 1) {
+				$Reserve1 = $output['Reserve1'];
+			 }
+
+			 if( array_key_exists('Reserve2', $output) == 1) {
+			 	$Reserve2 = $output['Reserve2'];
+			 }
+			 if( array_key_exists('Reserve3', $output) == 1) {
+			 	$Reserve3 = $output['Reserve3'];
+			 }
+
+			 if( array_key_exists('Reserve4', $output) == 1) {
+			 	$Reserve4 = $output['Reserve4'];
+			 }
+
+			 if( array_key_exists('Reserve5', $output) == 1) {
+			 	$Reserve5 = $output['Reserve5'];
+			 }
+			 if( array_key_exists('Reserve6', $output) == 1) {
+			 	$Reserve6 = $output['Reserve6'];
+			 }
+
+			 if( array_key_exists('Reserve7', $output) == 1) {
+			 	$Reserve7 = $output['Reserve7'];
+			 }
+			 if( array_key_exists('Reserve8', $output) == 1) {
+			 	$Reserve8 = $output['Reserve8'];
+			 }
+
+			 if( array_key_exists('Reserve9', $output) == 1) {
+			 	$Reserve9 = $output['Reserve9'];
+			 }
+			 if( array_key_exists('Reserve10', $output) == 1) {
+			 	$Reserve10 = $output['Reserve10'];
+			 }
+			}
+		 }
+
+  $time = time();
+  $data_updated = db_update('bigbazaarcrm_payment') // Table name no longer needs {}
+  ->fields(array(
+    'status' => 1,
+    'workflow_status' => $ResponseCode,
+    'txn_id' => $TxnID,
+    'auth_id_code' => $AuthIdCode,
+    'epg_txn_id'=> $ePGTxnID,
+    'rrn' => $RRN,
+    'timestamp' => $time,
+  ))
+  ->condition('nid', $nid)
+  ->execute();
+
+  $node = node_load($nid);
+  $to = $node->field_email;
+  $stmt = '';
+  $stmt = '<div id = "confirm_header" style="margin-left:-28px;"><img src="'.base_path().path_to_theme().'/images/confirm.png"/></div><div>&nbsp;</div>';
+  if($ResponseCode == 0)
+  {
+    $sid = 1;
+    $stmt .= '<div>Thank you for your payment</div>';
+  }
+  else{
+    $sid = 14;
+     drupal_set_message('It seems that your payment process was not completed.<br/>Please try again.<br/><br/>For any payment related queries, contact our customer support.');
+     $stmt .= $Message;
+  }
+  workflow_execute_transition($node, $sid, $comment = NULL, $force = FALSE);
+
+  $email_cc = 'kashmira@iksula.com';
+  if($ResponseCode == 0)
+  {
+   $template = '<table>
+                  <tr>
+                    <td>Thank you for your application for Franchisee. </td>
+                  <tr>
+                  <tr>
+                    <td>Please find attached form.</td>
+                  <tr>
+                </table>';
+
+   $from = 'enquiry@bigbazaardirect.com';
+   $body[0] = $template;
+   $params = array(
+    'body' => $body,
+    'subject' => 'Big Bazaar Direct Online Application',
+    'nid' => $nid,
+    'title' => $node->title,
+    'headers' => array('Cc' => $email_cc, 'Bcc' => $email_cc),
+   );
+
+   if (drupal_mail('bigbazaarcrm_payment', 'bigbazaar_notification',$to , language_default(), $params, $from, TRUE)){
+     $sid = 2;
+     workflow_execute_transition($node, $sid, $comment = NULL, $force = FALSE);
+     setcookie("nidcookie", "", time()-3600);
+   }
+  }
+
+  return $stmt;
+}
+
+function bigbazaarcrm_payment_mail($key, &$message, $params){
+	//dsm($key); 
+    $filename = "Big Bazaar Direct-".$params['title']."-".$params['nid'].'.pdf';
+     pdf_using_mpdf_generate_pdf(node_load($params['nid'])); 
+    switch($key){
+      case 'bigbazaar_notification':
+        foreach ($headers as $k => $value) {
+          $message['headers'][$k] = $value;
+        }
+        $message['headers'] += $params['headers'];
+        $message['subject'] = $params['subject'];
+        $message['body'] = $params['body'];
+        $attachment = array(
+            'filecontent' => file_get_contents("./".$filename),
+            'filename' => $filename,
+            'filemime' => 'application/pdf',
+        );
+        
+
+        $message['params']['attachments'][] = $attachment;
+        unlink("./".$filename);
+        break;
+   }
+}

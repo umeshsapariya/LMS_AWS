@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * 
+ * @param type $pincode
+ * @param type $order_id
+ * @param type $stock
+ * @return type
+ */
+function _pincode_hardcommit_and_ledger_entry($pincode, $order_id, $stock) {
+  $tid = _get_term_id_from_name($pincode);
+  $term = taxonomy_term_load($tid);
+  $term->field_vacancy[LANGUAGE_NONE][0]['value'] += $stock;
+  $term->field_is_order_transaction‎[LANGUAGE_NONE][0]['value'] = 1;
+  $available_stock = $term->field_vacancy[LANGUAGE_NONE][0]['value'];
+  taxonomy_term_save($term);
+  return pincode_vacancy_ledger_create($pincode, $order_id, $available_stock, $stock);
+}
+
+/**
+ * 
+ * @param type $name
+ * @param type $vocab_name
+ * @return type
+ */
+function _get_term_id_from_name($name, $vocab_name = 'pincode') {
+  $vocab = taxonomy_vocabulary_machine_name_load($vocab_name);
+  $query = db_select('taxonomy_term_data', 't');
+  $query->fields('t', array('tid'));
+  $query->condition('t.name', $name);
+  $query->condition('t.vid', $vocab->vid);
+  $tid = $query->execute()->fetchField();
+  return $tid;
+}
+
+/**
+ * 
+ * @param type $pincode_tid
+ * @param type $order_id
+ * @param type $available_stock
+ * @param type $stock
+ * @return type
+ */
+function pincode_vacancy_ledger_create($pincode, $order_id, $available_stock, $stock) {
+  global $user;
+  $node = new stdClass();
+  $node->title = $order_id;
+  $node->uid = $user->uid; 
+  $node->type = 'pincode_vacancy_ledger';
+  $node->field_stock[LANGUAGE_NONE][0]['value'] = $stock;
+  $node->field_available_stock[LANGUAGE_NONE][0]['value'] = $available_stock;
+  $node->field_pincode[LANGUAGE_NONE][0]['value'] = $pincode;
+  $node->status = 0;
+  return node_save($node);
+}
+
+function bigbazaarcrm_vacancy_taxonomy_term_presave($term) {
+//  if ($term->vocabulary_machine_name == 'pincode' && is_numeric($term->name) && !$term->field_is_order_transaction‎[LANGUAGE_NONE][0]['value']) {
+//    if(!is_null($term->tid)) {
+//      $stock = $term->field_vacancy[LANGUAGE_NONE][0]['value'] - $term->original->field_vacancy[LANGUAGE_NONE][0]['value'];
+//    }
+//    else {
+//      $stock = $term->field_vacancy[LANGUAGE_NONE][0]['value'];
+//    }
+//    $available_stock = $term->field_vacancy[LANGUAGE_NONE][0]['value'];
+//    pincode_vacancy_ledger_create($term->name, 0, $available_stock, $stock);
+//  }
+}
+
+/**
+ * 
+ * @param type $profile_id
+ * @return type
+ */
+function _get_pincode_from_order_id($order_id){
+  $query = db_select('field_data_commerce_customer_billing', 'cb');
+  $query->join('field_data_commerce_customer_address', 'ca', 'cb.commerce_customer_billing_profile_id = ca.entity_id');
+  $query->fields('ca',array('commerce_customer_address_postal_code'));
+  $query->condition('ca.entity_type','commerce_customer_profile');
+  $query->condition('ca.bundle','billing');
+  $query->condition('cb.entity_id',$order_id);
+  $pincode = $query->execute()->fetchField();
+  return $pincode;    
+}

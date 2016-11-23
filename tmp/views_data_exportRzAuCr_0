@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>Application No</th><th>Post date</th><th>Title</th><th>First Name</th><th>Middle Name</th><th>Last Name</th><th>Date Of Birth</th><th>Image</th><th>Address 1</th><th>Address 2</th><th>City</th><th>PIN Code</th><th>Mobile 1</th><th>Mobile 2</th><th>Landline No</th><th>Email</th><th>Current Occupation</th><th>Current Occupation Other</th><th>Business Sector</th><th>Business Sector Other</th><th>Doing Business Since</th><th>Operating from</th><th>Leader of any society, committee or group</th><th>If Yes, Specify</th><th>Education Qualification</th><th>Education Qualification Other</th><th>Jurisdiction of police station </th><th>Applicant type</th><th>Name of Establishment</th><th>Address line 1</th><th>Address line 2</th><th>Shop in City</th><th>Shop PIN Code</th><th>Shop Landline No</th><th>Shop Mobile 1</th><th>Shop Mobile 2</th><th>Shop Email</th><th>Area</th><th>Property Type</th><th>Other, Specify</th><th>NEON/FLEX Board</th><th>If Yes, Specify Dimensions</th><th>Bank Name</th><th>PAN No</th><th>Application number</th><th>Application Status</th><th>Transaction Id </th><th>Assign Status</th></tr></thead>    <tbody> <tr class="odd"><td>203086</td><td>Thursday, September 26, 2013 - 15:16</td><td>Bakirhussain Sadriwala</td><td>Bakirhussain</td><td>Sadiqali</td><td>Sadriwala</td><td>Saturday, December 18, 1954</td><td></td><td>B/301, Fakhir Apt, Opp Esplanade School, Vohra Colony</td><td>Mathuradas Ext Rd, Kandivali (W)</td><td>Mumbai suburban</td><td>400067</td><td>9619005253</td><td></td><td>222 801 450</td><td>zainabhp@gmail.com</td><td>Self Employed</td><td></td><td>Other</td><td></td><td>More than 5 Years</td><td>Home</td><td>No</td><td></td><td>Under Graduate</td><td></td><td>Kandivali West</td><td>Individual</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>Central Bank of India</td><td>AAYPS9665F</td><td>203086</td><td>(Payment Received Online)</td><td></td><td></td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

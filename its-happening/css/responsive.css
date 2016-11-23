@@ -1,0 +1,694 @@
+/*@media (max-width: 1196px){
+
+	#message-booking{
+
+		font-size: 15px; 
+
+	}
+
+	#book{
+
+		bottom: 90px;
+
+	}
+
+	#submit-franchisee{
+
+	 	padding-left: 142px;
+
+    	padding-right: 144px;
+
+	}
+
+
+
+	.video {
+
+		right: 20px;
+
+	}
+
+	.videobg p {
+
+		left: 11%;
+
+	}
+
+	.videobg .secondp{
+
+		left: 135px;
+
+	}
+
+}
+
+
+
+
+
+@media (min-width: 991px) and (max-width: 1199px){
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+@media (max-width:991px){
+
+	#book {
+
+		top: 108px !important;
+
+		left: 0px;
+
+	}
+
+	.video iframe {
+
+		left: 17%;
+
+
+
+	}
+
+	.viewmore{
+
+		left: 25%;
+
+		z-index: 4444;
+
+
+
+	}
+
+
+
+	#tabs{
+
+		margin-top: 120px;
+
+	}
+
+	#submit-franchisee{
+
+		z-index: 4444;
+
+	}
+
+
+
+}*/
+
+
+@media (max-width:667px){
+	body{
+        overflow-x: hidden; 
+    }
+    .container{
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+	.videobg{
+		width: 100% !important;
+		background-size: 100% 100% !important;
+		margin-bottom: 110px !important;
+		border-right:none !important;
+        background: url(../img/videobgmob.png) !important;
+
+	}
+
+	.video iframe{
+		width: 250px !important;
+		height: 250px !important;
+		left: 11% !important;
+	}
+	.videobg img{
+		width: 320px;
+	}
+    .tab1-img a{
+        top: 189px !important;
+    }
+	#message-booking{
+		font-size: 15px;
+	}
+
+	.viewmore{
+	left: 17% !important;
+    }
+    .videobg p{
+    	width: 310px !important;
+        left: 2% !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    display: inline;
+    }
+    .videobg .secondp{
+    	left: 8px;
+    }
+         #book{
+        position: static !important ;
+        margin-top: 150px;
+        width: 100% !important ;
+    }
+     .submitbutton{
+        left: 0px !important;
+        top: 20px !important; 
+    }
+    
+    img.shadow, img.shadowb{
+    	display: none;
+    }
+   
+    .fname_booking{
+    	width: 47% !important;
+    }
+   
+    .main{
+    	margin-bottom: 390px;
+    }
+    .jssor_1{
+    	width: 100% !important;
+
+    }
+    .jssor-header p{
+        padding-left: 15px !important;
+        font-size: 20px !important;
+    }
+    .jssor-header-second {
+        bottom: 58px !important;
+        width: 77% !important;
+        height: 58px !important;
+        left: 23% !important;
+    }
+    .jssor-header-second p{
+        padding: 0px !important;
+        padding-top: 10px !important;
+        padding-left: 0.8px !important;
+        padding-right: 0.8px !important;
+    }
+    .testimonial-header-second p {
+        padding-top: 10px !important;
+    	padding-left: 5px !important;
+    	padding-right: 5px !important;
+    	font-weight: 600 !important;
+
+    }
+    .testimonial-header-second{
+        left: 30% !important; 
+        height: 52px !important;
+        width: 60% !important;
+        left: 40% !important;
+        bottom: 58px !important;
+    }
+
+    .jssora03r{
+    	left: 90.5% !important;
+    }
+    .cd-author{
+    	right: 0px !important;
+    }
+    .flex-viewport{
+    	height: 440px !important;
+    }
+    .cd-testimonials p{
+    	padding: 0px !important;
+
+    }
+    .showcase .content{
+    	left: -18px !important;
+    	padding-right: 10px !important;
+    	padding-left: 10px !important;
+    }
+    .cd-testimonials .showcase section{
+    	height: 235px;
+    }
+    .cd-author img {
+    	width: 80px !important;
+    	height: 80px !important;
+    	margin-top: 17px;
+    }
+    .cd-author-info{
+    	top: 300px !important;
+
+    }
+    .arrowdown{
+    	top: 245px !important;
+    }
+    .social .fa{
+    	font-size: 15px !important;
+    }
+    .social{
+    	right: 4% !important;
+    }
+    .footer ul {
+    	margin-left: 10px !important;
+    
+    }
+    .footer{
+    	padding-left: 0px !important;
+        right: 0px !important;
+    }
+    .contactf{
+        margin-top: 15px;
+    }
+    .footer .fa-twitter, .footer .fa-linkedin {
+        padding: 13px !important;
+    }
+    .footer .fa-facebook{
+      padding: 12px !important;
+      width: 40px !important;
+    }
+    header .fa-envelope{
+        margin-right: -13px;
+        margin-top: 3px;
+    }
+    .testimonial-header{
+        margin-top: -38px !important;
+    }
+    .testimonial-header p{
+        padding-left: 10px !important;
+        font-size: 20px !important;
+    }
+    .responsive-tabs-container{
+        margin-top: 230px;
+    }
+    .accordion-link .active .first{
+        background: #fff !important;
+        color: #002949 !important;
+    }
+    .accordion-link{
+        background: #002949 !important;
+        color: #fff !important;
+        text-decoration: none !important;
+        border-radius: 5px !important;
+        font-size: 25px !important;
+    }
+    .jssora03l, .jssora03r{
+        background: rgba(0,0,0,0.8) !important;
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+}
+
+
+
+/*----------*/
+
+
+@media (max-width:480px){
+    body{
+        overflow-x: hidden; 
+    }
+    .container{
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+    .videobg{
+        width: 100% !important;
+        background-size: 100% 100% !important;
+        margin-bottom: 110px !important;
+        border-right:none !important;
+        background: url(../img/videobgmob.png) !important;
+
+    }
+
+    .video iframe{
+        width: 250px !important;
+        height: 250px !important;
+        left: 11% !important;
+    }
+    .videobg img{
+        width: 320px;
+    }
+    .tab1-img a{
+        top: 189px !important;
+    }
+    #message-booking{
+        font-size: 15px;
+    }
+
+    .viewmore{
+    left: 17% !important;
+    }
+    .videobg p{
+        width: 310px !important;
+        left: 2% !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    display: inline;
+    }
+
+    .videobg .secondp{
+        left: 8px;
+    }
+         #book{
+        position: static !important ;
+        margin-top: 150px;
+        width: 100% !important ;
+    }
+     .submitbutton{
+        left: 0px !important;
+        top: 20px !important; 
+    }
+    
+    img.shadow, img.shadowb{
+        display: none;
+    }
+   
+    .fname_booking{
+        width: 47% !important;
+    }
+   
+    .main{
+        margin-bottom: 390px;
+    }
+    .jssor_1{
+        width: 100% !important;
+
+    }
+    .jssor-header p{
+        padding-left: 15px !important;
+        font-size: 20px !important;
+    }
+    .jssor-header-second {
+        bottom: 58px !important;
+        width: 77% !important;
+        height: 58px !important;
+        left: 23% !important;
+    }
+    .jssor-header-second p{
+        padding: 0px !important;
+        padding-top: 10px !important;
+        padding-left: 0.8px !important;
+        padding-right: 0.8px !important;
+    }
+    .testimonial-header-second p {
+        padding-top: 10px !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+        font-weight: 600 !important;
+
+    }
+    .testimonial-header-second{
+        left: 30% !important; 
+        height: 52px !important;
+        width: 60% !important;
+        left: 40% !important;
+        bottom: 58px !important;
+    }
+
+    .jssora03r{
+        left: 90.5% !important;
+    }
+    .cd-author{
+        right: 0px !important;
+    }
+    .flex-viewport{
+        height: 440px !important;
+    }
+    .cd-testimonials p{
+        padding: 0px !important;
+
+    }
+    .showcase .content{
+        left: -18px !important;
+        padding-right: 10px !important;
+        padding-left: 10px !important;
+    }
+    .cd-testimonials .showcase section{
+        height: 235px;
+    }
+    .cd-author img {
+        width: 80px !important;
+        height: 80px !important;
+        margin-top: 17px;
+    }
+    .cd-author-info{
+        top: 300px !important;
+
+    }
+    .arrowdown{
+        top: 245px !important;
+    }
+    .social .fa{
+        font-size: 15px !important;
+    }
+    .social{
+        right: 4% !important;
+    }
+    .footer ul {
+        margin-left: 10px !important;
+    
+    }
+    .footer{
+        padding-left: 0px !important;
+        right: 0px !important;
+    }
+    .contactf{
+        margin-top: 15px;
+    }
+    .footer .fa-twitter, .footer .fa-linkedin {
+        padding: 13px !important;
+    }
+    .footer .fa-facebook{
+      padding: 12px !important;
+      width: 40px !important;
+    }
+    header .fa-envelope{
+        margin-right: -13px;
+        margin-top: 3px;
+    }
+    .testimonial-header{
+        margin-top: -38px !important;
+    }
+    .testimonial-header p{
+        padding-left: 10px !important;
+        font-size: 20px !important;
+    }
+    .responsive-tabs-container{
+        margin-top: 230px !important;
+    }
+    .accordion-link .active .first{
+        background: #fff !important;
+        color: #002949 !important;
+    }
+    .accordion-link{
+        background: #002949 !important;
+        color: #fff !important;
+        text-decoration: none !important;
+        border-radius: 5px !important;
+        font-size: 25px !important;
+    }
+    .jssora03l, .jssora03r{
+        background: rgba(0,0,0,0.8) !important;
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+}  
+
+/*------*/ 
+@media (max-width:768px) and (min-width: 481px){
+    body{
+        overflow-x: hidden; 
+    }
+    .container{
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+    .videobg{
+        width: 100% !important;
+        background-size: 100% 100% !important;
+        margin-bottom: 110px !important;
+        border-right:none !important;
+        background: url(../img/videobgmob.png) !important;
+
+    }
+
+    .video iframe{
+        width: 250px !important;
+        height: 250px !important;
+        left: 11% !important;
+    }
+    .videobg img{
+        width: 320px;
+    }
+    .tab1-img a{
+        top: 189px !important;
+    }
+    #message-booking{
+        font-size: 15px;
+    }
+
+    .viewmore{
+        right: 24% !important;
+    }
+    .videobg p{
+        width: 310px !important;
+        left: 2% !important;
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        display: inline;
+    }
+    .videobg .secondp{
+        left: 8px;
+    }
+         #book{
+     left: 450px !important;
+    }
+    #message-booking{
+    font-size: 15px !important;
+    padding: 1px !important;
+    }
+     .submitbutton{
+        left: 0px !important;
+        top: 20px !important; 
+    }
+    
+    img.shadow, img.shadowb{
+        display: none;
+    }
+   
+    .fname_booking{
+        width: 47% !important;
+    }
+   
+    .main{
+        margin-bottom: 0px;
+    }
+    .jssor_1{
+        width: 100% !important;
+
+    }
+    .jssor-header p{
+        padding-left: 15px !important;
+        font-size: 20px !important;
+    }
+    .jssor-header-second {
+        bottom: 58px !important;
+        width: 77% !important;
+        height: 58px !important;
+        left: 23% !important;
+    }
+    .jssor-header-second p{
+        padding: 0px !important;
+        padding-top: 10px !important;
+        padding-left: 0.8px !important;
+        padding-right: 0.8px !important;
+    }
+    .testimonial-header-second p {
+        padding-top: 10px !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+        font-weight: 600 !important;
+
+    }
+    .testimonial-header-second{
+        left: 30% !important; 
+        height: 52px !important;
+        width: 60% !important;
+        left: 40% !important;
+        bottom: 58px !important;
+    }
+
+    .jssora03r{
+        left: 90.5% !important;
+    }
+    .cd-author{
+        right: 0px !important;
+    }
+    .flex-viewport{
+        height: 440px !important;
+    }
+    .cd-testimonials p{
+        padding: 0px !important;
+
+    }
+    .showcase .content{
+        left: -18px !important;
+        padding-right: 10px !important;
+        padding-left: 10px !important;
+    }
+    .cd-testimonials .showcase section{
+        height: 235px;
+    }
+    .cd-author img {
+        width: 80px !important;
+        height: 80px !important;
+        margin-top: 17px;
+    }
+    .cd-author-info{
+        top: 300px !important;
+
+    }
+    .arrowdown{
+        top: 245px !important;
+    }
+    .social .fa{
+        font-size: 15px !important;
+    }
+    .social{
+        right: 4% !important;
+    }
+    .footer ul {
+        margin-left: 10px !important;
+    
+    }
+    .footer{
+        padding-left: 0px !important;
+        right: 0px !important;
+    }
+    .contactf{
+        margin-top: 15px;
+    }
+    .footer .fa-twitter, .footer .fa-linkedin {
+        padding: 13px !important;
+    }
+    .footer .fa-facebook{
+      padding: 12px !important;
+      width: 40px !important;
+    }
+    header .fa-envelope{
+        margin-right: -13px;
+        margin-top: 3px;
+    }
+    .testimonial-header{
+        margin-top: -38px !important;
+    }
+    .testimonial-header p{
+        padding-left: 10px !important;
+        font-size: 20px !important;
+    }
+
+    .accordion-link .active .first{
+        background: #fff !important;
+        color: #002949 !important;
+    }
+    .accordion-link{
+        background: #002949 !important;
+        color: #fff !important;
+        text-decoration: none !important;
+        border-radius: 5px !important;
+        font-size: 25px !important;
+    }
+    .jssora03l, .jssora03r{
+        background: rgba(0,0,0,0.8) !important;
+        width: 80px !important;
+        height: 80px !important;
+    }
+    .responsive-tabs-container{
+        margin-top: 0px !important;
+    }
+
+}
+

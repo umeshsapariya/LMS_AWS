@@ -1,0 +1,530 @@
+<?php
+
+/**
+ * @file
+ * Provides a Pay by Cheque payment method for Drupal commerce
+ */
+
+/**
+ * 
+ * Implements hook_permission
+ */
+function cheque_payment_permission() {
+  return array(
+    'Process Payment' => array(
+      'title' => t('Allow user to Process Payment'),
+      'description' => t('Allow user to Process Payment'),
+    ),
+    'Commerce Payment Delete Option' => array(
+      'title' => t('Commerce Payment Delete Option'),
+      'description' => t('Commerce Payment Delete Option'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function cheque_payment_menu() {
+  $items = array();
+
+  // Add a menu item for capturing authorizations.
+  $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/cheque-cash'] = array(
+    'title' => 'Verify payment',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cheque_payment_cash_form', 3, 5),
+    'access callback' => 'cheque_payment_cash_access',
+    'access arguments' => array(3, 5),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'weight' => 2,
+  );
+  /*$items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/verify-payment'] = array(
+    'title' => 'Verify Online Payment',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cheque_payment_payment_verify_form', 3, 5),
+    'access callback' => 'cheque_payment_cash_access',
+    'access arguments' => array(3, 5),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'weight' => 2,
+  );*/
+  
+  $items['admin/commerce/config/commerce-cheque'] = array(
+    'title' => 'Cheque settings',
+    'description' => 'Override the title of the Commerce Cheque Payment method',
+    'access arguments' => array('configure store'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cheque_payment_admin_config')
+  );
+    
+
+  return $items;
+}
+
+
+/**
+ * 
+ * Form to verify online payment transaction
+ */
+function cheque_payment_payment_verify_form($form, &$form_state, $order, $transaction){
+  $form_state['order'] = $order;
+  $form_state['transaction'] = $transaction;
+  $options = drupal_map_assoc(array('Recieved','success','Failed'));
+  
+  $form['payment_status'] = array(
+    '#title' => t('Payment status'),
+    '#type' => 'select',
+    '#description' => t('Select the Payment status here'),
+    '#options' => $options,
+    '#default_value' => $transaction->remote_status,
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
+  );
+  return $form;
+  
+}
+
+/**
+ * 
+ * Implements hook_form_submit
+ */
+function cheque_payment_payment_verify_form_submit($form, &$form_state) {
+  global $user;
+  $transaction = $form_state['transaction'];
+  $order = $form_state['order'];
+  $payload = array();
+  $payload['payment_type'] = 'Online';
+  if (!empty($form_state['values']['payment_status'])) {
+    $transaction->remote_status = $form_state['values']['payment_status'];
+    switch($form_state['values']['payment_status']){
+      case 'Failed':
+          $transaction->message = t('Online Payment for this order transaction Has been failed');
+          $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+          //$profile_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
+          //$pincode = cheque_payment_get_pincode_from_profile_id($profile_id);
+          //_pincode_hardcommit_and_ledger_entry($pincode, $order->order_id, 1);
+        break;
+      case 'success':
+        $pincode = _get_pincode_from_order_id($order->order_id);
+        _pincode_hardcommit_and_ledger_entry($pincode, $order->order_id, -1);
+        $transaction->message = t('Online Payment for this order transaction Has been Successful');
+        $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+        $order_id = arg(3);
+        $data = _get_application_no_and_nid_from_order_id($order_id);
+        $nid = $data[0]->entity_id;
+        $node = node_load($nid);
+        $sid = bigbazaarcrm_application_get_sid_from_state_name('(Applied-KYC Pending)');
+        workflow_execute_transition($node, $sid, NULL, TRUE);
+        break;
+    }
+  }else{
+    // Assume success as default status
+    $transaction->message = t('Online payment is recieved for this transaction');
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+  }
+  $payload['uid'] = $user->uid;
+  $payload['name'] = $user->name;
+  if($payload){
+    $transaction->payload[REQUEST_TIME] = $payload; // Add additional fields
+  }
+  commerce_payment_transaction_save($transaction);
+  $form_state['redirect'] = 'admin/commerce/orders/'.$order->order_id.'/payment';
+}
+
+
+/**
+ * Form builder; The settings form for commerce cheque.
+ *
+ * @ingroup forms
+ * @see system_settings_form()
+ */
+function cheque_payment_admin_config() {
+  $form['cheque_payment_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#default_value' => variable_get('cheque_payment_title', 'Cheque'),
+    '#description' => t('Override the default title of the commerce cheque payment method.'),
+  );
+
+  return system_settings_form($form);
+}
+/**
+ * User access callback for cashing cheque
+ */
+function cheque_payment_cash_access($order, $transaction) {
+  // Return FALSE if the transaction isn't with a Cheque
+  if ($transaction->payment_method != 'cheque_payment') {
+    return FALSE;
+  }
+  else {
+    if ($transaction->status == COMMERCE_PAYMENT_STATUS_PENDING) {
+      // Allow access if the user can update payments on this order.
+      return commerce_payment_transaction_access('update', $transaction);
+    }
+    else {
+      return FALSE;
+    }
+  }
+}
+
+/**
+ * Form to cash a cheque
+ */
+function cheque_payment_cash_form($form, &$form_state, $order, $transaction) {
+  $form_state['order'] = $order;
+  $form_state['transaction'] = $transaction;
+
+  // Load and store the payment method instance for this transaction.
+  $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
+  $form_state['payment_method'] = $payment_method;
+  
+  $form['information'] = array(
+    '#markup' => t('Cashing the payment means that the payment has been verified and cashed').'<br />'
+  );
+  // Get default values
+  if (isset($transaction->payload)){
+    // Most recent element
+    $default = array_pop($transaction->payload);
+  }
+  // Cheque date
+  // Use date field if available
+  if(module_exists('date')){
+    module_load_include('inc', 'date', 'date_api_elements');
+    
+    $form['payment_type'] = array(
+      '#title' => t('Payment Type'),
+      '#type' => 'select',
+      '#description' => t('Select the cheque / Draft / Cash'),
+      '#options' => drupal_map_assoc(array('Draft','Cheque')),
+      '#default_value' => $default['payment_type'],
+    );
+    $form['payment_date'] = array(
+      '#title' =>  t('Payment date'),
+      '#description' => t('Enter Payment date here'),
+      '#type' => 'date_popup',
+      '#default_value' => isset($default['payment_date']) ? $default['payment_date'] : date("Y-m-d"),
+      '#date_type' => DATE_DATETIME,
+      '#date_timezone' => date_default_timezone(),
+      '#date_format' => 'Y-m-d',
+      '#date_increment' => 1,
+      '#date_year_range' => '-3:+3',
+    );
+  }else{
+    $form['payment_date'] = array(
+      '#title' => t('Payment date'),
+      '#type' => 'textfield',
+      '#description' => t('Enter Payment date here'),
+      '#default_value' => isset($default['payment_date']) ? $default['payment_date'] : date("Y-m-d"),
+      '#size' => 48,
+    );
+  }
+  
+  // Payee name
+  $form['bank_name'] = array(
+    '#title' => t('Bank name'),
+    '#type' => 'textfield',
+    '#description' => t('Enter Bank name here'),
+    '#default_value' => isset($default['bank_name']) ? $default['bank_name'] : '',
+    '#size' => 60,
+  );
+  // Cheque checque_draft_no
+  $form['checque_draft_no'] = array(
+    '#title' => t('Payment No'),
+    '#type' => 'textfield',
+    '#description' => t('Enter Payment no here'),
+    '#default_value' => $transaction->remote_id,
+    '#size' => 32,
+  );
+  // Cheque status
+  
+  if(user_access('Process Payment')){
+    $options = drupal_map_assoc(array('Received', 'Deposited','Bounced', 'Cleared','Failed'));
+  }else{
+    $options = drupal_map_assoc(array('Received','Deposited'));
+  }
+  $form['cheque_draft_status'] = array(
+    '#title' => t('Payment status'),
+    '#type' => 'select',
+    '#description' => t('Select the Payment status here'),
+    '#options' => $options,
+    '#default_value' => $transaction->remote_status,
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
+  );
+  
+  return $form;
+}
+
+function cheque_payment_cash_form_submit($form, &$form_state) {
+  global $user;
+  $transaction = $form_state['transaction'];
+  $order = $form_state['order'];
+  $payload = array();
+  if (!empty($form_state['values']['cheque_draft_status'])) {
+    $transaction->remote_status = $form_state['values']['cheque_draft_status'];
+    switch($form_state['values']['cheque_draft_status']){
+      case 'Received':
+          $transaction->message = t('The cheque / cash / Draft for this order transaction has been received');
+          $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+        break;
+      case 'Deposited':
+          $transaction->message = t('The cheque / Draft / Cash for this order transaction has been deposited');
+          $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+        break;
+      case 'Bounced':
+          $transaction->message = t('The  cheque / Draft / Cash for this order transaction has been Bounced');
+          $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+        break;
+      case 'Failed':
+          $transaction->message = t('The  cheque / Draft / Cash for this order transaction Has been failed');
+          $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+          $profile_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
+          $pincode = cheque_payment_get_pincode_from_profile_id($profile_id);
+          _pincode_hardcommit_and_ledger_entry($pincode, $order->order_id, 1);
+        break;
+      case 'Cleared':
+          $transaction->message = t('The cheque / Draft / Cash for this order transaction has been cleared');
+          $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+          $order_id = arg(3);
+          $data = _get_application_no_and_nid_from_order_id($order_id);
+          $nid = $data[0]->entity_id;
+          $node = node_load($nid);
+          $sid = bigbazaarcrm_application_get_sid_from_state_name('(Applied-KYC Pending)');
+          workflow_execute_transition($node, $sid, NULL, TRUE);
+        break;
+    }
+  }else{
+    // Assume success as default status
+    $transaction->message = t('The cheque for this order has been cashed');
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+  }
+  if (!empty($form_state['values']['checque_draft_no'])) {
+    $transaction->remote_id = $form_state['values']['checque_draft_no'];
+  }
+  if (!empty($form_state['values']['bank_name'])) {
+    $payload['bank_name'] = $form_state['values']['bank_name'];
+  }
+  if (!empty($form_state['values']['payment_date'])) {
+    $payload['payment_date'] = $form_state['values']['payment_date'];
+  }
+  if (!empty($form_state['values']['payment_type'])) {
+    $payload['payment_type'] = $form_state['values']['payment_type'];
+  }
+  $payload['uid'] = $user->uid;
+  $payload['name'] = $user->name;
+  if($payload){
+    $transaction->payload[REQUEST_TIME] = $payload; // Add additional fields
+  }
+  commerce_payment_transaction_save($transaction);
+  $form_state['redirect'] = 'admin/commerce/orders/'.$order->order_id.'/payment';
+}
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function cheque_payment_commerce_payment_method_info() {
+  $payment_methods = array();
+  $title = 'Pay <span class="orng">Rs 25,000</span> by Cheque/DD to complete agency application process';
+  $payment_methods['cheque_payment'] = array(
+    'title' => 'Cheque / Draft',
+    'display_title' => $title,
+    'description' => t('Pay by cheque'),
+    'active' => TRUE,
+  );
+
+  return $payment_methods;
+}
+
+/**
+ * Payment method callback: settings form.
+ */
+function cheque_payment_settings_form($settings = NULL) {
+  
+  $settings = (array) $settings + array(
+    'information' => ''
+  );
+  
+  $form = array();
+  
+  $form['information'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Information'),
+    '#description' => t('Information you would like to be shown to users when they select this payment method, such as the address where they should send the cheque'),
+    '#default_value' => $settings['information']
+  );
+  $form['partial_amount'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Partial amount to be paid while paying using cheque module'),
+    '#default_value' => $settings['partial_amount'],
+    '#size' => 60, 
+    '#maxlength' => 128, 
+    '#required' => TRUE,
+  );
+  return $form;
+}
+
+/**
+ * Payment method callback: checkout form.
+ */
+function cheque_payment_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  $form = array();
+
+  if (!empty($payment_method['settings']['information'])) {
+    $form['cheque_payment_description'] = array(
+      '#markup' => $payment_method['settings']['information']
+    );
+  }
+  $http_referer = $_SERVER['HTTP_REFERER'];
+  $data = explode('/',$http_referer);// Check If URL comes from Partial Payment through Review page
+  if($data[3] == 'checkout' && $data[5] == 'review'){
+      $output = '<div class="payment-pg-block">
+    <p>Hurry!! we have limited seats per pincode. All you need to do is send Cheque/DD and below documents quickly. Once Big Bazaar receives the documents,</p>
+    <p>you will receive the agreement and welcome kit. A relationship manager will be assigned to help you do business.</p>                                                                                                                                                                                                                   Get started, courier the following documents:
+    <p>INR 25,000 Cheque & DD in favor of Future Retail Limited payable at Mumbai</p> 
+    <p>KYC documents (IMP:Mention applicaiton number behind all documents)</p>
+    <ul class="inner-pg-lst">
+       <li>ID Proof</li>
+       <li>2 Photographs</li> 
+       <li>Pan card</li>
+       <li>Cancelled cheque  with your name</li>
+    </ul>
+<p>Address Proof: (Copy of any one of the following) 
+<p>Voter’s Id/ Driving License/  Adhar Card/ Passport / Electricity Bill / Telephone Bill / Rent agreement
+<p><b>Kindly courier the above documents to:</b></p>
+<p>Commercial Team, Big bazaar.Com</p>
+<p>Future Retail Limited</p>
+<p>4th Floor, Tower C,</p>
+<p>247 Park, LBS Marg, Vikhroli (West),</p>
+<p>Mumbai – 400083</p>
+    </div>';
+    $form['dummy'] = array(
+      '#markup' => $output,
+    );
+  }
+  return $form;
+}
+
+/**
+ * Payment method callback: checkout form validation.
+ */
+function cheque_payment_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  $profile_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
+  $pincode = cheque_payment_get_pincode_from_profile_id($profile_id);
+  $vacancy = bigbazaarcrm_application_get_pincode_status($pincode);
+  if(!$vacancy[0]){
+    watchdog('failed','no vacancy');
+    form_set_error('dummy','sorry Vacancy is completed for your pincode');
+    return FALSE;
+  }
+}
+
+/**
+ * Payment method callback: checkout form submission.
+ */
+function cheque_payment_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  $order->data['cheque_payment'] = $pane_values;
+  $order->field_payment_mode[LANGUAGE_NONE][0]['value'] = 'BANK_PARTIAL_PAYMENT'; // Save Payment Type
+  $http_referer = $_SERVER['HTTP_REFERER'];
+  $data = explode('/',$http_referer);// Check If URL comes from Partial Payment through Review page
+  if($data[3] == 'checkout' && $data[5] == 'review'){
+    $charge['amount'] = $payment_method['settings']['partial_amount'] * 100;// Alter Transaction Amount from Settings form
+  }
+  cheque_payment_transaction($payment_method, $order, $charge);
+}
+
+/**
+ * Creates a cheque payment transaction for the specified charge amount.
+ *
+ * @param $payment_method
+ *   The payment method instance object used to charge this payment.
+ * @param $order
+ *   The order object the payment applies to.
+ * @param $charge
+ *   An array indicating the amount and currency code to charge.
+ */
+function cheque_payment_transaction($payment_method, $order, $charge) {
+  $transaction = commerce_payment_transaction_new('cheque_payment', $order->order_id);
+  $transaction->instance_id = $payment_method['instance_id'];
+  $transaction->amount = $charge['amount'];
+  $transaction->currency_code = $charge['currency_code'];
+  $transaction->remote_status = t('Success');
+  $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+  $transaction->message = t('This order is waiting for the cheque to be cashed.');
+
+  commerce_payment_transaction_save($transaction);
+}
+
+/**
+ * 
+ * Implements hook_form_alter
+ */
+function cheque_payment_form_alter(&$form, &$form_state, $form_id) {
+  // Disable Payment Amount Field
+  if($form_id == 'commerce_payment_order_transaction_add_form'){
+    $form['payment_terminal']['amount']['#disabled'] = TRUE;
+    $order_id = arg(3);
+    if(is_numeric($order_id)){
+      $order = commerce_order_load($order_id);
+      $order_balance = commerce_payment_order_balance($order);
+      if($order_balance['amount'] == 0){
+        $form['add_payment']['#disabled'] = TRUE;
+      }
+    }
+  }
+}
+
+/**
+ * 
+ * Get Pincode from profile id
+ */
+function cheque_payment_get_pincode_from_profile_id($profile_id){
+  $query = db_select('field_data_commerce_customer_address', 'ca');
+  $query->fields('ca',array('commerce_customer_address_postal_code'));
+  $query->condition('ca.entity_type','commerce_customer_profile');
+  $query->condition('ca.bundle','billing');
+  $query->condition('ca.entity_id',$profile_id);
+  $pincode = $query->execute()->fetchField();
+  return $pincode;    
+}
+/**
+ * 
+ * Implements hook_commerce_checkout_page_info_alter
+ */
+function cheque_payment_commerce_checkout_page_info_alter(&$checkout_pages) {
+  $checkout_pages['review']['title'] = 'Payment';
+  $checkout_pages['review']['help'] = '';
+}
+
+/**
+ * 
+ * Implements hook_commerce_checkout_pane_info alter
+ */
+function cheque_payment_commerce_checkout_pane_info_alter(&$checkout_panes) {
+  if(arg(2) == 'review'){
+    $checkout_panes['cart_contents']['enabled'] = 0;
+    $checkout_panes['account']['enabled'] = 0;
+    $checkout_panes['customer_profile_billing']['enabled'] = 0;  
+  }
+  
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function cheque_payment_page_alter(&$page) {
+  drupal_set_breadcrumb(array());
+}
+
+/**
+ * Implements hook_menu_alter()
+ */
+function cheque_payment_menu_alter(&$items) {
+  $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/delete']['access callback'] = 'Commerce Payment Delete Option';
+} 

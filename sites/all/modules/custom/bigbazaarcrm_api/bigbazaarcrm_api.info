@@ -1,0 +1,4 @@
+name = Big Bazaar CRM api
+description = Big bazaaar CRM api
+core = 7.x
+package = Big bazaaar CRM api

@@ -1,0 +1,166 @@
+<?php
+/**
+ * @file
+ * Provides tests for Commerce Node Checkout process.
+ */
+
+/**
+ * Test class.
+ */
+class CommerceNodeCheckoutTests extends DrupalWebTestCase {
+  /**
+   * Declare the profile to use.
+   * @var string $profile
+   */
+  public $profile = 'standard';
+
+  /**
+   * Implementation of getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Commerce Node Checkout',
+      'description' => 'Test commerce node checkout.',
+      'group' => 'Drupal Commerce',
+      'dependencies' => array(
+        'commerce',
+        'entity',
+        'rules',
+        'ctools',
+        'views',
+        'node_reference'
+      )
+    );
+  }
+
+  /**
+   * Implementation of setUp().
+   */
+  public function setUp() {
+    parent::setUp(array(
+      'entity',
+      'entity_token',
+      'rules',
+      'addressfield',
+      'ctools',
+      'views',
+      'field',
+      'field_ui',
+      'field_sql_storage',
+      'commerce',
+      'commerce_product',
+      'commerce_price',
+      'commerce_customer',
+      'commerce_customer_ui',
+      'commerce_line_item',
+      'commerce_order',
+      'commerce_product_reference',
+      'commerce_tax',
+      'commerce_product_pricing',
+      'node_reference',
+      'commerce_checkout',
+      'commerce_cart',
+      'commerce_product_ui',
+      'commerce_node_checkout',
+      'commerce_order_ui',
+    ));
+
+    drupal_flush_all_caches();
+
+    // User creation for different operations.
+    $admin_permissions = array(
+      // Access admin/content/node.
+      'access content overview',
+      'administer nodes',
+    );
+    $this->admin = $this->drupalCreateUser($admin_permissions);
+
+    // Create a commerce_node_checkout for the listing.
+    $new_product = commerce_product_new('commerce_node_checkout');
+    $new_product->sku = 'std-listing';
+    $new_product->title = 'Standard listing';
+    // Admin user.
+    $new_product->uid = 1;
+
+    // Standard listing is 30 dollars.
+    $new_product->commerce_price[LANGUAGE_NONE][0]['amount'] = 3000;
+    $new_product->commerce_price[LANGUAGE_NONE][0]['currency_code'] = 'USD';
+
+    commerce_product_save($new_product);
+
+    // Now associate page listing with the content type.
+    variable_set('commerce_node_checkout_products_page', array(
+      $new_product->product_id
+    ));
+
+    user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array(
+      'create page content',
+      'access checkout',
+    ));
+    variable_set('node_options_page', array());
+
+    // Set default country.
+    variable_set('site_default_country', 'AU');
+  }
+
+  /**
+   * Test anonymous users can create content after payment.
+   */
+  public function testAnonymousPublishing() {
+    // We're not logged in here - so as anonymous - head to node/add/page.
+    $this->drupalGet('node/add/page');
+    // Check the response was 200 'OK'.
+    $this->assertResponse('200', 'Anonymous users can access node creation form for page content type');
+    $edit = array(
+      'title' => 'Miniature pony',
+      'body[und][0][value]' => 'A lovely 3yo miniature pony named rainbow sparkles'
+    );
+    // Save the node by posting to the current url.
+    $this->drupalPost(NULL, $edit, t('Save'));
+    // Assert we get the required messages.
+    $this->assertText('Basic page Miniature pony has been created', 'Created the page');
+    $this->assertText('Standard listing added to your cart', 'Listing item added to cart');
+    // Make sure we were redirected.
+    $matches = array();
+    preg_match('/checkout\/([0-9]+)/', $this->getUrl(), $matches);
+    $this->assertTrue(count($matches) == 2, 'User redirected to checkout');
+
+    // Make sure the node isn't published.
+    $node = node_load(1);
+    $this->assertFalse((bool) $node->status, 'The node is not published');
+
+    // Now we complete checkout form.
+    $edit = array(
+      'account[login][mail]' => 'joe.bloggs@example.com',
+      'customer_profile_billing[commerce_customer_address][und][0][name_line]' => 'Joe Bloggs',
+      'customer_profile_billing[commerce_customer_address][und][0][country]' => 'AU',
+      'customer_profile_billing[commerce_customer_address][und][0][thoroughfare]' => '1 Some St',
+      'customer_profile_billing[commerce_customer_address][und][0][locality]' => 'Somewhere',
+      'customer_profile_billing[commerce_customer_address][und][0][administrative_area]' => 'QLD',
+      'customer_profile_billing[commerce_customer_address][und][0][postal_code]' => '1234'
+    );
+
+    $this->drupalPost(NULL, $edit, t('Continue to next step'));
+
+    // This is 'complete' purchase.
+    $this->drupalPost(NULL, array(), t('Continue to next step'));
+
+    // Check order is complete.
+    $this->assertRaw('Checkout complete', 'Checkout was completed');
+    $this->assertRaw(format_string("Your order is number @id", array(
+      '@id' => !empty($matches[1]) ? $matches[1] : 'N/A'
+    )));
+
+    // Login as admin.
+    $this->drupalLogin($this->admin);
+    $this->drupalGet('admin/content/node');
+
+    // Check for the node and published status.
+    $this->assertRaw('Miniature pony', 'Found miniature pony node');
+    $this->assertRaw('published', 'Node is published');
+
+    // Load the node and see if its published (be sure to pass $reset = TRUE).
+    $node = node_load(1, NULL, TRUE);
+    $this->assertTrue((bool) $node->status, 'The node is now published');
+  }
+}

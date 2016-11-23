@@ -1,0 +1,4 @@
+name = Custom forms
+description = Forms.
+package = Custom
+core = 7.x

@@ -1,0 +1,427 @@
+<?php
+
+
+define('MERCHANT_TRANSACTION_ID', '96009295');
+/**
+ * @file
+ * Code for partial payment integration using Drupal Commerce.
+ */
+function partial_payment_permission() {
+  return array(
+    'Online payment verification' => array(
+      'title' => t('Online payment varification'),
+      'description' => t('Online payment varification'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function partial_payment_menu() {
+  $items = array();
+
+  /*$items['online/payment/verification'] = array(
+    'title' => 'Online payment varify',
+    'description' => 'Verify online payment against order',
+    'page callback' => 'partial_payment_scheduler_order_verification',
+    'access arguments' => array('Online payment verification'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'partial_payment.admin.inc'
+  );*/
+  
+  $items['order/%/%/refund'] = array(
+    'title' => 'Order canceled',
+    'description' => 'Order refund',
+    'page callback' => 'partial_payment_refund',
+    'page arguments' => array(1,2),
+    //'access callback' => TRUE,
+    'access arguments' => array('Online payment verification'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'partial_payment.admin.inc'
+  );
+  
+  /*$items['checkout/%/different/return/url/%'] = array(
+    'title' => 'credit card payment',
+    'description' => 'rest amount by credit card',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(1,5),
+    //'access callback' => TRUE,
+    'access arguments' => array('Online payment verification'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'partial_payment.admin.inc'
+  );*/
+  $items['order/%/%/%/verify'] = array(
+    'title' => 'Verify payment',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('online_verify_form', 1, 2, 3),
+    //'access callback' => 'cheque_payment_cash_access',
+    'access arguments' => array('Online payment verification'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function partial_payment_commerce_payment_method_info() {
+  $payment_methods['partial_payment_online'] = array(
+    'title' => t('Pay <span class="orng">Rs 5,000</span> Online & reserve seat for 48 Hrs and Meet us at Registration centre'),
+    'display_title' => 'Pay <span class="orng">Rs 5,000</span> Online & reserve seat for 48 Hrs and Meet us at Registration centre',
+    'short_title' => 'Partial Payment',
+    'description' => t("Payment method for Partial payment"),
+    //'terminal' => FALSE,
+    'offsite' => TRUE,
+    'offsite_autoredirect' => TRUE,
+  );
+  return $payment_methods;
+  
+}
+
+/**
+ * Implements hook_settings_form().
+ */
+function partial_payment_online_settings_form($settings = NULL) {
+  $form = array();
+  $settings = (array) $settings + array(
+    'key_file_name' => '',
+  );
+  $form['key_file_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Key Name'),
+    '#default_value' => $settings['key_file_name'],
+    '#description' => t('Enter Merchant key name here provided by ICICI bank e.g 0000XXXX'),
+  );
+  $form['partial_amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Partial payment'),
+    '#default_value' => $settings['partial_amount'],
+    '#description' => t('Enter Partial amount to pay'),
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_redirect_form
+ */
+function partial_payment_online_redirect_form($form, &$form_state, $order, $payment_method) {
+  $gateway_redirect_url = _partial_payment_online_get_redirection_url($order, $payment_method);
+  $form['#action'] = $gateway_redirect_url;
+  return $form;
+}
+
+function partial_payment_online_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  $profile_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
+  $pincode = cheque_payment_get_pincode_from_profile_id($profile_id);
+  $vacancy = bigbazaarcrm_application_get_pincode_status($pincode);
+  if (!$vacancy[0]) {
+    watchdog('failed', 'no vacancy');
+    form_set_error('dummy', 'sorry Vacancy is completed for your pincode');
+    return FALSE;
+  }
+}
+
+function partial_payment_online_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  $form = array();
+
+  $output = '<div class="payment-pg-block">
+<p>Once you pay Rs 5000 online we will block you seat for 48 hrs. You have to visit our nearest Registration office and meet our team for further discussion.</p>
+<p>The list of Registration offices nearby you are as below</p>
+<ul class="inner-pg-lst">
+  <li>Tonk Road, Jaipur</li>
+  <li>Jaipur-Triton Mall</li>
+  <li>Jaipur-Vaishali Nagar.</li>
+  <li>Kota-Jhalawar Road</li>
+  <li>Udaipur-Kumbha Marg</li>
+  <li>Bhilwara</li>
+  <li>Ganganagar</li>
+  <li>Bikaner</li>
+  <li>Ajmer</li>
+  <li>Alwar</li>
+</ul>
+<p>Once you have made the online we shall display to you the complete address of the nearest Registration Office </p>
+</div>';
+  $form['dummy'] = array(
+    '#markup' => $output,
+  );
+
+
+  return $form;
+}
+
+/*function partial_payment_online_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  //$query = 
+  $diff_return_url = TRUE;
+  $gateway_redirect_url = _partial_payment_online_get_redirection_url($order, $payment_method, $diff_return_url);
+  drupal_goto($gateway_redirect_url);
+}*/
+/**
+ * Implements hook_redirect_form_validate().
+ */
+function partial_payment_online_redirect_form_validate($order, $payment_method) {
+  _common_icici_validate_function($order, $payment_method);
+}
+
+/**
+ * Common validate function for partial and full payment of ICICI
+ */
+function _common_icici_validate_function($order, $payment_method){
+  global $base_url;
+  $redirect_flag = FALSE;
+  include "Sfa/EncryptionUtil.php";
+  $key_path = $payment_method['settings']['key_file_name'];
+  $astr_response_data = $_POST['DATA'];
+  $str_merchant_id = $key_path;
+  $astr_file_name = 'bankkey/' . $key_path . '.key';
+  $astr_digest = $_POST['EncryptedData'];
+  $o_encryption_utilenc = new EncryptionUtil();
+  $astrsfa_digest = $o_encryption_utilenc->getHMAC($astr_response_data, $astr_file_name, $str_merchant_id);
+  if (strcasecmp($astr_digest, $astrsfa_digest) == 0) {
+    parse_str($astr_response_data, $output);
+    if (array_key_exists('RespCode', $output) == 1) {
+      // Responce code.
+      $response_code = $output['RespCode'];
+    }
+    if (array_key_exists('Message', $output) == 1) {
+      $message = $output['Message'];
+    }
+  }
+
+  if ($response_code == 0 && $message == 'Transaction Successful') {
+    $pincode = _get_pincode_from_order_id($order->order_id);
+    _pincode_hardcommit_and_ledger_entry($pincode, $order->order_id, -1);
+    $pay_txn = partial_payment_online_transaction($order, $payment_method, $output);
+    $order->field_payment_mode['und'][0]['value'] = 'ONLINE_PARTIAL_PAYMENT'; 
+    drupal_set_message(t("Thankyou for shopping with us your card has been charged"), 'status');
+    $data['pay_txn'] = $pay_txn;
+  }
+  
+  else {
+    drupal_set_message(check_plain(t("Your transaction could not be completed")), 'error');
+    $order->status = 'checkout_review';
+    commerce_order_save($order);
+    $url = $base_url . '/checkout/' . $order->order_id . '/review';
+    $redirect_flag = TRUE;
+  }
+  $data['transaction_id'] = $output['TxnID'];
+  $data['response'] = serialize($output);
+  $data['status'] = 1;
+  database_entry_for_icici_transaction('update', $data);
+  if($redirect_flag){
+    drupal_goto($url);    
+  }
+}
+/**
+ * Implements hook_get_redirection_url()
+ */
+function _partial_payment_online_get_redirection_url($order, $payment_method, $diff_return_url = NULL) {
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+  if($payment_method['method_id'] == 'partial_payment_online'){
+    $amount = $payment_method['settings']['partial_amount'];
+  }
+  if($payment_method['method_id'] == 'commerce_icici_payment'){
+    $amount = $wrapper->commerce_order_total->amount->value()/ 100;   
+  }
+  $key_path = $payment_method['settings']['key_file_name'];
+
+  // Include ICICI Payment Gateway Required Files.
+  //print_r('<pre>'.debug_backtrace().'</pre>');
+  if(!class_exists('BillToAddress'))
+    include "Sfa/BillToAddress.php";
+  if(!class_exists('CardInfo'))
+    include "Sfa/CardInfo.php";
+  if(!class_exists('Merchant'))
+    include "Sfa/Merchant.php";
+  if(!class_exists('MPIData'))
+    include "Sfa/MPIData.php";
+  if(!class_exists('ShipToAddress'))
+    include "Sfa/ShipToAddress.php";
+  if(!class_exists('PGResponse'))
+    include "Sfa/PGResponse.php";
+  if(!class_exists('PostLibPHP'))
+    include "Sfa/PostLibPHP.php";
+  if(!class_exists('PGReserveData'))
+    include "Sfa/PGReserveData.php";
+
+  // Initialize the classes.
+  $o_mpi = new MPIData();
+  $o_ci = new CardInfo();
+  $o_post_libphp = new PostLibPHP();
+  $o_merchant = new Merchant();
+  $o_bta = new BillToAddress();
+  $o_sta = new ShipToAddress();
+  $o_pgresp = new PGResponse();
+  $o_pgreserve_data = new PGReserveData();
+  $myip = ip_address();
+  $bank = 'icici';
+  $txid = get_transaction_id($order->order_id, $amount, $bank);
+  if($diff_return_url){
+    $return_url = url('checkout/' . $order->order_id . '/different/return/url/'. $order->data['payment_redirect_key'], array('absolute' => TRUE));  
+  }
+  else{
+  $return_url = url('checkout/' . $order->order_id . '/payment/return/' . $order->data['payment_redirect_key'], array('absolute' => TRUE));
+  }
+  $o_merchant->setMerchantDetails($key_path, $key_path, $key_path, $myip, $txid, 'Order' . $txid, $return_url, "POST", "INR", "INV123", "req.Sale", $amount, "", "", "true", "", "", "");
+  $o_pgresp = $o_post_libphp->postSSL($o_bta, $o_sta, $o_merchant, $o_mpi, $o_pgreserve_data);
+
+  $url = $o_pgresp->mstrRedirectionUrl;
+  return $url;
+}
+
+/**
+ * Implements hook_transaction()
+ */
+function partial_payment_online_transaction($order, $payment_method, $output) {
+
+  // Ask results from verify function.
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $currency_code = $wrapper->commerce_order_total->currency_code->value();
+  if($payment_method['method_id'] == 'partial_payment_online'){
+    $amount = $payment_method['settings']['partial_amount'] * 100;
+  }
+  if($payment_method['method_id'] == 'commerce_icici_payment'){
+    $amount = $wrapper->commerce_order_total->amount->value();   
+  }
+  $transaction = commerce_payment_transaction_new($payment_method['method_id'], $order->order_id);
+  $transaction->instance_id = $payment_method['instance_id'];
+  $transaction->amount = $amount;
+  $transaction->currency_code = $currency_code;
+  $transaction->remote_status = t('Success');
+  $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+  $transaction->remote_id = $output['TxnID'];
+  $transaction->data = serialize($output);
+  $transaction->message = t('Payment recieved at %date', array("%date" => date("d-m-Y H:i:s", REQUEST_TIME)));
+  commerce_payment_transaction_save($transaction);
+  return $transaction->transaction_id;
+}
+
+function partial_payment_check_payment_done($order_id) {
+  $query = db_select('commerce_payment_transaction', 'cpt');
+  $query->fields('cpt', array('transaction_id'));
+  $query->condition('cpt.order_id', $order_id, '=');
+  $query->condition('cpt.remote_status', 'Success', '=');
+  $result = $query->execute()->fetchcol();
+  return $result;
+}
+
+/*
+ * Get Transaction ID for PG
+ */
+
+function get_transaction_id($order_id, $amount, $bank){
+  $application_id = _get_application_no_and_nid_from_order_id($order_id);
+  $transaction = db_select('online_transaction', 'o')
+                  ->fields('o', array('id', 'transaction_id'))
+                  ->orderBy('id', 'DESC')
+                  ->condition('application_id', $application_id[0]->field_application_number_value)
+                  ->execute()->fetchAll();
+  $txn = current($transaction);
+  if (isset($txn->transaction_id)) {
+    $v = substr(strrchr($txn->transaction_id, "_"), 1) + 1;
+    $txid = $application_id[0]->field_application_number_value . '_' . $v;
+  }
+  else {
+    $txid = $application_id[0]->field_application_number_value . '_1';
+  }
+  $data['application_id'] = $application_id[0]->field_application_number_value;
+  $data['transaction_id'] = $txid;
+  $data['amount'] = $amount;
+  $data['bank'] = $bank;
+  $data['created']= REQUEST_TIME;
+  $insert = database_entry_for_icici_transaction('insert', $data);
+  return $txid;
+}
+
+/**
+ * Database Entry for icici transaction
+ */
+
+function database_entry_for_icici_transaction($type, $data){
+  $data['updated']= REQUEST_TIME;  
+  if($type == 'insert'){
+    $data['status'] = 0;  
+    $transaction = db_insert('online_transaction')
+    ->fields($data)
+    ->execute();
+    }
+    if($type == 'update'){
+      $transaction = db_update('online_transaction');
+      $transaction->fields($data);
+      $transaction->condition('transaction_id', $data['transaction_id'], '=');
+      $transaction->execute();  
+    }
+   
+    return $transaction;
+   }
+
+/**
+* Rest amount 95000 paid at PG
+*/
+function _rest_amount_card_payment($txn_id,$data){
+  global $base_url;
+  $url = $base_url.'/admin/commerce/orders/'.$txn_id.'/payment';
+  drupal_goto($url);
+//  $payment_method = commerce_payment_method_load('partial_payment_online');
+//  $payment_method['settings']['key_file_name'] = MERCHANT_TRANSACTION_ID;
+//  $diff_return_url = 
+//  $gateway_redirect_url = _partial_payment_online_get_redirection_url($order, $payment_method, $diff_return_url);
+//  drupal_goto($gateway_redirect_url);
+  
+}
+
+function online_verify_form($form, &$form_state, $merchant_txn_id, $order_id, $txn_id) {
+  $form_state['merchant_transaction_id'] = $merchant_txn_id;
+  $form_state['order_id'] = $order_id;
+  $form_state['transaction_id'] = $txn_id;
+  
+  $option = array(
+    1 => t('payment_received'),  
+    2 => t('payment_not_received'),  
+  );
+  $form['verify_type'] = array(
+      '#title' => t('Verification Status'),
+      '#type' => 'select',
+      '#description' => t('Verification status'),
+      '#options' => $option,
+      '#default_value' => 'select',
+    );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
+  );
+  return $form;
+}
+
+function online_verify_form_submit($form, &$form_state) {
+  $verificattion_status = $form_state['values']['verify_type'];
+  $order_id = $form_state['order_id'];
+  if($verificattion_status == 1){
+    $transaction = commerce_payment_transaction_load($form_state['transaction_id']);
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    commerce_payment_transaction_save($transaction);
+    $data['transaction_id'] = $form_state['merchant_transaction_id'];
+    $data['verification_response'] = 'payment_received';
+    $data['status'] = 2;
+    database_entry_for_icici_transaction('update', $data);
+    dsm('Payment Received Option Updtaed');
+    $path = 'admin/commerce/orders/'.$order_id.'/payment'; 
+    drupal_goto($path);    
+  }
+  
+  else{
+    dsm('Payment Not Received Option Updtaed');
+    $data['transaction_id'] = $form_state['transaction_id'];
+    $data['verification_response'] = 'payment_not_received';
+    $data['status'] = 2;
+    $transaction = commerce_payment_transaction_load($form_state['transaction_id']);
+    $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+    commerce_payment_transaction_save($transaction);
+    database_entry_for_icici_transaction('update', $data);
+    $path = 'admin/commerce/orders/'.$order_id.'/payment'; 
+    drupal_goto($path);  
+  }
+  
+}

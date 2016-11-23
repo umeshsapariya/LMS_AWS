@@ -1,0 +1,1848 @@
+<?php
+
+module_load_include('inc', 'bigbazaarcrm_application', 'includes/views_handler_payment_type.inc');
+/*
+ * @file
+ * Custom Module file to alter applicatgion
+ */
+
+/**
+ * 
+ * 
+ */
+function bigbazaarcrm_application_permission() {
+  return array(
+    'administer my module' => array(
+      'title' => t('Administer my module'),
+      'description' => t('Perform administration tasks for my module.'),
+    ),
+    'fill application form' => array(
+      'title' => t('Fill the application Form'),
+      'description' => t('Allow some roles to fill the application Form (Warning : Give to SO/RM only)'),
+    ),
+    'alliance lead generation' => array(
+      'title' => t('Alliance lead generation'),
+      'description' => t('Permission to upload alliance leads.'),
+    ),
+  );
+}
+
+/**
+ * Implements of hook_views_api().
+ * Integration of application_existing_lead_source table with views.
+ */
+function bigbazaarcrm_application_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'bigbazaarcrm_application'),
+  );
+}
+
+/**
+ * 
+ * 
+ */
+function webform_custom_validate($form, &$form_state) {
+  $mobile = $form_state['values']['submitted']['phone_no'];
+  $mobile_check = preg_match('/^([0-9]{10})$/', $mobile);
+  if (!$mobile_check) {
+    form_set_error('phone_no', 'Please enter Valid 10 Digit Mobile No');
+  }
+  $pincode = $form_state['values']['submitted']['pincode'];
+  $pincode_check = preg_match('/^([0-9]{6})$/', $pincode);
+  if (!$pincode_check) {
+    form_set_error('pincode', 'Please enter Valid 6 Digit pincode');
+  }
+}
+
+/**
+ * 
+ * 
+ */
+function webform_custom_submit($form, &$form_state) {
+  $_SESSION['survey_flag'] = TRUE;
+}
+
+/*
+ * Implements hook_form_alter().
+ */
+function bigbazaarcrm_application_form_alter(&$form, &$form_state, $form_id) {
+  if(is_numeric(strpos($form_id,'webform_client_form_'))){
+    $form['#validate'][] = 'webform_custom_validate';
+    $form['#submit'][] = 'webform_custom_submit';
+  }
+  
+  if ($form_id == 'commerce_checkout_form_review') {
+    //Remove help text
+    $form['help']['#markup'] = '';
+//    dsm($form, 'form');
+//    dsm($form_state, 'formstate');
+//
+//removing As it wasnt being used.
+//    $order = commerce_cart_order_load($user->uid);
+//    $line_item_id = $order->commerce_line_items[LANGUAGE_NONE][0]['line_item_id'];
+//    $line_item = commerce_line_item_load($line_item_id);
+//    $node_id = $line_item->commerce_node_checkout_node[LANGUAGE_NONE][0]['nid'];
+//    $node_item = node_load($node_id);
+//    $pincode = $node_item->field_pin_code[LANGUAGE_NONE][0]['value'];
+//    $vacancy = bigbazaarcrm_application_get_pincode_status($pincode);
+//    if ($vacancy[0] && $vacancy[1] < 6) {
+//      $message = 'Hurry Up! Only x seats left';
+//      drupal_set_message($message);
+//    }
+    //$form['commerce_payment']['payment_method']['#suffix'] = t('You will be redirected to our partners website to process the payment.');
+    //$form['commerce_payment']['payment_method']['#options']['commerce_icici_payment|commerce_payment_commerce_icici_payment'] = t('Pay <span class="orng">Rs 1,00,000</span> by credit/debit card and get your agency now');
+    //$form['commerce_payment']['payment_method']['#options']['ccavenue|commerce_payment_ccavenue'] = t('Net Banking');
+    //$form['commerce_payment']['#access'] = FALSE;
+    $form['buttons']['continue']['#value'] = 'Pay Now';
+    $form['buttons']['back']['#access'] = FALSE;
+    $form['buttons']['cancel']['#access'] = FALSE;
+    //dsm($form);
+  }
+  $bool = 0;
+  if ($form_id == 'application_node_form' && isset($_GET['mobile'])) {
+
+    //disable procced to pay here.
+    $nid = arg(1);
+    if (is_numeric($nid) && is_numeric($_GET['mobile'])) {
+      if ($nid == bigbazaarcrm_common_get_nid_from_mobile_no($_GET['mobile'])) {
+        $loaded_node = node_load($nid);
+        //$result = db_query("select count(Pincode) from pin_code where Pincode = :pin_code",array(':pin_code' => $loaded_node->field_pin_code[LANGUAGE_NONE][0]['value']))->fetchField();
+        $result = bigbazaarcrm_application_get_pincode_status($loaded_node->field_pin_code[LANGUAGE_NONE][0]['value']);
+        if (!$result[0]) {
+          $bool = 1;
+        }
+        if (empty($loaded_node->field_quiz_passed[LANGUAGE_NONE][0]['value'])) {
+          $bool = 1;
+        }
+
+        /* Auto submit for node edit form
+         */
+        if (user_is_anonymous() || user_has_roles('Lead') || user_access('fill application form')) {
+          drupal_add_js('jQuery(document).ready(function () {
+  jQuery("div.main-container").attr("style", "display: none;");  });', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+  drupal_add_js('jQuery(document).ready(function () {
+  jQuery("#application-node-form").submit(); });', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+        }
+      }
+      else {
+        $bool = 1;
+      }
+    }
+    else {
+      $bool = 1;
+    }
+  }
+  if (arg(2) == 'edit' && !isset($_GET['mobile'])) {
+    if (user_is_anonymous()) {
+      $bool = 1;
+    }
+  }
+  if ($bool) {
+    drupal_goto();
+  }
+
+  // adding extra submit handler for application form to create enquiry.
+  if ($form_id == 'application_node_form') {
+
+    unset($form['#token']);
+    drupal_add_js(drupal_get_path('theme', 'bbdlms') . '/js/jquery.validate.min.js');
+    drupal_add_js(drupal_get_path('theme', 'bbdlms') . '/js/form_validate.js');
+
+    $allowed_fields = array('field_first_name', 'field_last_name', 'field_date_of_birth', 'field_mobile_1', 'field_pin_code', 'field_address_1', 'field_city', 'field_state_list', 'field_email', 'field_education_qualification', 'field_occupation');
+    foreach ($form as $k => $v) {
+      if ((substr($k, 0, 6) == 'field_') && !in_array($k, $allowed_fields)) {
+        $form[$k]['#access'] = FALSE;
+      }
+    }
+
+    $form['field_franchisee_code'][LANGUAGE_NONE][0]['value']['#maxlength'] = 8;
+    //Show 'Franchisee code field for finance team'
+    if (user_has_roles('Finance Team')) {
+      $form['field_franchisee_code']['#access'] = TRUE;
+    }
+
+
+    //Adding placeholders and removing Title
+    foreach ($form as $k => $v) {
+      if ((substr($k, 0, 6) == 'field_') && in_array($k, $allowed_fields)) {
+        $form[$k][LANGUAGE_NONE][0]['value']['#attributes']['placeholder'] = $form[$k][LANGUAGE_NONE][0]['value']['#title'];
+        $form[$k][LANGUAGE_NONE][0]['value']['#title_display'] = 'invisible';
+      }
+    }
+    $form['field_state_list']['und']['#title_display'] = 'invisible';
+
+    $form['field_mobile_1'][LANGUAGE_NONE][0]['value']['#maxlength'] = 10;
+    $form['field_date_of_birth']['#prefix'] = '<div class="dob-label">DOB Format : DD/MM/YYYY</div>';
+
+    if (user_is_logged_in() && !user_has_roles('Lead') && !user_access('fill application form')) {
+      // edit application content type - sales team to upload images.
+      $form['actions']['submit']['#access'] = FALSE;
+      $form['actions']['node_call'] = array(
+        '#type' => 'submit',
+        '#access' => TRUE,
+        '#value' => t('update'),
+        '#submit' => array('bigbazaarcrm_application_node_call'),
+      );
+    }
+    else {
+      if ($form['nid']['#value'] == NULL) {
+
+        //Remove Lead information from SESSION
+        //when Apply now page is visited
+        if (isset($_SESSION['application_info'])) {
+          unset($_SESSION['application_info']);
+        }
+
+        $form['actions']['submit']['#access'] = FALSE;
+//				$form['actions']['node_save_only'] = array(
+//				'#type' => 'submit',
+//				'#access' => TRUE,
+//				'#value' => t('Save Application'),
+//				'#submit' => array('bigbazaarcrm_application_node_saveonly'),
+//				);
+//        $form['field_pin_code'][LANGUAGE_NONE][0]['value']['#ajax']=array(
+//        'callback'=>'pincode_ajax_callback',
+//        'wrapper'=>'form-replace'
+//      );
+      $form['field_mobile_1'][LANGUAGE_NONE][0]['value']['#ajax']=array(
+        'callback'=>'mobile_ajax_callback',
+        'wrapper'=>'form-replace',
+      );
+      
+      $button_weight = $form['field_pin_code']['#weight'];
+      $button_weight = $button_weight + 0.5;
+      
+      $form['pincode_check'] = array(
+        '#type' => 'button',
+        '#ajax' => array(
+        'callback' => 'pincode_ajax_callback',
+        'wrapper' => 'form-replace',
+        ),
+        '#weight' => $button_weight,
+        '#value'=> 'Save and Continue',
+        '#validate'=>'pincode_check_validate'
+        );
+
+      $form['#prefix']='<div id="form-replace">';
+      $form['#suffix']='</div>';
+      
+      
+      if($form_state['bigbazaarcrm_application']['show'] == 1){
+        $form['field_address_1'][LANGUAGE_NONE][0]['value']['#disabled'] = FALSE;
+        $form['field_address_2'][LANGUAGE_NONE][0]['value']['#disabled'] = FALSE;
+
+        //$form['field_city'][LANGUAGE_NONE][0]['value']['#disabled'] = FALSE;
+        //$form['field_city'][LANGUAGE_NONE][0]['value']['#attributes']['readonly'] = 'readonly';
+        $form['field_city'][LANGUAGE_NONE][0]['value']['#default_value'] = $form_state['bigbazaarcrm_application']['city'];
+        $form['field_city'][LANGUAGE_NONE][0]['value']['#attributes']['readonly'] = 'readonly';
+        //$form['field_city'][LANGUAGE_NONE]['#disabled'] = TRUE;
+
+        $form['field_state_list'][LANGUAGE_NONE]['#default_value'] = $form_state['bigbazaarcrm_application']['state'];
+        $form['field_state_list'][LANGUAGE_NONE]['#disabled'] = TRUE;
+        
+        $form['field_education_qualification'][LANGUAGE_NONE]['#disabled'] = FALSE;
+        $form['field_occupation'][LANGUAGE_NONE]['#disabled'] = FALSE;
+
+        //Disable the Mobile field, once the Lead's 
+        //pincode is eligible
+        //$form['field_mobile_1'][LANGUAGE_NONE][0]['value']['#attributes']['readonly'] = 'readonly';
+        $form['field_mobile_1'][LANGUAGE_NONE][0]['value']['#default_value'] = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+        $form['field_mobile_1'][LANGUAGE_NONE][0]['value']['#disabled'] = TRUE;
+        
+        $form['actions']['node_save_only'] = array(
+				'#type' => 'submit',
+				'#access' => TRUE,
+				'#value' => t('Save Application'),
+				'#submit' => array('bigbazaarcrm_application_node_saveonly'),
+        '#weight' => 100,
+				);
+        $form_state['values']['nid']=$form_state['bigbazaarcrm_application']['nid'];
+      }
+      else{
+        $form['field_address_1'][LANGUAGE_NONE][0]['value']['#disabled']=TRUE;
+        $form['field_address_2'][LANGUAGE_NONE][0]['value']['#disabled']=TRUE;
+        $form['field_city'][LANGUAGE_NONE][0]['value']['#disabled']=TRUE;
+        $form['field_state_list'][LANGUAGE_NONE]['#disabled']=TRUE;
+        $form['field_education_qualification'][LANGUAGE_NONE]['#disabled']=TRUE;
+        $form['field_occupation'][LANGUAGE_NONE]['#disabled']=TRUE;
+      }
+      
+      if(isset($form_state['bigbazaarcrm_application']['old_lead'])){
+        $form['field_first_name']['und'][0]['value']['#default_value'] = $form_state['bigbazaarcrm_application']['old_lead']['first_name'];
+        $form['field_last_name']['und'][0]['value']['#default_value'] = $form_state['bigbazaarcrm_application']['old_lead']['last_name'];
+        $form['field_date_of_birth']['und'][0]['#default_value']['value'] = $form_state['bigbazaarcrm_application']['old_lead']['date_of_birth'];
+        $form['field_email']['und'][0]['value']['#default_value'] = $form_state['bigbazaarcrm_application']['old_lead']['email'];
+        $form['field_mobile_1']['und'][0]['value']['#default_value'] = $form_state['bigbazaarcrm_application']['old_lead']['mobile_1'];
+        $form['field_pin_code']['und'][0]['value']['#default_value'] = $form_state['bigbazaarcrm_application']['old_lead']['pin_code'];
+        drupal_set_message('We have filled your details. Please fill the remaining form again');
+      }
+      
+      if($form_state['bigbazaarcrm_application']['mobile-error']){
+        $form['field_mobile_1']['#suffix']='<div id="mobile-error">The Mobile number already exists</div>';
+        $form_state['bigbazaarcrm_application']['mobile-error'] = 0;
+      }
+      
+      if($form_state['bigbazaarcrm_application']['error'] === 'no_service'){
+        $form['field_pin_code']['#suffix']='<div class="pincode-error">Sorry, we don’t service at this pin code</div>';
+        $form_state['bigbazaarcrm_application']['error']=0;
+      }
+      if($form_state['bigbazaarcrm_application']['error'] === 'no_vacancy'){
+        $form['field_pin_code']['#suffix']='<div class="pincode-error">Oops, the franchisee seats are full for this pin code, but will still get back within x days</div>';
+        $form_state['bigbazaarcrm_application']['error']=0;
+      }
+      if(is_numeric($form_state['bigbazaarcrm_application']['error']) && $form_state['bigbazaarcrm_application']['error'] > 0){
+        $form['field_pin_code']['#suffix']='<div>Hurry up,'.$form_state['bigbazaarcrm_application']['error'].' seats left</div>';
+        $form_state['bigbazaarcrm_application']['error']=0;
+      }
+			}
+      else {
+        if (!isset($_GET['mobile'])) {
+          $form['actions']['submit']['#access'] = FALSE;
+          $form['actions']['node_edit'] = array(
+            '#type' => 'submit',
+            '#access' => TRUE,
+            '#value' => t('Save Application'),
+            '#submit' => array('bigbazaarcrm_application_node_edit'),
+          );
+          
+          
+//          $state_city = bigbazaarcrm_application_get_state_city_from_pincode($form['field_pin_code'][LANGUAGE_NONE][0]['value']['#default_value']);
+//          $form['field_city'][LANGUAGE_NONE][0]['value']['#default_value'] = $state_city[1];
+            $form['field_city'][LANGUAGE_NONE][0]['value']['#attributes']['readonly'] = 'readonly';
+//          
+//          $form['field_state_list'][LANGUAGE_NONE]['#default_value'] = $state_city[0];
+            $form['field_state_list'][LANGUAGE_NONE]['#disabled'] = TRUE;
+
+          
+        }
+
+        $form['title']['#access'] = FALSE;
+        $form['field_first_name'][LANGUAGE_NONE][0]['value']['#disabled'] = TRUE;
+        $form['field_last_name'][LANGUAGE_NONE][0]['value']['#disabled'] = TRUE;
+        $form['field_date_of_birth'][LANGUAGE_NONE][0]['value']['#attributes']['readonly'] = 'readonly';
+        $form['field_mobile_1'][LANGUAGE_NONE][0]['value']['#disabled'] = TRUE;
+        $form['field_pin_code'][LANGUAGE_NONE][0]['value']['#disabled'] = TRUE;
+        $form['field_email'][LANGUAGE_NONE][0]['value']['#disabled'] = TRUE;
+      }
+      drupal_set_title('Application Form');
+      $form['actions']['submit']['#submit'][] = 'bigbazaarcrm_application_postsubmit';
+    }
+
+    // don't set for node update.
+    if (!$form['nid']['#value']) {
+      $form['#validate'][] = 'bigbazaarcrm_application_phone_validate';
+    }
+
+//		foreach($form['field_state_list'][LANGUAGE_NONE]['#options'] as $ck => $cv) {
+//			$form['field_state_list'][LANGUAGE_NONE]['#options'][$ck] = '- Select a state -'; break;
+//		}
+    $form['field_state_list'][LANGUAGE_NONE]['#options'] = array_merge(array('- Select a state -' => '- Select a state -'), $form['field_state_list'][LANGUAGE_NONE]['#options']);
+
+    //dsm($form);
+    drupal_add_js('jQuery(document).ready(function () {
+                 jQuery("#application-node-form .group_establishment_details h3").hide();
+                 jQuery("input#edit-field-applicant-type-und-proprietor").click(function(){ jQuery("#application-node-form .group_establishment_details h3").show(); });
+								 jQuery("input#edit-field-applicant-type-und-partnership").click(function(){ jQuery("#application-node-form .group_establishment_details h3").show(); });
+								 jQuery("input#edit-field-applicant-type-und-individual").click(function(){ jQuery("#application-node-form .group_establishment_details h3").hide(); });
+		});', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+
+
+    if (user_is_anonymous() || user_has_roles('Lead')) {
+      $form['contact_information'] = array(
+        '#weight' => 50,
+        '#markup' => '<div class="lms-applynow">
+  <p><b>To become a Big Bazaar Direct Franchisee, you have to make a small investment  as given below: </b></p>
+  <ul>
+    <li>Non-Refundable Set-Up fee of Rs.10,000</li>
+    <li>Advance Account Balance of Rs.15,000</li>
+  </ul>
+  <p><b>Declaration</b></p>
+  <p>I hereby declare that the details given herein are true, correct and complete to the best of my knowledge and belief, the photo copy of the documents submitted at a later stage are genuine and belong me. I hearby undertake to promptly inform Future Retail Limited (FRL) in writing, of any changes in the information provided herein above and agree and accept that FRL is not liable or responsible for any losses, costs, damages arising out of any actions undertaken or activities performed by FRL on the basis of the information provided by me as also due to my not intimating / delay in intimating such changes. I hereby authorize FRL to disclose, share, remit in any form, mode or manner, all / any of the information provided by me. I hereby agree to provide any additional information / documentation that may be required by FRL, in connection with this application. I also agree that FRL has the right to reject my application form on any ground without any reason.</p>
+</div>'
+      );
+    }
+  }
+
+  // skip checkout form for application submit.
+  if ($form_id == 'commerce_checkout_form_checkout') {
+    drupal_add_js('jQuery(document).ready(function () {
+                 jQuery("div.main-container").attr("style", "display: none;");  });', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+
+    global $user;
+    $order = commerce_cart_order_load($user->uid);
+    $line_item_id = $order->commerce_line_items[LANGUAGE_NONE][0]['line_item_id'];
+    $line_item = commerce_line_item_load($line_item_id);
+    $node_id = $line_item->commerce_node_checkout_node[LANGUAGE_NONE][0]['nid'];
+    $node_item = node_load($node_id);
+    $full_name = $node_item->field_first_name[LANGUAGE_NONE][0]['value'] . ' ' . $node_item->field_middle_name[LANGUAGE_NONE][0]['value'] . ' ' . $node_item->field_last_name[LANGUAGE_NONE][0]['value'];
+    $address_one = isset($node_item->field_address_1[LANGUAGE_NONE][0]['value']) ? $node_item->field_address_1[LANGUAGE_NONE][0]['value'] : '';
+    $address_two = isset($node_item->field_address_2[LANGUAGE_NONE][0]['value']) ? $node_item->field_address_2[LANGUAGE_NONE][0]['value'] : '';
+    $city = $node_item->field_city[und][0]['value'];
+    $state = isset($node_item->field_state_list[LANGUAGE_NONE][0]['value']) ? $node_item->field_state_list[LANGUAGE_NONE][0]['value'] : '';
+    $pin_code = isset($node_item->field_pin_code[LANGUAGE_NONE][0]['value']) ? $node_item->field_pin_code[LANGUAGE_NONE][0]['value'] : '';
+
+    $form['account']['login']['mail']['#default_value'] = $node_item->field_email[LANGUAGE_NONE][0]['value'];
+
+    $form['customer_profile_billing']['commerce_customer_address'][LANGUAGE_NONE][0]['#address']['name_line'] = $full_name;
+    $form['customer_profile_billing']['commerce_customer_address'][LANGUAGE_NONE][0]['#address']['thoroughfare'] = $address_one;
+    $form['customer_profile_billing']['commerce_customer_address'][LANGUAGE_NONE][0]['#address']['premise'] = $address_two;
+    $form['customer_profile_billing']['commerce_customer_address'][LANGUAGE_NONE][0]['#address']['locality'] = $city;
+    $form['customer_profile_billing']['commerce_customer_address'][LANGUAGE_NONE][0]['#address']['administrative_area'] = $state;
+    $form['customer_profile_billing']['commerce_customer_address'][LANGUAGE_NONE][0]['#address']['postal_code'] = $pin_code;
+    $form['customer_profile_billing']['commerce_customer_address'][LANGUAGE_NONE][0]['phone_block']['mobile_number']['#default_value'] = $node_item->field_mobile_1[LANGUAGE_NONE][0]['value'];
+
+    drupal_add_js('jQuery(document).ready(function () {
+                jQuery("#commerce-checkout-form-checkout").submit(); });', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));
+  }
+
+  if ($form_id == 'workflow_tab_form') {
+    if ($form_state['input']['workflow'] == 31 && arg(2) == 'workflow') {
+      $nid = arg(1);
+      $node = node_load($nid);
+      //workflow_execute_transition($node, 31, NULL, true);
+      workflow_execute_transition($node, 41, NULL, true);
+    }
+  }
+
+  if ($form_id == 'kyc_upload_node_form') {
+    $pram = drupal_get_query_parameters();
+    if ($form['nid']['#value'] == NULL) {
+      $form['title']['#attributes']['readonly'] = 'readonly';
+      $form['actions']['submit']['#submit'][] = 'kyc_upload_form_postsubmit';
+      //$form['field_application_refrenced'][LANGUAGE_NONE][0]['target_id']['#disabled'] = TRUE;
+      $form['#validate'][] = 'bigbazaarcrm_application_kyc_validate';
+      if (empty($form_state['bigbazaarcrm_application']['application_details']['nid'])) {
+        $form_state['bigbazaarcrm_application']['application_details']['nid'] = $pram['nid'];
+        $form['title']['#default_value'] = $pram['nid']; 
+     }
+    }
+    $form['field_application_refrence'][LANGUAGE_NONE][0]['target_id']['#access'] = FALSE;
+    drupal_set_title('Upload KYC documents');
+    $form['#validate'][] = 'bigbazaarcrm_application_kyc_validate';
+  }
+}
+
+function mobile_ajax_callback(&$form, &$form_state) {
+  $mobile = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+
+  if (bigbazaarcrm_application_check_mobile_exists($mobile)) {
+
+    $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+    $node = node_load($nid);
+    //$application_id = $node->field_application_number_old[LANGUAGE_NONE][0]['value'];
+    $application_id = $node->field_application_number[LANGUAGE_NONE][0]['value'];
+
+    //if(isset($node->field_application_number_old[LANGUAGE_NONE])) 
+
+    if (strlen($application_id) == 6 && $node->uid == '0') {
+      $node->field_application_number_old[LANGUAGE_NONE][0]['value'] = $application_id;
+      node_save($node);
+
+      //Store nid for use later to update the node
+      $form_state['bigbazaarcrm_application']['nid'] = $node->nid;
+
+      $form_state['bigbazaarcrm_application']['old_lead']['first_name'] = $node->field_first_name[LANGUAGE_NONE][0]['value'];
+      $form_state['bigbazaarcrm_application']['old_lead']['last_name'] = $node->field_last_name[LANGUAGE_NONE][0]['value'];
+      $form_state['bigbazaarcrm_application']['old_lead']['date_of_birth'] = $node->field_date_of_birth[LANGUAGE_NONE][0]['value'];
+      $form_state['bigbazaarcrm_application']['old_lead']['email'] = $node->field_email[LANGUAGE_NONE][0]['value'];
+      $form_state['bigbazaarcrm_application']['old_lead']['mobile_1'] = $node->field_mobile_1[LANGUAGE_NONE][0]['value'];
+      $form_state['bigbazaarcrm_application']['old_lead']['pin_code'] = $node->field_pin_code[LANGUAGE_NONE][0]['value'];
+
+      unset($form_state['input']['field_first_name'][LANGUAGE_NONE][0]['value']);
+      unset($form_state['input']['field_last_name'][LANGUAGE_NONE][0]['value']);
+      unset($form_state['input']['field_date_of_birth'][LANGUAGE_NONE][0]['value']);
+      unset($form_state['input']['field_email'][LANGUAGE_NONE][0]['value']);
+      unset($form_state['input']['field_mobile_1'][LANGUAGE_NONE][0]['value']);
+      unset($form_state['input']['field_pin_code'][LANGUAGE_NONE][0]['value']);
+
+      return drupal_rebuild_form('application_node_form', $form_state, $form);
+    }
+    else {
+      if (isset($form_state['bigbazaarcrm_application']['old_lead'])) {
+        unset($form_state['bigbazaarcrm_application']['old_lead']);
+      }
+      $form_state['bigbazaarcrm_application']['mobile-error'] = 1;
+      return drupal_rebuild_form('application_node_form', $form_state, $form);
+    }
+    //return '<div id="mobile-error">Mobile already exists</div>';
+  }
+  else {
+    //return '<div id="mobile-error"></div>';
+    return drupal_rebuild_form('application_node_form', $form_state, $form);
+  }
+}
+
+function pincode_ajax_callback(&$form, &$form_state) {
+  $pincode = $form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value'];
+  $first_name = $form_state['values']['field_first_name'][LANGUAGE_NONE][0]['value'];
+  $last_name = $form_state['values']['field_last_name'][LANGUAGE_NONE][0]['value'];
+  $dob = $form_state['values']['field_date_of_birth'][LANGUAGE_NONE][0]['value'];
+  $email = $form_state['values']['field_email'][LANGUAGE_NONE][0]['value'];
+  $mobile = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+  $mobile_status = bigbazaarcrm_application_check_mobile_exists($mobile);
+  $pincode_status = bigbazaarcrm_application_get_pincode_status($pincode);
+
+  $mobile_check = preg_match('/^([0-9]{10})$/', $mobile);
+  $pincode_check = preg_match('/^([0-9]{6})$/', $pincode);
+  $email_check = preg_match("/^[_\.0-9a-zA-Z-]+@([0-9a-zA-Z]+\.)+[a-zA-Z]{2,6}$/i", $email);
+
+//  if(isset($form_state['bigbazaarcrm_application']['old_lead'])){
+//    $mobile_status = 0;
+//    unset($form_state['bigbazaarcrm_application']['old_lead']);
+//  }
+
+  $dob = $form_state['values']['field_date_of_birth']['und'][0]['value2'];
+  $dob_check = bigbazaarcrm_application_check_age($dob, 18);
+
+  //Get state and city from Pincode
+  $state_city = bigbazaarcrm_application_get_state_city_from_pincode($pincode);
+
+  $user_access = user_access('fill application form');
+
+  if ($pincode_check && !empty($first_name) && !empty($last_name) && !empty($dob) && !empty($mobile) && !empty($email) && !$mobile_status && strlen($mobile) == 10 && $mobile_check && $dob_check && $email_check) {
+
+    if ($pincode_status[0]) {
+
+      if ($user_access) {
+        //Do not login if SO / RM is filling the application form
+        //Only register the lead
+        $uid = bigbazaarcrm_application_register_login_user($form_state, TRUE);
+        $false = FALSE; //Added to identify oxigen load on the following function
+        $return = bigbazaarcrm_application_create_application_node($form_state, $false, $uid);
+      }
+      else {
+        bigbazaarcrm_application_register_login_user($form_state);
+        $return = bigbazaarcrm_application_create_application_node($form_state, FALSE);
+      }
+
+
+      $node = $return[0];
+      $application_id = $return[1];
+
+      //Set status to (Lead Generated)
+      $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+      workflow_execute_transition($node, $sid, NULL, TRUE);
+
+
+
+      //Send SMS to LMS and AM
+      $so_rm = bigbazaarcrm_common_get_so_rm_from_pincode($pincode, TRUE, TRUE);
+      $lms = bigbazaarcrm_common_get_lms_from_pincode($pincode);
+      if (!empty($so_rm)) {
+        $so_name = ucwords(strtok($so_rm->so_name, '_'));
+        $rm_name = ucwords(strtok($so_rm->rm_name, '_'));
+        $so_mobile = $so_rm->so_mobile;
+        $rm_mobile = $so_rm->rm_mobile;
+        $so_email = $so_rm->so_email;
+        $rm_email = $so_rm->rm_email;
+
+        //Send SMS to Lead 
+        
+      $tokens = array('application_id' => $application_id,
+        'lead_name' => $first_name,
+        'so_name' => $so_name,
+        'so_mobile' => $so_mobile,
+        'rm_name' => $rm_name,
+        'rm_mobile' => $rm_mobile,
+      );
+      sms_configuration_helper_for_sms_template($node->field_mobile_1[LANGUAGE_NONE][0]['value'], 'lead_generation', $tokens);
+
+      //Send Email
+      $params = array(
+        'mail_to' => $email,
+        'dynamic' => $tokens,
+      );
+      entity_email_send('lead_generation', $params);
+      
+      //Send SMS to AM 
+        $tokens_rm = array('application_id' => $application_id,
+          'lead_name' => $first_name,
+          'lead_mobile' => $node->field_mobile_1[LANGUAGE_NONE][0]['value'],
+          'pincode' => $pincode,
+        );
+        sms_configuration_helper_for_sms_template($rm_mobile, 'lead_generation_message_to_am', $tokens_rm);
+
+        $params = array(
+          'mail_to' => $rm_email,
+          'dynamic' => ($tokens_rm + array('so_name' => $so_name)),
+        );
+        entity_email_send('lead_generation_email_to_am', $params);
+      }
+
+      if (!empty($lms) && !$user_access) { // To check the PUSH condition(SMS/Email send only to AM) 
+        //Send Email/SMS to LMS agent
+        $lms_name = ucwords(strtok($lms->lms_name, '_'));
+
+        //$so_mobile = $so_rm->so_mobile;
+        $lms_mobile = $lms->lms_mobile;
+        $lms_email = $lms->lms_email;
+
+        $tokens_lms = array('application_id' => $application_id,
+          'lead_name' => $first_name,
+          'lead_mobile' => $node->field_mobile_1[LANGUAGE_NONE][0]['value'],
+          'pincode' => $pincode,
+        );
+        sms_configuration_helper_for_sms_template($lms_mobile, 'lead_generation_message_to_lms', $tokens_lms);
+
+        $params = array(
+          'mail_to' => $lms_email,
+          'dynamic' => ($tokens_lms),
+        );
+        entity_email_send('lead_generation_email_to_lms', $params);
+      }
+
+      //$form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'] = $form['field_mobile_1'][LANGUAGE_NONE][0]['value']['#default_value'];
+      if ($pincode_status[1] <= 2) {
+        $form_state['bigbazaarcrm_application']['error'] = $pincode_status[1];
+      }
+      else {
+        $form_state['bigbazaarcrm_application']['error'] = 0;
+      }
+      $form_state['bigbazaarcrm_application']['nid'] = $node->nid;
+      $form_state['bigbazaarcrm_application']['show'] = 1;
+
+      unset($form_state['input']['field_city'][LANGUAGE_NONE][0]['value']);
+      $form_state['bigbazaarcrm_application']['city'] = $state_city[1];
+      $form_state['input']['field_city'][LANGUAGE_NONE][0]['value'] = $state_city[1];
+
+      unset($form_state['input']['field_state_list'][LANGUAGE_NONE]);
+      $form_state['bigbazaarcrm_application']['state'] = $state_city[0];
+      $form_state['input']['field_state_list'][LANGUAGE_NONE] = $state_city[0];
+
+      drupal_set_message('Your application number is ' . $application_id);
+      return drupal_rebuild_form('application_node_form', $form_state, $form);
+    }
+    else {
+      $uid = bigbazaarcrm_application_register_login_user($form_state, TRUE);
+      $false = FALSE; //Added to identify oxigen load on the following function
+      $return = bigbazaarcrm_application_create_application_node($form_state, $false, $uid);
+      $node = $return[0];
+      $application_id = $return[1];
+
+      //Set status to (Lead Generated)
+      $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+      workflow_execute_transition($node, $sid, NULL, TRUE);
+
+      $form_state['bigbazaarcrm_application']['nid'] = $node->nid;
+      $form_state['bigbazaarcrm_application']['show'] = 0;
+      $form_state['bigbazaarcrm_application']['error'] = $pincode_status[1];
+      return drupal_rebuild_form('application_node_form', $form_state, $form);
+    }
+  }
+  else {
+    //Temporary fix for case 1
+    //To be changed when workflow is set
+    if ($mobile_status && $pincode_status[0] && !empty($first_name) && !empty($last_name) && !empty($dob) && !empty($email) && $dob_check && $email_check) {
+      $node = node_load($form_state['bigbazaarcrm_application']['nid']);
+
+      //Check if user is entering new pincode
+      //In that case,update the node
+
+      $workflow_state = workflow_node_current_state($node);
+      $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+      if (($workflow_state == $sid) || (isset($form_state['bigbazaarcrm_application']['old_lead']))) {
+
+        if (isset($form_state['bigbazaarcrm_application']['old_lead'])) {
+          try {
+            $application_id = db_insert('application_id_counter')
+                ->fields(array(
+                  'mobile' => $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'],
+                ))
+                ->execute();
+          }
+          catch (Exception $ex) {
+            
+          }
+          unset($form_state['bigbazaarcrm_application']['old_lead']);
+          $node->field_application_number[LANGUAGE_NONE][0]['value'] = $application_id;
+        }
+
+//        if(user_is_anonymous()){
+//          bigbazaarcrm_application_register_login_user($form_state, $user);
+//        }
+        global $user;
+        if ($node->field_mobile_1[LANGUAGE_NONE][0]['value'] != $user->name) {
+          if ($user_access) {
+            //Do not login if SO / RM is filling the application form
+            //Only register the lead
+            $uid = bigbazaarcrm_application_register_login_user($form_state, TRUE);
+          }
+          else {
+            bigbazaarcrm_application_register_login_user($form_state);
+          }
+        }
+
+        global $user;
+        $node->field_first_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_first_name'][LANGUAGE_NONE][0]['value'];
+        $node->field_last_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_last_name'][LANGUAGE_NONE][0]['value'];
+        $node->field_mobile_1[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+        $node->field_email[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_email'][LANGUAGE_NONE][0]['value'];
+        $node->field_pin_code[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value'];
+        $node->field_date_of_birth[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_date_of_birth']['und'][0]['value2'];
+
+        $state_city = bigbazaarcrm_application_get_state_city_from_pincode($form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value']);
+        $state = $state_city[0];
+        $city = $state_city[1];
+        $node->field_state_list[LANGUAGE_NONE][0]['value'] = $state;
+        $node->field_city[LANGUAGE_NONE][0]['value'] = $city;
+
+        if (isset($uid)) {
+          $node->uid = $uid;
+        }
+        else {
+          $node->uid = $user->uid;
+        }
+        node_save($node);
+
+        //Set status to (Lead Generated)
+        $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+        workflow_execute_transition($node, $sid, NULL, TRUE);
+
+        if ($pincode_status[1] <= 2) {
+          $form_state['bigbazaarcrm_application']['error'] = $pincode_status[1];
+        }
+        else {
+          $form_state['bigbazaarcrm_application']['error'] = 0;
+        }
+
+        $form_state['bigbazaarcrm_application']['nid'] = $node->nid;
+        $form_state['bigbazaarcrm_application']['show'] = 1;
+
+        unset($form_state['input']['field_city'][LANGUAGE_NONE][0]['value']);
+        $form_state['bigbazaarcrm_application']['city'] = $state_city[1];
+        $form_state['input']['field_city'][LANGUAGE_NONE][0]['value'] = $state_city[1];
+
+        unset($form_state['input']['field_state_list'][LANGUAGE_NONE]);
+        $form_state['bigbazaarcrm_application']['state'] = $state_city[0];
+        $form_state['input']['field_state_list'][LANGUAGE_NONE] = $state_city[0];
+
+        drupal_set_message('Your application number is ' . $node->field_application_number[LANGUAGE_NONE][0]['value']);
+
+        return drupal_rebuild_form('application_node_form', $form_state, $form);
+      }
+    }
+
+    //Case when user adds invalid pincode node gets created,then again changes pincode
+    //Update the node in that case
+    if ($mobile_status && $pincode_check && !$pincode_status[0]) {
+      $node = node_load($form_state['bigbazaarcrm_application']['nid']);
+
+      $workflow_state = workflow_node_current_state($node);
+      $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+      if (($workflow_state == $sid) || isset($form_state['bigbazaarcrm_application']['old_lead'])) {
+        if (!empty($node)) {
+          $node->field_pin_code[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value'];
+
+          if (isset($form_state['bigbazaarcrm_application']['old_lead'])) {
+            try {
+              $application_id = db_insert('application_id_counter')
+                  ->fields(array(
+                    'mobile' => $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'],
+                  ))
+                  ->execute();
+            }
+            catch (Exception $ex) {
+              
+            }
+            unset($form_state['bigbazaarcrm_application']['old_lead']);
+            $node->field_application_number[LANGUAGE_NONE][0]['value'] = $application_id;
+
+            //Set status to (Lead Generated)
+            $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+            workflow_execute_transition($node, $sid, NULL, TRUE);
+          }
+          node_save($node);
+        }
+      }
+
+      $form_state['bigbazaarcrm_application']['show'] = 0;
+      $form_state['bigbazaarcrm_application']['error'] = $pincode_status[1];
+
+      return drupal_rebuild_form('application_node_form', $form_state, $form);
+    }
+
+    if (!$dob_check) {
+      form_set_error('field_date_of_birth', ' You must be at least 18 years of age');
+    }
+
+    if (!$pincode_check) {
+      form_set_error('field_pin_code', ' Please enter a valid 6 digit Pin Code');
+    }
+
+    if (strlen($mobile) != 10 || !$mobile_check) {
+      form_set_error('field_mobile_1', 'Please enter a valid 10 digit mobile no');
+    }
+
+    if (!$email_check) {
+      form_set_error('field_email', 'Please enter a valid email address (eg:bbd@gmail.com)');
+    }
+  }
+
+  return drupal_rebuild_form('application_node_form', $form_state, $form);
+}
+
+function bigbazaarcrm_application_kyc_validate($form, &$form_state) {
+
+  global $user;
+  $form_state['values']['field_application_refrence']['und'][0]['target_id'] = $form_state['bigbazaarcrm_application']['application_details']['nid'];
+
+  foreach ($form_state['complete form']['field_files'][LANGUAGE_NONE] as $k => $v) {
+    $md5[] = md5_file($v['#file']->uri);
+  }
+  foreach (array_count_values($md5) as $val => $count) {
+    if ($count > 1) {
+      form_set_error('field_files', 'Please remove duplicate documents');
+      break;
+    }
+  }
+
+  $refrence_no = $form_state['values']['field_application_refrence']['und'][0]['target_id'];
+  $kyc_nid = bigbazaarcrm_application_get_kyc_nid_from_app_nid($refrence_no);
+  if (!empty($kyc_nid)) {
+    form_set_error('', 'KYC already exists for this Applicant.');
+  }
+  $param_nid = $form_state['bigbazaarcrm_application']['application_details']['nid'];
+  if ($form['nid']['#value'] == NULL) {
+    if (empty($param_nid)) {
+      form_set_error('', 'There was a problem please visit the link again .');
+    }
+  }
+  //$mobile = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+  //$mob = strlen($mobile);
+
+  $mobile = $user->name;
+
+//   To validate against KYC document upload status 
+//   $application_id=  bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+//   $current_workflow = workflow_get_workflow_node_by_nid($application_id);
+//   if($current_workflow->sid == 4){
+//     form_set_error('field_files','You have already submitted the documents');
+//   }
+  /* Pin code validation */
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  if (empty($nid)) {
+    //form_set_error('field_mobile_1', 'There is no application against this mobile number');
+  }
+  /*
+    if ($form['field_files'][LANGUAGE_NONE]['#file_upload_delta'] != 3) {
+    form_set_error('field_files', 'Please upload all the three documents');
+    }
+   * 
+   */
+}
+
+function kyc_upload_form_postsubmit($form, &$form_state) {
+  $messages = drupal_get_messages();
+  foreach ($messages as $type => $message) {
+    if ($type != 'status') {
+      drupal_set_message($message, $type);
+    }
+  }
+  drupal_set_message(t('Your KYC documents have been uploaded successfully'));
+
+}
+
+function bigbazaarcrm_application_phone_validate($form, &$form_state) {
+  //$mobile = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+  //preg_match('/^((\+){0,1}91(\s){0,1}(\-){0,1}(\s){0,1})?([0-9]{10})$/', $mobile,$matches);
+  //$mobile_no = $matches[6];
+//  $result = db_select('field_data_field_mobile_1', 'c')
+//	->fields('c',array('field_mobile_1_value'))
+//	->condition('field_mobile_1_value',$mobile_no,'LIKE')
+//	->execute()
+//	->fetchField();
+//  if ($result) {
+//    drupal_set_message("error", "Mobile number is alreay exist.");
+//    form_set_error("Mobile number is alreay exist.");
+//  }
+//  $dob = $form_state['values']['field_date_of_birth'][LANGUAGE_NONE][0]['value'];
+//  $year = explode('/',$dob);
+//  
+//  form_set_error('field_date_of_birth','Less than 18');
+//  if($year[2] < 2010){
+//    
+//    
+//  }
+  $result = bigbazaarcrm_application_get_pincode_status($form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value']);
+
+  if (!$result[0]) {
+    form_set_error('field_pin_code', 'Sorry, we don’t service at this pin code');
+  }
+}
+
+function bigbazaarcrm_application_node_call($form, &$form_state) {
+  node_form_submit($form, $form_state);
+}
+
+function bigbazaarcrm_application_node_saveonly($form, &$form_state) {
+
+  $node = node_load($form_state['bigbazaarcrm_application']['nid']);
+  $node->field_address_1[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_address_1'][LANGUAGE_NONE][0]['value'];
+  $node->field_city[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_city'][LANGUAGE_NONE][0]['value'];
+  $node->field_state_list[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_state_list'][LANGUAGE_NONE][0]['value'];
+  $node->field_pin_code[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value'];
+  $node->field_education_qualification[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_education_qualification'][LANGUAGE_NONE][0]['value'];
+  $node->field_occupation[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_occupation'][LANGUAGE_NONE][0]['value'];
+  $node->field_first_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_first_name'][LANGUAGE_NONE][0]['value'];
+  $node->field_last_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_last_name'][LANGUAGE_NONE][0]['value'];
+  $node->field_email[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_email'][LANGUAGE_NONE][0];
+  $node->field_date_of_birth[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_date_of_birth']['und'][0]['value2'];
+
+  $result = bigbazaarcrm_application_get_pincode_status($form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value']);
+
+  node_form_submit_custom($form, $form_state, $node);
+
+  if (user_access('fill application form')) {
+    //IF SO/RM is filling,
+    //Send directly to payment-options page
+    $node->field_quiz_passed[LANGUAGE_NONE][0]['value'] = 1;
+    node_save($node);
+    //Set workflow status to (Quiz complete-Eligible)
+    $sid = bigbazaarcrm_application_get_sid_from_state_name('(Quiz complete-Eligible)');
+    workflow_execute_transition($node, $sid, NULL, TRUE);
+
+    //Store Lead information in SESSION
+    $_SESSION['application_info']['nid'] = $form_state['bigbazaarcrm_application']['nid'];
+    $_SESSION['application_info']['application_id'] = $node->field_application_number[LANGUAGE_NONE][0]['value'];
+    $_SESSION['application_info']['mobile'] = $node->field_mobile_1[LANGUAGE_NONE][0]['value'];
+
+    drupal_goto('payment-options');
+  }
+  else {
+    //Set status to (Quiz incomplete)
+    $sid = bigbazaarcrm_application_get_sid_from_state_name('(Quiz incomplete)');
+    workflow_execute_transition($node, $sid, NULL, TRUE);
+
+    bigbazaarcrm_application_postsubmit($form, $form_state);
+    // set application number
+//	if (db_query("select field_application_number_value from {field_data_field_application_number} where entity_id = " . $form_state['nid'])->fetchField()) {
+//	}
+//	else {
+//		//set application number and Receip Number
+//		$max_value = variable_get("application_id_counter_online", 0);
+//		$max_value = $max_value + 1;
+//		$application_id = $max_value + 5000000000;
+//		//variable_set('application_node_' . $form_state['nid'], $application_id);
+//		variable_set("application_id_counter_online_new", $max_value);
+//		db_query("INSERT INTO {field_data_field_application_number} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_application_number_value, field_application_number_format) VALUES ('node','application','0',". $form_state['nid'] .",". $form_state['nid'] .",LANGUAGE_NONE,'0',$application_id ,'');");
+//		field_cache_clear();
+//	}
+    //$result = db_query("select count(Pincode) from pin_code where Pincode = :pin_code",array(':pin_code' => $form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value']))->fetchField(); 
+
+    if ($result[0]) {
+      $mobile = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+      $nid = $form_state['nid'];
+
+      $machine_name = $form_state['values']['field_occupation'][LANGUAGE_NONE][0]['value'];
+      $quiz_nid = bigbazaarcrm_application_get_quiz_nid_from_machine_name($machine_name);
+      $form_state['redirect'] = array('node/' . $quiz_nid . '/take');
+    }
+    else {
+      //workflow_execute_transition($node, 39, NULL, true);
+      //$form_state['redirect'] = array('regret/'.$form_state['nid'],array('query' => array('error' => $result[1])));
+      //form_set_error('field_pin_code', 'Sorry, we don’t service at this pin code');
+    }
+  }
+}
+
+function bigbazaarcrm_application_node_edit($form, &$form_state) {
+  node_form_submit($form, $form_state);
+
+  $node = node_load($form_state['nid']);
+
+  if (user_access('fill application form')) {
+    //IF SO/RM is filling,
+    //Send directly to payment-options page
+    $node->field_quiz_passed[LANGUAGE_NONE][0]['value'] = 1;
+    node_save($node);
+    //Set workflow status to (Quiz complete-Eligible)
+    $sid = bigbazaarcrm_application_get_sid_from_state_name('(Quiz complete-Eligible)');
+    workflow_execute_transition($node, $sid, NULL, TRUE);
+
+    //Store Lead information in SESSION
+    $_SESSION['application_info']['nid'] = $form_state['nid'];
+    $_SESSION['application_info']['application_id'] = $node->field_application_number[LANGUAGE_NONE][0]['value'];
+    $_SESSION['application_info']['mobile'] = $node->field_mobile_1[LANGUAGE_NONE][0]['value'];
+
+    drupal_goto('payment-options');
+  }
+
+  //Set status to (Quiz incomplete)
+  $sid = bigbazaarcrm_application_get_sid_from_state_name('(Quiz incomplete)');
+  workflow_execute_transition($node, $sid, NULL, TRUE);
+
+  bigbazaarcrm_application_postsubmit($form, $form_state);
+
+  // Redirect Logic for quiz based on Occupation
+  $machine_name = $form_state['values']['field_occupation'][LANGUAGE_NONE][0]['value'];
+  $quiz_nid = bigbazaarcrm_application_get_quiz_nid_from_machine_name($machine_name);
+  $form_state['redirect'] = array('node/' . $quiz_nid . '/take');
+}
+
+/**
+ * 
+ * Implements hook_quiz_finished
+ */
+function bigbazaarcrm_application_quiz_finished($quiz, $score, $rid) {
+
+  $pass_percentage = $quiz->field_quiz_passing_percentage[LANGUAGE_NONE][0]['value'];
+
+  global $user;
+  $mobile = $user->name;
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  $node = node_load($nid);
+  $dob = $node->field_date_of_birth[LANGUAGE_NONE][0]['value'];
+  $age = bigbazaarcrm_application_get_age($dob);
+
+  $age_question_scores = bigbazaarcrm_application_get_age_question_scores();
+  //For age (18-25)
+  if ($age < 26) {
+    $age_question_score = $age_question_scores['18 to 25'];
+  }
+  //For age (26-30)
+  elseif ($age < 31) {
+    $age_question_score = $age_question_scores['26 to 30'];
+  }
+  //For age (31-40)
+  elseif ($age < 41) {
+    $age_question_score = $age_question_scores['31 to 40'];
+  }
+  //For age (41-50)
+  elseif ($age < 51) {
+    $age_question_score = $age_question_scores['41 to 50'];
+  }
+  //For age (50+)
+  else {
+    $age_question_score = $age_question_scores['50 +'];
+  }
+
+  $age_max_score = max($age_question_scores);
+
+  //Final percentage score considering Age
+  $final_percentage_score = (($score['numeric_score'] + $age_question_score) / ($score['possible_score'] + $age_max_score)) * 100;
+  $final_percentage_score = round($final_percentage_score);
+
+  if (!empty($node) && $score['is_evaluated']) {
+
+    if ($final_percentage_score >= $pass_percentage && !isset($node->field_quiz_passed[LANGUAGE_NONE])) {
+      $node->field_quiz_passed[LANGUAGE_NONE][0]['value'] = 1;
+      $node->field_quiz_percentage_score[LANGUAGE_NONE][0]['value'] = $final_percentage_score;
+      node_save($node);
+
+      //Set status to (Quiz complete-Eligible)
+      $sid = bigbazaarcrm_application_get_sid_from_state_name('(Quiz complete-Eligible)');
+      workflow_execute_transition($node, $sid, NULL, TRUE);
+
+      //Send SMS and Email with attachment
+      $application_id = $node->field_application_number[LANGUAGE_NONE][0]['value'];
+      $email = $node->field_email[LANGUAGE_NONE][0]['value'];
+      $tokens = array('application_id' => $application_id);
+      $params = array(
+        'mail_to' => $email,
+        'dynamic' => array('application_id' => $application_id),
+        'nid' => $nid
+      );
+      sms_configuration_helper_for_sms_template($node->field_mobile_1[LANGUAGE_NONE][0]['value'], 'quiz_completion_successful_for_other_pin_codes', $tokens);
+      entity_email_send('quiz_completion_successful_for_other_pin_codes', $params);
+      $value = 'auto submit';
+      $query = array('mobile' => $mobile,
+        'value' => $value
+      );
+      //drupal_goto('node/'.$nid.'/edit', array('query' => $query));
+      drupal_goto('payment-options');
+    }
+    else {
+      //Already passed quiz, takes quiz again
+      if ($node->field_quiz_passed[LANGUAGE_NONE][0]['value'] == 1) {
+        drupal_goto();
+      }
+      else {
+        $node->field_quiz_passed[LANGUAGE_NONE][0]['value'] = 0;
+        $node->field_quiz_percentage_score[LANGUAGE_NONE][0]['value'] = $final_percentage_score;
+        node_save($node);
+
+        //Set status to (Quiz complete-Ineligible)
+        $sid = bigbazaarcrm_application_get_sid_from_state_name('(Quiz complete-Ineligible)');
+        workflow_execute_transition($node, $sid, NULL, TRUE);
+
+        $application_id = $node->field_application_number[LANGUAGE_NONE][0]['value'];
+        //Send SMS
+        $tokens = array('application_id' => $application_id);
+        sms_configuration_helper_for_sms_template($node->field_mobile_1[LANGUAGE_NONE][0]['value'], 'quiz_completion_unsuccessful', $tokens);
+
+        //Send Email
+        $email = $node->field_email[LANGUAGE_NONE][0]['value'];
+        $params = array(
+          'mail_to' => $email,
+          'dynamic' => array('application_id' => $application_id),
+        );
+        entity_email_send('quiz_completion_unsuccessful', $params);
+
+        //drupal_goto('regret/' . $nid . '/ineligible');
+        drupal_goto('thank-you/' . $nid);
+      }
+    }
+  }
+}
+
+function bigbazaarcrm_application_postsubmit($form, &$form_state) {
+
+  $messages = drupal_get_messages();
+  foreach ($messages as $type => $message) {
+    if ($type != 'status') {
+      drupal_set_message($message, $type);
+    }
+  }
+  //drupal_set_message(t('Your application has been submitted'));
+//  global $user;
+//  $application_phone_no = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+//  $application_nid = $form_state['values']['nid'];
+//	$enquiry_nid = db_select('field_data_field_tel_no','tel')
+//	->fields('tel',array('entity_id'))
+//	->condition('field_tel_no_value',$application_phone_no)
+//	->condition('bundle','enquiry')
+//	->condition('deleted ',0)
+//	->condition('entity_type','node')
+//	->range(0,1)
+//	->execute()->fetchField();
+//
+//	if($enquiry_nid) {
+//		try {
+//		$node_ins = db_insert('field_data_field_application_refrenced')
+//		->fields(array(
+//		'entity_type' => 'node',
+//		'bundle' => 'enquiry',
+//		'deleted' => 0,
+//		'entity_id' => $enquiry_nid,
+//		'revision_id' => $enquiry_nid,
+//		'language' => LANGUAGE_NONE,
+//		'delta' => 0,
+//		'field_application_refrenced_target_id' => $application_nid,
+//		))
+//		->execute();
+//    field_cache_clear();
+//		}
+//		catch (Exception $e) {
+//		}
+//	}
+//  else {
+//		$node = new stdClass();
+//		$node->type = 'enquiry';
+//		$node->title = $form_state['values']['field_first_name'][LANGUAGE_NONE][0]['value'] . '-' . $form_state['values']['field_last_name'][LANGUAGE_NONE][0]['value'];
+//		$node->language = LANGUAGE_NONE;
+//    $node->field_first_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_first_name'][LANGUAGE_NONE][0]['value'];
+//		$node->field_last_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_last_name'][LANGUAGE_NONE][0]['value'];
+//		$node->field_email[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_email'][LANGUAGE_NONE][0];
+//		$node->field_tel_no[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+//		$node->field_city[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_city'][LANGUAGE_NONE][0]['value'];
+//		$node->field_state_list[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_state_list'][LANGUAGE_NONE][0]['value'];
+//		$node->field_pin_number[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value'];
+//
+//    $node->field_source_enquiry[LANGUAGE_NONE][0]['value'] = 'BBD Center';
+//
+//		$node->field_application_refrenced[LANGUAGE_NONE][0]['target_id'] = $application_nid;
+//		$node->uid = $user->uid;
+//		node_object_prepare($node);
+//		$node->status = 1;
+//		$node = node_submit($node);
+//		node_save($node);
+//    $enquiry_nid = $node->nid;
+//	}
+}
+
+/**
+ * Implements hook_mail().
+ */
+function bigbazaarcrm_application_mail($key, &$message, $params) {
+  /* $filename = "Big Bazaar Direct-".$params['title']."-".$params['nid'].'.pdf';
+    $pdf_node = node_load($params['nid']);
+    if (isset($params['application_id']) && $params['application_id']) {
+    $pdf_node->field_application_number[LANGUAGE_NONE][0]['value'] = $params['application_id'];
+    } */
+  if (isset($params['subject'])) {
+    $message['subject'] = $params['subject'];
+  }
+  if (isset($params['body'])) {
+    $message['body'][] = $params['body'];
+  }
+  if (isset($params['attachment'])) {
+    $message['params']['attachments'][] = $params['attachment'];
+  }
+  //unlink("./".$filename)
+  //drupal_mail('bigbazaarcrm_application', 'bigbazaar_notification',$to , language_default(), $params, $from, TRUE);
+}
+
+function bigbazaarcrm_application_send_mail() {
+  global $user;
+  $filename = 'Big Bazaar Direct' . 'pdf';
+  $to = 'vikee.mahale@iksula.com'; //gets the current user's mail address
+  $from = 'support@bigbazaardirect.com'; //admin's mail address
+  $body = 'This is a test mail';
+  $attachment = array(
+    'filecontent' => file_get_contents('/' . $filename),
+    'filename' => $filename,
+    'filemime' => 'application/pdf',
+  );
+  drupal_mail('bigbazaarcrm_application', 'bigbazaar_notification', $to, array('body' => $body, 'subject' => $subject, 'attachment' => $attachment), language_default(), $from, TRUE);
+}
+
+/**
+ * Returns Payment Transaction Id from Order Id
+ * 
+ * @param $order_id
+ * 	Order Id of Apllication
+ * 	
+ * @result $transaction_id
+ *  Transaction Id of payement Method
+ */
+function bigbazaarcrm_application_get_transaction_id_from_order_id($order_id) {
+  $transaction_id = '';
+  if (!empty($order_id)) {
+    $query = db_select('commerce_payment_transaction', 't');
+    $query->fields('t', array('transaction_id'));
+    $query->condition('t.order_id', $order_id);
+    $transaction_id = $query->execute()->fetchField();
+  }
+  return $transaction_id;
+}
+
+/**
+ * Callback function form Rules for order complete.
+ */
+function bigbazaarcrm_application_rules_php($commerce_order, $nodes) {
+//  dpm(node_load($nodes[0]->nid));
+//  $pincode=$nodes[0]->field_pin_code[LANGUAGE_NONE][0]['value'];
+//  $vid = taxonomy_vocabulary_machine_name_load('PINCODE')->vid;
+//  $query=db_select('taxonomy_term_data', 't');
+//  $query->fields('t', array('tid'));
+//  $query->condition('name', $pincode);
+//  $query->condition('vid',$vid);
+//  $tid=$query->execute()->fetchField();
+//  
+//	try {
+//		if (db_query("select field_application_number_value from {field_data_field_application_number} where entity_id = " . $nodes[0]->nid)->fetchField()) {
+//	  }
+//		else {
+//			//set application number and Receip Number
+//			$query = new EntityFieldQuery;
+//			$result = $query
+//				->entityCondition('entity_type', 'commerce_payment_transaction')
+//				->propertyCondition('order_id', $commerce_order->order_id)
+//				->propertyOrderBy('transaction_id', 'DESC')
+//				->range(0, 1)
+//				->execute();
+//			$max_value = variable_get("application_id_counter_online_new", 0);
+//			$max_value = $max_value + 1;
+//			$application_id = $max_value + 5000000000;
+//			//variable_set('application_node_' . $nodes[0]->nid, $application_id);
+//      $result = db_query("select  field_application_number_value from field_data_field_application_number where entity_id = :nid",array(":nid" => $nodes[0]->nid))->fetchField();
+//			if ($result) {
+//			}
+//			else {
+//				db_query("INSERT INTO {field_data_field_application_number} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_application_number_value, field_application_number_format) VALUES ('node','application','0',". $nodes[0]->nid .",". $nodes[0]->nid .",LANGUAGE_NONE,'0',$application_id ,'');");
+//				variable_set("application_id_counter_online_new", $max_value);
+//			}
+//			$trasaction_id = $commerce_order->order_id;
+//
+//		}
+//    //db_query("INSERT INTO {field_data_field_receipt_number} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_receipt_number_value, field_receipt_number_format) VALUES ('node','application','0',". $nodes[0]->nid .",". $nodes[0]->nid .",LANGUAGE_NONE,'0',$commerce_order->order_id ,'');");
+//    $node = node_load($nodes[0]->nid);
+//    //$node->field_payment_mode[LANGUAGE_NONE][0]['value'] = 'Online';
+//    $node->field_receipt_number[LANGUAGE_NONE][0]['value'] = $commerce_order->order_id;
+//    field_attach_update('node', $node);
+//    field_cache_clear();
+//    $trasaction_id = $commerce_order->order_id;
+//    $application_id = db_query("select field_application_number_value from {field_data_field_application_number} where entity_id = " . $nodes[0]->nid)->fetchField();
+//		if ($nodes[0]->status) {
+//			// Send PDF attached email
+//			$to = $nodes[0]->field_email[LANGUAGE_NONE][0]['value'];
+//			$name = $nodes[0]->field_first_name[LANGUAGE_NONE][0]['value'].' '.$nodes[0]->field_last_name['LANGUAGE_NONE'][0]['value'];
+//			$form_no = $nodes[0]->field_application_number[LANGUAGE_NONE][0]['value'];
+//			//$email_cc = variable_get('site_mail');
+//			$email_cc = '';
+//			$date = date('M j, Y',time());
+//			$template = '
+//			<table style="width:650px;" class="recipt">
+//				<tr>
+//					<td><img alt="logo" src="http://www.bigbazaardirect.com/sites/default/files/logo.jpg"/> </td>
+//					<td class="transaction" style="text-align:right; padding-right:6%;font-weight:bold;" >Transaction No. '.$trasaction_id.' </td>
+//				</tr>
+//				<tr>
+//					<td colspan="2" style=" color: #00284C; font-size: 21px;">Thank you !</td>
+//						 </tr>
+//							<tr>
+//							 <td colspan="2">Dear '.$name.' ,</td>
+//						 </tr>
+//						<tr>
+//							 <td colspan="2">We have received your payment and your application form number is '.$application_id.' </td>
+//						 </tr>
+//
+//						 <tr style="background: none repeat scroll 0 0 #E9EEF2;border-top: 1px solid white;">
+//								<td colspan="2">
+//								<table style=" background-color: white;border: 1px solid #D7E0E5;border-radius: 8px 8px 8px 8px;float: left;margin: 20px; padding: 20px;width: 650px;">
+//									<tr>
+//										<td><h2 style="text-align: center;padding-left:40px;font-family: tahoma;font-size: 15px;font-weight: bold;">APPLICATION RECEIPT</h2><hr style="color: #D7E0E5;"/></td>
+//									</tr>
+//									<tr>
+//										<td colspan="2" style="padding:0px 17%;">
+//											<span class="address-header" style="font-weight: bold;padding-left: 35%;font-family: tahoma;font-size: 14px;">Future Value Retail Ltd.</span><br />
+//											<span class="address-content" style="text-align: center;float:left;width:102%;font-size: 12px;font-family: tahoma;">Future Retail Home Office, Tower C, 4th Floor, 247 Park, LBS Marg, Vikhroli West, Mumbai - 400083</span>
+//										</td>
+//									</tr>
+//									<tr class="payment_block" style="background-color: #FFFAF7;padding: 0px 20px;float:left;border: 1px solid #FCDED3;">
+//										<td style="float: left;padding: 10px;width: 414px;">
+//											<span style="font-family: tahoma;font-size: 13px;" class="date">Date: '.$date.'</span><br />
+//											<span style="font-family: tahoma;font-size: 13px;" class="form-app-no">Form Application No: '.$application_id.'</span><br /><br />
+//											<span style="font-family: tahoma;font-size: 13px;" class="user-name">Name: <span style="font-weight:bold;font-family: tahoma;font-size: 13px;">'.$name.'</span></span><br /><br />
+//											<span style="font-family: tahoma;font-size: 13px;" class="amount">Amount* (In words): </span>
+//											<span style="font-family: tahoma;font-size: 13px;font-weight: bold;">One Thousand Only /-</span><br />
+//											<span style="font-family: tahoma;font-size: 13px;" class="amount-condition" style="font-size: 12px;">*(Non refundable franchisee application fees)</span><br /><br />
+//											<span style="font-family: tahoma;font-size: 13px;" class="payment-mode">Payment Mode: </span>
+//											<span style="font-weight: bold;font-family: tahoma;font-size: 13px;">Online Payment</span>
+//										</td>
+//										<td style="padding-top: 20px;float:left;"><div class="payment_amount" style="font-family: tahoma;font-size: 18px;background-color: white;font-weight:bold;padding: 10px;width: 104px;border: 1px solid #FCDED3;">RS. 1,000/-</div></td>
+//								 </tr>
+//								 <tr>
+//									 <td colspan="2">
+//										<br /><span style="font-family: tahoma;font-size:11px;">I agree that Future Value Retail Ltd. has the right to reject my application form on any ground without any reason and I understand that INR 1,000/- paid towards the application form is non refundable.</span><br /><br />
+//										<span class="header" style="font-weight: bold;font-family: tahoma;font-size:11px;">If your application gets selected you will be called for interview kindly carry the KYC Documents (Original & 2 photocopies)</span>
+//													<ul>
+//														<li style="font-family: tahoma;font-size:11px;" >2 passport size photographs</li>
+//														<li style="font-family: tahoma;font-size:11px;" >1 Cancelled cheque</li>
+//														<li style="font-family: tahoma;font-size:11px;" >PAN card (Permanent Account Number) </li>
+//														<li style="font-family: tahoma;font-size:11px;" >Photo ID proof (Any one - Aadhaar card/ Driving License/ Passport/ Voter ID) </li>
+//														<li style="font-family: tahoma;font-size:11px;" >Address proof (Any one - Aadhaar card/ Driving License/ Passport/ Voter ID/ Telephone Bill/ Electricity Bill) </li>
+//													</ul>
+//													<span class="header" style="font-weight: bold;font-family: tahoma;font-size:11px;">If you are selected as a Big Bazaar Franchisee, you have to make a small investment of INR 3,00,000/- as given below </span>
+//													<ul>
+//														<li style="font-family: tahoma;font-size:11px;" >INR 1,00,000/- Non interest bearing refundable security deposit.</li>
+//														<li style="font-family: tahoma;font-size:11px;" >INR 1,00,000/- as initial advance which is to be used for placing order.</li>
+//														<li style="font-family: tahoma;font-size:11px;" >INR 1,00,000/- Set Up charges for Big Bazaar Direct Tablet, initial branding, one year training, launch material etc.</li>
+//													</ul>
+//										</td>
+//									</tr>
+//
+//								</table>
+//						 </td>
+//						</tr>
+//						<tr>
+//							<td colspan="2" class="copy" style="font-size:11px;font-family: tahoma; padding:8px 30px; background-color: #00284C; color:#FFFFFF;">COPYRIGHT &copy; 2013 BIG BAZAAR DIRECT.</td>
+//						</tr>
+//			</table>';
+//
+//			$from = '"Big Bazaar Direct" <support@bigbazaardirect.com>';
+//			$body[0] = $template;
+//			$params = array(
+//			 'body' => $body,
+//			 'subject' => 'Big Bazaar Direct Online Application',
+//			 'nid' => $nodes[0]->nid,
+//			 'title' => $nodes[0]->title,
+//			 'headers' => array('Cc' => $email_cc, 'Bcc' => $email_cc),
+//			);
+//			drupal_mail('bigbazaarcrm_application', 'bigbazaar_notification',$to , language_default(), $params, $from, TRUE);
+//		}
+//	}
+//	catch(Exception $e) {
+//	}
+}
+
+/**
+ * Implements hook_workflow()
+ */
+function bigbazaarcrm_application_workflow($op, $old_state, $new_state, $node) {
+  //watchdog("wrk", '<pre>%array</pre>', array('%array' => print_r(array($op, $old_state, $new_state), true)));
+  switch ($op) {
+    case 'transition pre':
+      // The workflow module does nothing during this operation.
+      // But your module's Implements the workflow hook could
+      // return FALSE here and veto the transition.
+      break;
+
+    case 'transition post':
+
+      break;
+    case 'transition delete':
+      break;
+  }
+}
+
+/**
+ * Returns Pin Code serviceability status
+ */
+function bigbazaarcrm_application_get_pincode_status($pincode) {
+  $vid = taxonomy_vocabulary_machine_name_load('PINCODE')->vid;
+  $sub_query = db_query('SELECT parent FROM taxonomy_term_hierarchy')->fetchAll();
+  foreach ($sub_query as $r) {
+    $sub_res[] = $r->parent;
+  }
+  $query = db_select('taxonomy_term_data', 't');
+  $query->join('taxonomy_term_hierarchy', 'h', 'h.tid = t.tid');
+  $query->join('field_data_field_vacancy', 'v', 'v.entity_id=t.tid');
+  $query->fields('t', array('name', 'tid'));
+  $query->fields('v', array('field_vacancy_value'));
+  $query->condition('t.vid', $vid);
+  $query->condition('h.parent', 0, '!=');
+  $query->condition('t.name', $pincode);
+  $query->condition('t.tid', $sub_res, 'NOT IN');
+  $res = $query->execute()->fetchObject();
+  if (empty($res)) {
+    return array(FALSE, 'no_service');
+  }
+  elseif ($res->field_vacancy_value == 0) {
+    return array(FALSE, 'no_vacancy');
+  }
+  else
+    return array(TRUE, $res->field_vacancy_value);
+}
+
+function bigbazaarcrm_application_generate_panels_content($panel_machine_name, $node) {
+  $task = page_manager_get_task($panel_machine_name);
+
+  // Load the node into a context.
+  ctools_include('context');
+  ctools_include('context-task-handler');
+  $contexts = ctools_context_handler_get_task_contexts($task, '', array($node));
+
+  $output = ctools_context_handler_render($task, '', $contexts, array($node->nid));
+  if ($output !== FALSE) {
+    return drupal_render($output['content']);
+  }
+  else {
+    drupal_set_message(t('There is no content for that node!'), 'warning');
+    drupal_goto(urlencode('node') . '/' . $node->nid);
+    return;
+  }
+}
+
+/**
+ * Implements hook_menu_alter()
+ */
+function bigbazaarcrm_application_menu_alter(&$items) {
+  //Remove the View and Take tabs from the Quiz page
+  $items['node/%node/take']['type'] = MENU_CALLBACK;
+
+  //Hide workflow tab for Customer
+  //Custom callback to block access to Lead
+  $items['node/%node/workflow']['access callback'] = 'custom_workflow_tab_node_access';
+}
+
+/**
+ * Menu access control callback. Determine access to Workflow tab
+ * Used custom callback to hide workflow tab for author(Lead)
+ */
+function custom_workflow_tab_node_access($node = NULL) {
+  global $user;
+  if ($workflow = workflow_get_workflow_type_map_by_type($node->type)) {
+    if ($workflow = workflow_get_workflows_by_wid($workflow->wid)) {
+      $roles = array_keys($user->roles);
+      if ($node->uid == $user->uid && !user_has_roles('Lead')) {
+        $roles = array_merge(array('author'), $roles);
+      }
+      $allowed_roles = $workflow->tab_roles ? explode(',', $workflow->tab_roles) : array();
+      if (user_access('administer nodes') || array_intersect($roles, $allowed_roles)) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+
+function bigbazaarcrm_application_quiz_answers($node = NULL) {
+  if (isset($node)) {
+    $user = $node;
+  }
+  else {
+    global $user;
+  }
+
+  $result_id = db_select('quiz_node_results', 'q')
+          ->fields('q', array('result_id'))
+          ->condition('uid', $user->uid)
+          ->condition('is_evaluated', 1)->execute()->fetchField();
+  $res = db_select('quiz_multichoice_user_answers', 'q');
+  $res->join('quiz_multichoice_user_answer_multi', 'c', 'q.id = c.user_answer_id');
+  $res->join('quiz_multichoice_answers', 'a', 'a.id = c.answer_id');
+  $res->join('node', 'n', 'n.nid = a.question_nid');
+  //$res->fields('q', array('id', 'result_id'));
+  //$res->fields('c', array('user_answer_id', 'answer_id'));
+  $res->fields('a', array('answer'));
+  $res->fields('n', array('title'));
+  $res->condition('q.result_id ', $result_id);
+  $output = $res->execute()->fetchAll();
+  $op.='<div class ="pdf-details"><b></b></div>';
+  foreach ($output as $value) {
+    $op.='<div class = "field">';
+    $op.='<div class ="field-label">Question:</div>' . '<div class="field-items">' . $value->title . '</div>';
+    $op.='<div class ="field-label">Answer:</div>' . '<div class="field-items">' . $value->answer . '</div>';
+    $op.='</div>';
+  }
+
+  return $op;
+}
+
+function bigbazaarcrm_application_payment_details($order_id) {
+  $order = commerce_order_load($order_id);
+  if (!empty($order->field_payment_mode['und'][0]['value'])) {
+    $op.='<div class ="pdf-details"><b>Payment Details</b></div>';
+    $op.='<div class = "field">';
+    $op.='<div class ="field-label">Payment Mode:</div>' . '<div class="field-items">' . $order->field_payment_mode['und'][0]['value'] . '</div>';
+    $op.='</div>';
+  }
+  return $op;
+}
+
+function bigbazaarcrm_application_register_login_user($form_state, $nologin = FALSE) {
+
+  global $user;
+
+  $name = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+
+  $user_detail = db_select('users', 'u')
+      ->fields('u', array('name'))
+      ->condition('u.name', $name, '=')
+      ->execute()
+      ->fetchAssoc();
+
+  if (!$user_detail) {
+    //This will generate a random password
+    $password = user_password(8);
+    $rid = user_role_load_by_name('Lead')->rid;
+    //set up the user fields
+    $fields = array(
+      'name' => $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'],
+      //'mail' => $form_state['values']['field_email'][LANGUAGE_NONE][0]['value'],
+      'pass' => $password,
+      'status' => 1,
+      'init' => 'email address',
+      'roles' => array(
+        $rid => 'Lead',
+      ),
+    );
+
+    //the first parameter is left blank so a new user is created
+    $account = user_save('', $fields);
+
+    if (!$nologin) {
+      //Log-in the user which was created
+      $user = user_load($account->uid);
+
+      user_login_finalize();
+    }
+    return $account->uid;
+  }
+
+  //Temporary solution for old leads
+  else {
+    if (!$nologin) {
+      $user = user_load($user_detail['uid']);
+      user_login_finalize();
+    }
+    return $user->uid;
+  }
+}
+
+function node_form_submit_custom($form, &$form_state, $node) {
+  //$node = node_form_submit_build_node($form, $form_state);
+  $insert = empty($node->nid);
+  node_save($node);
+  $node_link = l(t('view'), 'node/' . $node->nid);
+  $watchdog_args = array(
+    '@type' => $node->type,
+    '%title' => $node->title,
+  );
+  $t_args = array(
+    '@type' => node_type_get_name($node),
+    '%title' => $node->title,
+  );
+
+  if ($insert) {
+    watchdog('content', '@type: added %title.', $watchdog_args, WATCHDOG_NOTICE, $node_link);
+    drupal_set_message(t('@type %title has been created.', $t_args));
+  }
+  else {
+    watchdog('content', '@type: updated %title.', $watchdog_args, WATCHDOG_NOTICE, $node_link);
+    drupal_set_message(t('@type %title has been updated.', $t_args));
+  }
+  if ($node->nid) {
+    $form_state['values']['nid'] = $node->nid;
+    $form_state['nid'] = $node->nid;
+    $form_state['redirect'] = node_access('view', $node) ? 'node/' . $node->nid : '<front>';
+  }
+  else {
+    // In the unlikely case something went wrong on save, the node will be
+    // rebuilt and node form redisplayed the same way as in preview.
+    drupal_set_message(t('The post could not be saved.'), 'error');
+    $form_state['rebuild'] = TRUE;
+  }
+  // Clear the page and block caches.
+  cache_clear_all();
+}
+
+function bigbazaarcrm_application_check_mobile_exists($mobile) {
+  $result = db_select('field_data_field_mobile_1', 'c')
+      ->fields('c', array('field_mobile_1_value'))
+      ->condition('field_mobile_1_value', $mobile, 'LIKE')
+      ->execute()
+      ->fetchField();
+
+  return $result;
+}
+
+/**
+ * 
+ * Returns Quiz Nid from machine name of occupation
+ */
+function bigbazaarcrm_application_get_quiz_nid_from_machine_name($machine_name) {
+  $query = db_select('field_data_field_quiz_machine_name', 'f');
+  $query->fields('f', array('entity_id'));
+  $query->condition('field_quiz_machine_name_value', $machine_name);
+  $nid = $query->execute()->fetchField();
+  return $nid;
+}
+
+/**
+ * 
+ * @param $state
+ * State name
+ * 
+ * @return 
+ * Corresponding sid
+ */
+function bigbazaarcrm_application_get_sid_from_state_name($state) {
+  $query = db_select('workflow_states', 'ws');
+  $query->fields('ws', array('sid'));
+  $query->condition('state', '%' . $state . '%', 'LIKE');
+  $sid = $query->execute()->fetchField();
+
+  return $sid;
+}
+
+/**
+ * 
+ * @param $sid
+ * 
+ * @return
+ * Corresponding State name
+ */
+function bigbazaarcrm_application_get_state_name_from_sid($sid) {
+  $query = db_select('workflow_states', 'ws');
+  $query->fields('ws', array('state'));
+  $query->condition('sid', $sid);
+  $state = $query->execute()->fetchField();
+
+  return $state;
+}
+
+/**
+ * 
+ * Get application no from Order id
+ */
+function _get_application_no_and_nid_from_order_id($order_id) {
+  $query = db_select('commerce_line_item', 'cli');
+  $query->join('field_data_commerce_node_checkout_node', 'n', 'cli.line_item_id = n.entity_id');
+  $query->join('field_data_field_application_number', 'apn', 'apn.entity_id = n.commerce_node_checkout_node_nid');
+  $query->fields('apn', array('entity_id', 'field_application_number_value'));
+  $query->condition('cli.order_id', $order_id);
+  $app_no = $query->execute()->fetchAll();
+  return $app_no;
+}
+
+/*
+ * 
+ * Get Order no from nid
+ */
+
+function bigbazaarcrm_application_get_order_id_from_nid($nid) {
+  $query = db_select('commerce_line_item', 'cli');
+  $query->join('field_data_commerce_node_checkout_node', 'n', 'cli.line_item_id = n.entity_id');
+  $query->fields('cli', array('order_id'));
+  $query->condition('n.commerce_node_checkout_node_nid', $nid);
+  $order_number = $query->execute()->fetchField();
+  return $order_number;
+}
+
+/**
+ * 
+ * Get KYC Nid from APP NID
+ */
+function bigbazaarcrm_application_get_kyc_nid_from_app_nid($app_nid) {
+  $query = db_select('field_data_field_application_refrence', 'ar');
+  $query->fields('ar', array('entity_id'));
+  $query->condition('ar.entity_type', 'node');
+  $query->condition('ar.bundle', 'kyc_upload');
+  $query->condition('ar.field_application_refrence_target_id', $app_nid);
+  $nid = $query->execute()->fetchField();
+  return $nid;
+}
+
+/**
+ * Creates a node of type 'Application'
+ */
+function bigbazaarcrm_application_create_application_node($form_state, $oxigen = FALSE, $uid = FALSE, $source = NULL) {
+  global $user;
+
+  $pincode_status = bigbazaarcrm_application_get_pincode_status($form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value']);
+  if ($pincode_status[0]) {
+    $state_city = bigbazaarcrm_application_get_state_city_from_pincode($form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value']);
+    $state = $state_city[0];
+    $city = $state_city[1];
+  }
+
+  $node = new stdClass();
+  $node->title = $form_state['values']['field_first_name'][LANGUAGE_NONE][0]['value'] . ' ' . $form_state['values']['field_last_name'][LANGUAGE_NONE][0]['value'];
+  $node->type = 'application';
+  node_object_prepare($node); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
+  $node->field_first_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_first_name'][LANGUAGE_NONE][0]['value'];
+  $node->field_last_name[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_last_name'][LANGUAGE_NONE][0]['value'];
+  $node->field_mobile_1[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'];
+  $node->field_email[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_email'][LANGUAGE_NONE][0]['value'];
+  $node->field_pin_code[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_pin_code'][LANGUAGE_NONE][0]['value'];
+
+
+  if (!$oxigen) {
+    if ($pincode_status[0]) {
+      $node->field_state_list[LANGUAGE_NONE][0]['value'] = $state;
+      $node->field_city[LANGUAGE_NONE][0]['value'] = $city;
+    }
+    $node->field_date_of_birth[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_date_of_birth']['und'][0]['value2'];
+    try {
+      $application_id = db_insert('application_id_counter')
+          ->fields(array(
+            'mobile' => $form_state['values']['field_mobile_1'][LANGUAGE_NONE][0]['value'],
+          ))
+          ->execute();
+    }
+    catch (Exception $ex) {
+      
+    }
+
+    //Store SO/RM info in node
+    //If lead is generated by them
+    if (user_access('fill application form')) {
+      $node->field_application_created_by[LANGUAGE_NONE][0]['uid'] = $user->uid;
+    }
+
+    $node->field_application_number[LANGUAGE_NONE][0]['value'] = $application_id;
+    // Storing  source details from where lead come.
+    if (!empty($source)) {
+      $node->field_alliance_name[LANGUAGE_NONE][0]['tid'] = $source;
+      $node->field_remark[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_remark'][LANGUAGE_NONE][0]['value'];
+    }
+  }
+  else { //for oxigen leads
+    $application_id = $form_state['values']['field_application_number'][LANGUAGE_NONE][0]['value'];
+    $node->field_application_number[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_application_number'][LANGUAGE_NONE][0]['value'];
+    $alliance_name = $form_state['values']['alliance_name'][LANGUAGE_NONE][0]['value'];
+    $node->field_alliance_name[LANGUAGE_NONE][0]['tid'] = $alliance_name;
+    $node->field_address_1[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_address_1'][LANGUAGE_NONE][0]['value'];
+    $node->field_address_2[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_address_2'][LANGUAGE_NONE][0]['value'];
+    $node->field_remark[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_remark'][LANGUAGE_NONE][0]['value'];
+    $node->field_state_list[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_state_list'][LANGUAGE_NONE][0]['value'];
+    $node->field_city[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_city'][LANGUAGE_NONE][0]['value'];
+    if (!empty($form_state['values']['field_pan_no'][LANGUAGE_NONE][0]['value'])) {
+      $node->field_pan_no[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_pan_no'][LANGUAGE_NONE][0]['value'];
+    }
+    if (!empty($form_state['values']['field_service_tax'][LANGUAGE_NONE][0]['value'])) {
+      $node->field_service_tax[LANGUAGE_NONE][0]['value'] = $form_state['values']['field_service_tax'][LANGUAGE_NONE][0]['value'];
+    }
+  }
+  $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+
+  if ($uid) {
+    $node->uid = $uid;
+  }
+  else {
+    $node->uid = $user->uid;
+  }
+  $node->status = 0; //(1 or 0): published or not
+  $node->promote = 0; //(1 or 0): promoted to front page
+
+  $node = node_submit($node); // Prepare node for saving
+  node_save($node);
+
+  return array($node, $application_id);
+}
+
+/*
+ * Check if age is satisfied
+ */
+function bigbazaarcrm_application_check_age($dob, $age) {
+  $dob_array = explode('-', $dob);
+  $year = $dob_array[0];
+  $month = $dob_array[1];
+
+  $current_date_array = explode('-', date('Y-m'));
+  $current_year = $current_date_array[0];
+  $current_month = $current_date_array[1];
+
+  if ($current_year - $year >= $age) {
+    if (($current_year - $year) == $age) {
+      if ($current_month < $month) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/*
+ * Function to calculate age in years
+ */
+function bigbazaarcrm_application_get_age($dob) {
+  $dob_array = explode('-', $dob);
+  $year = $dob_array[0];
+  $month = $dob_array[1];
+
+  $current_date_array = explode('-', date('Y-m'));
+  $current_year = $current_date_array[0];
+  $current_month = $current_date_array[1];
+
+  if ($current_month >= $month) {
+    return ($current_year - $year);
+  }
+  else {
+    return ($current_year - $year - 1);
+  }
+}
+
+/*
+ * Get Pincode state and city for populating in Application form
+ */
+function bigbazaarcrm_application_get_state_city_from_pincode($pincode) {
+  $tid = bigbazaarcrm_common_get_term_id_from_name($pincode, 'PINCODE');
+
+  $query = db_select('taxonomy_term_data', 't');
+  $query->join('taxonomy_term_hierarchy', 'h', 'h.parent = t.tid');
+  $query->addField('t', 'name');
+  $query->condition('h.tid', $tid);
+  $state = $query->execute()->fetchField();
+
+  $query = db_select('field_data_field_pincode_city', 'fp');
+  $query->join('taxonomy_term_data', 't', 'fp.entity_id = t.tid');
+  $query->fields('fp', array('field_pincode_city_value'));
+  $query->condition('t.tid', $tid);
+  $city = $query->execute()->fetchField();
+
+  return array($state, $city);
+}
+
+/**
+ * Get scores of Age question in the quiz
+ */
+function bigbazaarcrm_application_get_age_question_scores() {
+  $res = db_select('quiz_multichoice_answers', 'a');
+  $res->join('node', 'n', 'n.nid = a.question_nid');
+  $res->fields('a', array('score_if_chosen', 'answer'));
+  $res->condition('title', 'What is your Age?');
+  $output = $res->execute()->fetchAllKeyed(1, 0);
+
+  return $output;
+}

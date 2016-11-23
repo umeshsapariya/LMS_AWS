@@ -1,0 +1,228 @@
+<?php
+
+
+
+function application_report_menu(){
+    $items = array();
+    
+    $items['user/%/application-details/download'] = array(
+        'page callback' => 'drup1',
+        'access arguments' => array('access content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+
+return $items;
+}
+
+function drup1(){
+    $a = strtotime($_GET['date_filter_min__date_'], Y-m-d);
+    $b = strtotime($_GET['date_filter_max__date_'].' +1 day', Y-m-d);
+    $c = strtotime($_GET['date_filter_1_min__date_'], Y-m-d);
+    $d = strtotime($_GET['date_filter_1_max__date_'].' +1 day', Y-m-d);
+
+
+    $output = "";
+
+$query = db_select('node','a');
+$query->condition('a.type','application','=');
+$query->leftjoin('field_data_field_application_number','b','a.nid = b.entity_id');
+$query->leftjoin('field_data_field_first_name', 'c', 'c.entity_id=a.nid');
+$query->leftjoin('field_data_field_middle_name', 'd', 'a.nid = d.entity_id');
+$query->leftjoin('field_data_field_last_name', 'e', 'a.nid = e.entity_id');
+$query->leftjoin('field_data_field_date_of_birth', 'f', 'a.nid = f.entity_id');
+$query->leftjoin('field_data_field_address_1', 'g', 'a.nid = g.entity_id');
+$query->leftjoin('field_data_field_address_2', 'h', 'a.nid = h.entity_id');
+$query->leftjoin('field_data_field_city', 'cl', 'a.nid = cl.entity_id');
+$query->leftjoin('field_data_field_state_list', 'sl', 'a.nid = sl.entity_id');
+$query->leftjoin('field_data_field_pin_code', 'i', 'a.nid = i.entity_id');
+$query->leftjoin('field_data_field_mobile_1', 'j', 'a.nid = j.entity_id');
+$query->leftjoin('field_data_field_mobile_2', 'k', 'a.nid = k.entity_id');
+$query->leftjoin('field_data_field_landline_no', 'l', 'a.nid = l.entity_id');
+$query->leftjoin('field_data_field_email', 'm', 'a.nid = m.entity_id');
+$query->leftjoin('field_data_field_current_occupation', 'n', 'a.nid = n.entity_id');
+$query->leftjoin('field_data_field_current_occupation_other', 'o', 'a.nid = o.entity_id');
+$query->leftjoin('field_data_field_business_sector', 'p', 'a.nid = p.entity_id');
+$query->leftjoin('field_data_field_business_sector_other', 'q', 'a.nid = q.entity_id');
+$query->leftjoin('field_data_field_doing_business_since', 'r', 'a.nid = r.entity_id');
+$query->leftjoin('field_data_field_do_you_operate_from', 's', 'a.nid = s.entity_id');
+$query->leftjoin('field_data_field_leader_of_society_commity', 't', 'a.nid = t.entity_id');
+$query->leftjoin('field_data_field_leader_specify', 'u', 'a.nid = u.entity_id');
+$query->leftjoin('field_data_field_education_qualification', 'v', 'a.nid = v.entity_id');
+$query->leftjoin('field_data_field_education_qualification_ot', 'w', 'a.nid = w.entity_id');
+$query->leftjoin('field_data_field_jurisdiction_police_stn', 'x', 'a.nid = x.entity_id');
+$query->leftjoin('field_data_field_applicant_type', 'y', 'a.nid = y.entity_id');
+$query->leftjoin('field_data_field_name_of_establishment', 'z', 'a.nid = z.entity_id');
+$query->leftjoin('field_data_field_address_line_1', 'aa', 'a.nid = aa.entity_id');
+$query->leftjoin('field_data_field_address_line_2', 'bb', 'a.nid = bb.entity_id');
+$query->leftjoin('field_data_field_shop_in_city', 'cc', 'a.nid = cc.entity_id');
+$query->leftjoin('field_data_field_shop_pin_code', 'dd', 'a.nid = dd.entity_id');
+$query->leftjoin('field_data_field_shop_tel_no', 'ee', 'a.nid = ee.entity_id');
+$query->leftjoin('field_data_field_shop_mobile_1', 'ff', 'a.nid = ff.entity_id');
+$query->leftjoin('field_data_field_shop_mobile_2', 'gg', 'a.nid = gg.entity_id');
+$query->leftjoin('field_data_field_shop_email', 'hh', 'a.nid = hh.entity_id');
+$query->leftjoin('field_data_field_area', 'ii', 'a.nid = ii.entity_id');
+$query->leftjoin('field_data_field_select', 'jj', 'a.nid = jj.entity_id');
+$query->leftjoin('field_data_field_other_specify_of', 'kk', 'a.nid = kk.entity_id');
+$query->leftjoin('field_data_field_neon_flex_board_size', 'll', 'a.nid = ll.entity_id');
+$query->leftjoin('field_data_field_if_yes_specify_dimensions', 'mm', 'a.nid = mm.entity_id');
+$query->leftjoin('field_data_field_bank_name', 'oo', 'a.nid = oo.entity_id');
+$query->leftjoin('field_data_field_pan_no', 'pp', 'a.nid = pp.entity_id');
+$query->leftjoin('field_data_field_receipt_number', 'qq', 'a.nid = qq.entity_id');
+$query->leftjoin('workflow_node', 'wn', 'wn.nid = a.nid');
+$query->leftjoin('workflow_states', 'rr', 'rr.sid = wn.sid');
+$query->leftjoin('field_data_field_application_refrenced', 'far', 'a.nid = far.field_application_refrenced_target_id');
+$query->leftjoin('field_data_field_enquiry_status', 'fes', 'far.entity_id = fes.entity_id');
+$query->leftjoin('field_data_field_assign_status', 'fas', 'far.entity_id = fas.entity_id');
+
+
+$query->fields('a', array('created','title','nid','changed'));
+$query->fields('b', array('field_application_number_value'));
+$query->fields('c',array('field_first_name_value'));
+$query->fields('d',array('field_middle_name_value'));
+$query->fields('e',array('field_last_name_value'));
+$query->fields('f',array('field_date_of_birth_value'));
+$query->fields('g',array('field_address_1_value'));
+$query->fields('h',array('field_address_2_value'));
+$query->fields('cl',array('field_city_value'));
+$query->fields('sl',array('field_state_list_value'));
+$query->fields('i',array('field_pin_code_value'));
+$query->fields('j',array('field_mobile_1_value'));
+$query->fields('k',array('field_mobile_2_value'));
+$query->fields('l',array('field_landline_no_value'));
+$query->fields('m',array('field_email_value'));
+$query->fields('n',array('field_current_occupation_value'));
+$query->fields('o',array('field_current_occupation_other_value'));
+$query->fields('p',array('field_business_sector_value'));
+$query->fields('q',array('field_business_sector_other_value'));
+$query->fields('r',array('field_doing_business_since_value'));
+$query->fields('s',array('field_do_you_operate_from_value'));
+$query->fields('t',array('field_leader_of_society_commity_value'));
+$query->fields('u',array('field_leader_specify_value'));
+$query->fields('v',array('field_education_qualification_value'));
+$query->fields('w',array('field_education_qualification_ot_value'));
+$query->fields('x',array('field_jurisdiction_police_stn_value'));
+$query->fields('y',array('field_applicant_type_value'));
+$query->fields('z',array('field_name_of_establishment_value'));
+$query->fields('aa',array('field_address_line_1_value'));
+$query->fields('bb',array('field_address_line_2_value'));
+$query->fields('cc',array('field_shop_in_city_value'));
+$query->fields('dd',array('field_shop_pin_code_value'));
+$query->fields('ee',array('field_shop_tel_no_value'));
+$query->fields('ff',array('field_shop_mobile_1_value'));
+$query->fields('gg',array('field_shop_mobile_2_value'));
+$query->fields('hh',array('field_shop_email_value'));
+$query->fields('ii',array('field_area_value'));
+$query->fields('jj',array('field_select_value'));
+$query->fields('kk',array('field_other_specify_of_value'));
+$query->fields('ll',array('field_neon_flex_board_size_value'));
+$query->fields('mm',array('field_if_yes_specify_dimensions_value'));
+$query->fields('oo',array('field_bank_name_value'));
+$query->fields('pp',array('field_pan_no_value'));
+$query->fields('qq',array('field_receipt_number_value'));
+$query->fields('rr',array('state'));
+$query->fields('fes',array('field_enquiry_status_value'));
+$query->fields('fas',array('field_assign_status_target_id'));
+
+
+
+//Filters
+if($_GET['mobile_no'] != '') {
+    $query->condition('j.field_mobile_1_value', $_GET['mobile_no'], '=');
+}
+if($_GET['date_filter_min__date_'] != '' && $_GET['date_filter_max__date_'] != '') {
+    $query->condition('a.created', $a,'>=');
+    $query->condition('a.created', $b,'<=');
+}
+if($_GET['date_filter_1_min__date_'] != '' && $_GET['date_filter_1_max__date_'] != '') {
+    $query->condition('a.changed', $c,'>=');
+    $query->condition('a.changed', $d,'<=');
+}
+
+if($_GET['status'] != '' && $_GET['status'] != 'All') {
+    $query->condition('rr.sid', $_GET['status'], '=');
+}
+if($_GET['field_enquiry_status_value'] != 'All' && $_GET['field_enquiry_status_value'] != '') {
+    $query->condition('fes.field_enquiry_status_value', $_GET['field_enquiry_status_value'], '=');
+}
+
+
+$output = $query->groupBy('nid')->execute();
+//dsm($output);die;
+
+$rows1 = array();
+$header = "Application No \t Post date \t Updated date \t Title \t First Name \t Middle Name \t Last Name \t Date of Birth \t Address 1 \t Address 2 \t City \t State \tPin Code \tMobile 1 \t Mobile 2\t Landline No\t Email\t Current Occupation\t Current Occupation Other\t Business Sector\t Business Sector Other \t Doing Business Since\t Operating from\t Leader of any society, committee or group\t If Yes, Specify\t Education Qualification\t Education Qualification Other\t Jurisdiction of police station\t Applicant type\t Name of Establishment\t Address line 1\t Address line 2\t Shop in City\t Shop PIN Code\t Shop Landline No\t Shop Mobile 1\t Shop Mobile 2\t Shop Email\t Area\t Property Type\t Others Specify\t NEON/FLEX Board\t If Yes, Specify Dimensions\t Bank Name\t PAN No\t Reciept Number\t Application Status\t Transaction Id\t Assign Status  \n";
+    $rows = $header;
+  while($data = $output->fetchObject()){
+                $rows .=$data->field_application_number_value."\t";
+                $rows .= date('l, jS F Y, h:i:s A',$data->created)."\t";
+                $rows .= date('l, jS F Y, h:i:s A',$data->created)."\t";
+                $rows .=$data->title."\t";
+                $rows .= $data->field_first_name_value."\t";
+                $rows .= $data->field_middle_name_value."\t";
+                $rows .= $data->field_last_name_value."\t";
+                $rows .= $data->field_date_of_birth_value."\t";
+                $rows .= $data->field_address_1_value."\t";
+                $rows .= $data->field_address_2_value."\t";
+                $rows .= $data->field_city_value."\t";
+                $rows .= $data->field_state_list_value."\t";
+                $rows .= $data->field_pin_code_value."\t";
+                $rows .= $data->field_mobile_1_value."\t";
+                $rows .= $data->field_mobile_2_value."\t";
+                $rows .= $data->field_landline_no_value."\t";
+                $rows .= $data->field_email_value."\t";
+                $rows .= $data->field_current_occupation_value."\t";
+                $rows .= $data->field_current_occupation_other_value."\t";
+                $rows .= $data->field_business_sector_value."\t";
+                $rows .= $data->field_business_sector_other_value."\t";
+                $rows .= $data->field_doing_business_since_value."\t";
+                $rows .= $data->field_do_you_operate_from_value."\t";
+                $rows .= $data->field_leader_of_society_commity_value."\t";
+                $rows .= $data->field_leader_specify_value."\t";
+                $rows .= $data->field_education_qualification_value."\t";
+                $rows .= $data->field_education_qualification_ot_value."\t";
+                $rows .= $data->field_jurisdiction_police_stn_value."\t";
+                $rows .= $data->field_applicant_type_value."\t";
+                $rows .= $data->field_name_of_establishment_value."\t";
+                $rows .= $data->field_address_line_1_value."\t";
+                $rows .= $data->field_address_line_2_value."\t";
+                $rows .= $data->field_shop_in_city_value."\t";
+                $rows .= $data->field_shop_pin_code_value."\t";
+                $rows .= $data->field_shop_tel_no_value."\t";
+                $rows .= $data->field_shop_mobile_1_value."\t";
+                $rows .= $data->field_shop_mobile_2_value."\t";
+                $rows .= $data->field_shop_email_value."\t";
+                $rows .= $data->field_area_value."\t";
+                $rows .= $data->field_select_value."\t";
+                $rows .= $data->field_other_specify_of_value."\t";
+                $rows .= $data->field_neon_flex_board_size_value."\t";
+                $rows .= $data->field_if_yes_specify_dimensions_value."\t";
+                $rows .= $data->field_bank_name_value."\t";
+                $rows .= $data->field_pan_no_value."\t";
+                $rows .= $data->field_receipt_number_value."\t";
+                $rows .= $data->state."\t";
+                $rows .= bigbazaarcrm_application_get_transaction_id_from_order_id($data->field_receipt_number_value)."\t";
+                $rows .= user_load($data->field_assign_status_target_id)->name.
+                "\n";
+                
+}
+
+    $date = date('d-m-Y', time());      
+    
+    header("Expires: 0");
+    header("Pragma: public");
+    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+    header('Content-type: application/ms-excel');
+    header('Content-Disposition: attachment; filename=application_report_'.$date.'.xls');
+    echo $rows;
+    exit();
+
+
+$a = $base_url.$_SERVER[REQUEST_URI].'/download';
+$result=l(t('My Page'),$a);
+return $result;
+
+
+}
+
+

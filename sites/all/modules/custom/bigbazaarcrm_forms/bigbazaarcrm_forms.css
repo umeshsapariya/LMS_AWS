@@ -1,0 +1,30 @@
+/*Speak to our Business Advisors*/
+[id^="bigbazaarcrm-forms-request-form"] .form-group {
+    display: inline-block;
+    margin: 10px 20px 10px 0;
+    width: 47%;
+}
+[id^="bigbazaarcrm-forms-request-form"] .container-inline-date {
+    display: inline-block;
+    margin: 0 25px 0 0;
+    vertical-align: top;
+    width: 47%;
+}
+[id^="bigbazaarcrm-forms-request-form"] .container-inline-date::after {
+    content: "DOB Format : DD/MM/YYYY";
+    font-size: 10px;
+    font-weight: 600;
+}
+[id^="bigbazaarcrm-forms-request-form"] .container-inline-date .form-group {
+    display: block;
+    margin-bottom: 0;
+    width: 100%;
+}
+[id^="bigbazaarcrm-forms-request-form"] .btn.btn-primary.form-submit {
+    display: block;
+    margin: 0 0 10px;
+}
+.call-email {
+    margin: 15px 0 10px;
+}
+/*end Speak to our Business Advisors*/

@@ -1,0 +1,192 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>First Name</th><th>Last Name</th><th>Mobile No.</th><th>City</th><th>Status</th><th>Application State</th><th>Created On</th><th>Email</th><th>Pin Code</th><th>Query</th></tr></thead>    <tbody> <tr class="odd"><td>Vidya</td><td>Narnavre</td><td>8928878909</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 14, 2013 - 09:49</td><td></td><td>444604</td><td>Cust want information about seminar. </td> </tr>
+ <tr class="even"><td>Dr. Ashwin</td><td>.</td><td>8983699310</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 14, 2013 - 09:39</td><td>Ashwin@bbd.com</td><td>444103</td><td>Customer wants to attend the Akola seminar hence dtls provided for the same
+</td> </tr>
+ <tr class="odd"><td>Ravi</td><td>Kumar</td><td>9373663493</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 14, 2013 - 09:38</td><td>ravi.dhankani86@yahoo.com</td><td>444004</td><td>he is going to seminar</td> </tr>
+ <tr class="even"><td>Nitesh </td><td>shanta ram </td><td>7875112744</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 14, 2013 - 09:30</td><td></td><td>444001</td><td>cust will go for seminar</td> </tr>
+ <tr class="odd"><td>Dr Yogesh</td><td>A</td><td>9049182307</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 14, 2013 - 08:28</td><td>akotyogesh@gmail.com</td><td>444001</td><td>cust is going to seminar</td> </tr>
+ <tr class="even"><td>Anand</td><td>Thandetod</td><td>9552712837</td><td>Akola</td><td>Open</td><td>No state</td><td>Thursday, June 13, 2013 - 20:49</td><td>Antu_kp@rediffmail.com</td><td>444303</td><td>Cust interested for seminar</td> </tr>
+ <tr class="odd"><td>Ashish</td><td>Khandelwal</td><td>9422939955</td><td>Akola</td><td>Open</td><td>No state</td><td>Thursday, June 13, 2013 - 16:16</td><td>khandelwalbiz@gmail.com</td><td>444001</td><td>Cust interested for seminar but if time is possible than he will go</td> </tr>
+ <tr class="even"><td>Ashish</td><td>Bachawe</td><td>8483013360</td><td>Akola</td><td>Open</td><td>No state</td><td>Thursday, June 13, 2013 - 11:13</td><td>bachaweashish@yahoo.com</td><td>444001</td><td>int cust infrmd him to visit seminar in akola city on 15june at 10.30am ... </td> </tr>
+ <tr class="odd"><td>Ganesh</td><td>Patne</td><td>9765884073</td><td>Akola</td><td>Open</td><td>No state</td><td>Thursday, June 13, 2013 - 10:05</td><td></td><td>444001</td><td>seminar venue add given</td> </tr>
+ <tr class="even"><td>Mahesh</td><td>Deshmukh</td><td>9604054908</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 20:51</td><td></td><td>444102</td><td>Cust is interested for seminar</td> </tr>
+ <tr class="odd"><td>bbdtest</td><td>test</td><td>9876767877</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 19:08</td><td>test@gmail.com</td><td>400092</td><td>test </td> </tr>
+ <tr class="even"><td>Dilip</td><td>Phatnani</td><td>8793820318</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 18:05</td><td></td><td>444001</td><td>He will visit  seminar.
+</td> </tr>
+ <tr class="odd"><td>sona sarab</td><td>.</td><td>8956520719</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 13:41</td><td></td><td>440001</td><td>cust calling from pune he wants to sell his land</td> </tr>
+ <tr class="even"><td>Nilesh</td><td>kakde</td><td>9373774814</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 13:20</td><td></td><td>441601</td><td>cust int for seminar </td> </tr>
+ <tr class="odd"><td>Sunderlal</td><td>Warma</td><td>9373931599</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 13:09</td><td>sunderlalw@bbd.com</td><td>444002</td><td>Cust interested for seminar </td> </tr>
+ <tr class="even"><td>Iftekhar</td><td>Khan</td><td>9049592741</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 13:01</td><td></td><td>444501</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+ <tr class="odd"><td>Mrs.kalpna</td><td>.</td><td>8698367393</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 12:50</td><td></td><td>440017</td><td>cust int for akola seminar</td> </tr>
+ <tr class="even"><td>Pankaj</td><td>Deshmukh</td><td>9970547293</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 12:30</td><td>pankajdesh248@gmail.com</td><td>440001</td><td>Pankaj Deshmukh  int cust he siad that he will made paymnet online today ... &amp; bring the recpt to akola seminar on 15jun .. at 10.30am </td> </tr>
+ <tr class="odd"><td>Hakimuddin</td><td>Amin</td><td>9970163252</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 10:20</td><td>hakim_amin2008@rediffmail.com</td><td>444001</td><td>want to attend the seminar in 3:00 to 4:30 pm </td> </tr>
+ <tr class="even"><td>Yash</td><td>Nagwani</td><td>7276482380</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 10:05</td><td></td><td>444001</td><td>Will go for Akola&#039;s seminar</td> </tr>
+ <tr class="odd"><td>Bhovindar </td><td>Singh</td><td>9822222287</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 09:51</td><td></td><td>444001</td><td>wants to knw rdrg form</td> </tr>
+ <tr class="even"><td>Ankit</td><td>Jain</td><td>8888444999</td><td>Akola</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 09:45</td><td>onlyankit9@gmail.com</td><td>444001</td><td>Will visit Akola&#039;s seminar</td> </tr>
+ <tr class="odd"><td>Vijay</td><td>Gomase</td><td>9881218761</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 21:11</td><td></td><td>444108</td><td>BBD detilas given</td> </tr>
+ <tr class="even"><td>Jaiprakash</td><td>Atal</td><td>9423848942</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 19:25</td><td>JaiprakashAtal@futurebazaar.com</td><td>444001</td><td>Seminar details given</td> </tr>
+ <tr class="odd"><td>Miss</td><td>kacure</td><td>8888600239</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 19:02</td><td></td><td>444002</td><td>semainar related</td> </tr>
+ <tr class="even"><td>testsuper</td><td>testsuper</td><td>9878765432</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 17:59</td><td></td><td>499980</td><td>testsuper</td> </tr>
+ <tr class="odd"><td>vishal</td><td>pohekar</td><td>9960555148</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 17:52</td><td></td><td>444001</td><td>how to join n what are benefits
+</td> </tr>
+ <tr class="even"><td>yogesh</td><td>pitamberwale</td><td>9370542555</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 16:19</td><td>yogesh.rathor999@gmail.com</td><td>444101</td><td>seminar related </td> </tr>
+ <tr class="odd"><td>Prakash</td><td>Deshmukh</td><td>9970218014</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 15:57</td><td></td><td>444004</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+ <tr class="even"><td>rahul</td><td>sapkal</td><td>9011281483</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 15:04</td><td></td><td>444001</td><td>semiar registration</td> </tr>
+ <tr class="odd"><td>Kunal </td><td>.</td><td>9860303212</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 14:35</td><td>Kunal@bbd.com</td><td>444103</td><td>Gvn bb direct dtls to the customer</td> </tr>
+ <tr class="even"><td>Gopal</td><td>Gomashe</td><td>9922657526</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 13:46</td><td>gomasegopal@gmail.com</td><td>444103</td><td>Akola me big baazar chahiye</td> </tr>
+ <tr class="odd"><td>mahesh</td><td>tawari</td><td>9822045005</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 13:06</td><td>rsm.tawari@gmail.com</td><td>444004</td><td>Franchisee enquiry</td> </tr>
+ <tr class="even"><td>Pradip</td><td>Nawalkar</td><td>9689532471</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 12:59</td><td>nawalkarpradip@gmail.com</td><td>444103</td><td>Akola me big bazaar chahiye</td> </tr>
+ <tr class="odd"><td>Sameer</td><td>Bhabal</td><td>9920047608</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 12:47</td><td></td><td>444002</td><td>Testing</td> </tr>
+ <tr class="even"><td>Jitendra</td><td>.</td><td>9850595895</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 11:28</td><td>Jitendra@bbd.com</td><td>444001</td><td>gvn dtls of bb direct and dtls fwdd to kais as customer wants to attend the seminar
+</td> </tr>
+ <tr class="odd"><td>Mukesh </td><td>Rathod</td><td>9270356401</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 11:09</td><td>MukeshRathod@bbd.com</td><td>444001</td><td>customer is interested to join BB direct franchisee he will Join at Akola on 15 june at 10:30am
+</td> </tr>
+ <tr class="even"><td>Chetan </td><td>Agrawl</td><td>7242420834</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 10:30</td><td></td><td>444003</td><td>cust will go  for seminar</td> </tr>
+ <tr class="odd"><td>vishal</td><td>yelkar</td><td>9096555287</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 08:57</td><td>vishal_7787@yahoo.co.in</td><td>444001</td><td>detail about process and process duration, also about the net benifit in this service.
+Thank you.</td> </tr>
+ <tr class="even"><td>kapil</td><td>samat</td><td>7276549860</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 08:28</td><td>kapilsamat@gmail.com</td><td>444001</td><td>he is going to seminar</td> </tr>
+ <tr class="odd"><td>Sandesh</td><td>wailkar</td><td>9960831511</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 21:43</td><td>swailkar13@gmail.com</td><td>444101</td><td>Customer interested for seminar</td> </tr>
+ <tr class="even"><td>Chaitanya </td><td>agarwal</td><td>8855071348</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 19:42</td><td>chaitanyaagarwal@bbd.com</td><td>444107</td><td>customer is interested to join BB direct franchisee he will Join at Akola on 13 june at 10:30am
+</td> </tr>
+ <tr class="odd"><td>Durga prasad </td><td>Agarwal</td><td>9422160845</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 19:29</td><td>durgaprasadagarwal@bbd.com</td><td>444001</td><td>customer is interested to join BB direct franchisee he will Join at Akola on 13 june but not confirming any time
+</td> </tr>
+ <tr class="even"><td>TEST</td><td>TEST 123</td><td>9664134864</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 19:27</td><td>test@iksula.com</td><td>400113</td><td>TEST ADD ENQUIRY</td> </tr>
+ <tr class="odd"><td>krishna kumar</td><td>Padiya</td><td>9403472780</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 19:18</td><td>krishnakumar.padiya@rediffmail.com</td><td>444108</td><td>Customer is intersted for seminar</td> </tr>
+ <tr class="even"><td>Vishwas </td><td>Deshmukh</td><td>7773992814</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 16:59</td><td>vishwas2303@rediffmail.com</td><td>444002</td><td>customer is interested to join BB direct franchisee he will Join at Akola on 13 june 03:00 PM
+</td> </tr>
+ <tr class="odd"><td>Vijay </td><td>Govind</td><td>8308061739</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 16:51</td><td>VijayGovind@bbd.com</td><td>444006</td><td>gvn dtls of bb direct and dtls fwdd to kais as customer wants to attend the seminar
+</td> </tr>
+ <tr class="even"><td>Krishna</td><td>Toshniwal</td><td>9673359222</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 15:58</td><td></td><td>444001</td><td>what do I earn in this franchisee concept. I just recieve the orders and collect the money. What is my earning</td> </tr>
+ <tr class="odd"><td>satish</td><td>warkare</td><td>8983040281</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 15:55</td><td>satishwarkare@bigbazaar.com</td><td>444108</td><td>customer int but he said that he will  visit seminar but not able to confirm know ... infrmd to collect a form from nearest bbd center </td> </tr>
+ <tr class="even"><td>DC</td><td>Bhandari</td><td>9420712758</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 15:02</td><td>harshalbhandari01@gmail.com</td><td>444101</td><td>semianr</td> </tr>
+ <tr class="odd"><td>Nitin </td><td>r mude</td><td>9420077078</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 14:57</td><td></td><td>440001</td><td>cust int for saminar</td> </tr>
+ <tr class="even"><td>Manoj</td><td>Agrawal</td><td>9405944030</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 14:17</td><td>manoja@bbd.com</td><td>444107</td><td>Gvn dtls of bb
+</td> </tr>
+ <tr class="odd"><td>test</td><td>testy</td><td>9223305000</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 13:59</td><td>test@at.com</td><td>444444</td><td>dsd</td> </tr>
+ <tr class="even"><td>Mayur</td><td>Satnami</td><td>9422193952</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 13:18</td><td>mayur.satnami@gmail.com</td><td>444001</td><td>want to attend seminar</td> </tr>
+ <tr class="odd"><td>Rajesh</td><td>Bhandari</td><td>9822087655</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 12:34</td><td>RajeshBhandari@bigbazaardirect.com</td><td>444601</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+ <tr class="even"><td>Ram </td><td>Yadav</td><td>8888819532</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 11:40</td><td>yadav.ramnath@mahfin.com</td><td>444003</td><td>will attend the seminar batch of 3  to 4.30
+</td> </tr>
+ <tr class="odd"><td>Suryakant</td><td>Shende</td><td>9766937010</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 11:11</td><td></td><td>441111</td><td>Cust will think to visit for Akola&#039;s seminar.</td> </tr>
+ <tr class="even"><td>Amit</td><td>Laddha</td><td>7242423651</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 10:54</td><td>amit.laddha@bbd.com</td><td>444001</td><td>will collect the form and attend the seminar</td> </tr>
+ <tr class="odd"><td>Pooja</td><td>Gupta</td><td>9096927994</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 10:12</td><td>pooja.gupta@bbd.com</td><td>444004</td><td>Wanted if house wife can enroll, explain the concept will attend the seminar</td> </tr>
+ <tr class="even"><td>Amit Shantaram</td><td>Tarde</td><td>8379922742</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 09:40</td><td>AmitShantaramTarde@bbd.com</td><td>444001</td><td>calling from khapsi village want to attend seminar</td> </tr>
+ <tr class="odd"><td>Bharat Hariom</td><td>Bharuka</td><td>9423130107</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 09:15</td><td>BharatHariomBharuka@bbd.com</td><td>444107</td><td>want to attend the seminar</td> </tr>
+ <tr class="even"><td>Sanket</td><td>Rathi</td><td>8275296467</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 08:55</td><td>sanket.rathi@bbd.com</td><td>444001</td><td>call got disconnected</td> </tr>
+ <tr class="odd"><td>Sanjay</td><td>Gupta</td><td>9970957177</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 08:46</td><td>sanjay.gupta@bbd.com</td><td>444001</td><td>Explained the concept, customer will attend the seminar at akola on 15th June</td> </tr>
+ <tr class="even"><td>Bharat</td><td>Bharuka</td><td>8275412241</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 08:34</td><td>Bharat@bbd.com</td><td>444106</td><td>Cust is frm Murtajapur. Will think to go for Akola&#039;s seminar.</td> </tr>
+ <tr class="odd"><td>Suraj Omkar</td><td>Mishra</td><td>9011023123</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 08:07</td><td>Suraj@bbd.com</td><td>444303</td><td>Cust is frm Buldhana he is int for Franchisee. Will visit Akola Seminar</td> </tr>
+ <tr class="even"><td>Vinod </td><td>Kohar</td><td>9420434659</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, June 9, 2013 - 19:33</td><td>vinodkohar86@gmail.com</td><td>444001</td><td>Cust cald to knw that he has taken the frm now what to do</td> </tr>
+ <tr class="odd"><td>Pawan</td><td>Khandelwal</td><td>9011532532</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, June 9, 2013 - 18:29</td><td>pwn_khandelwal@rediffmail.com</td><td>444004</td><td>BBD detials Given</td> </tr>
+ <tr class="even"><td>Sunil </td><td>Kohate</td><td>9422791537</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, June 9, 2013 - 16:37</td><td>Chhittarkm@gmail.com</td><td>444506</td><td>gvn dtls of bb direct and dtls fwdd to kais as customer wants to attend the seminar</td> </tr>
+ <tr class="odd"><td>Kailas</td><td>Amrutkar</td><td>9960331370</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, June 9, 2013 - 12:01</td><td>Kailas.amrutkar89@gmail.com</td><td>444001</td><td>he is going to seminar</td> </tr>
+ <tr class="even"><td>Juber</td><td>Sayyed</td><td>9860143662</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, June 9, 2013 - 10:31</td><td>sdguddu@rediff.com</td><td>444001</td><td>he is going to seminar</td> </tr>
+ <tr class="odd"><td>Sarika </td><td>Gupta</td><td>8793963075</td><td>Akola</td><td>Open</td><td>(Payment Received Online)</td><td>Sunday, June 9, 2013 - 09:25</td><td>sarikagupta6@gmail.com</td><td>444001</td><td>Customer wants to attend the seminar hence dtls fwdd to kais</td> </tr>
+ <tr class="even"><td>VIjay</td><td>Bhakar</td><td>9422920160</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 20:58</td><td>vijaybhakar@bbd.com</td><td>440044</td><td>cust int for seminar</td> </tr>
+ <tr class="odd"><td>Sunil Agarwal</td><td>Agarwal</td><td>9404091867</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 19:51</td><td>sunil.agarwal@bigbazaar.com</td><td>444001</td><td>he is interested he is going to akola seminar</td> </tr>
+ <tr class="even"><td>vinod</td><td>Tayde</td><td>7798014924</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 19:20</td><td>vinodTayde@bigbazaar.com</td><td>444001</td><td>cust int he said that he will visit bbd cnter for form then on 15jun he will visit Akola 	Parmila Tai Oak Hall</td> </tr>
+ <tr class="odd"><td>Vaibhav</td><td>Ghuht</td><td>8698026751</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 17:38</td><td>vaibhav.ghuht@bigbazaar.com</td><td>444503</td><td>he is interested he is going akola seminar</td> </tr>
+ <tr class="even"><td>Sachin</td><td>Morey</td><td>9921484186</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 14:31</td><td>sachin1011morey@gmail.com</td><td>444001</td><td>BBD details given </td> </tr>
+ <tr class="odd"><td>SACHIN</td><td>MOREY</td><td>9921484183</td><td>Akola</td><td>Open</td><td>(Application Submitted Online)</td><td>Saturday, June 8, 2013 - 14:16</td><td>sachin1011morey@gmail.com</td><td>444001</td><td>information given abt changed location Tower Chowk  to Ramlata and Cricket Club  customer will attained this seminat at 12:30 on 15 June Akola
+</td> </tr>
+ <tr class="even"><td>Anand</td><td>Wankhede</td><td>9860308245</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 14:06</td><td>anandwankhede@bbd.com</td><td>444302</td><td>int in seminar</td> </tr>
+ <tr class="odd"><td>Sandeep</td><td>Chavan</td><td>9689358365</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 13:30</td><td>sandeep@bbd.com</td><td>443202</td><td>Call disconnected inbetween the discussion</td> </tr>
+ <tr class="even"><td>Satish</td><td>chandaliya</td><td>9421397251</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 13:15</td><td>satishc@bbd.com</td><td>443202</td><td>Customer interested for seminar</td> </tr>
+ <tr class="odd"><td>Gajanan</td><td>badgal</td><td>9850807055</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 13:14</td><td>gajanan.badgal@bigbazaar.com</td><td>440724</td><td>he is going to akola seminar</td> </tr>
+ <tr class="even"><td>Vipin </td><td>Naphade</td><td>7588803141</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 12:40</td><td>vipinnaphade@gmail.com</td><td>444001</td><td>cust going to akola seminar</td> </tr>
+ <tr class="odd"><td>Shamal</td><td>dodiya</td><td>9422171943</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 07:31</td><td>shamaldodiya@yahoo.com</td><td>444002</td><td>Cust int in seminar</td> </tr>
+ <tr class="even"><td>sharad</td><td>Lambe</td><td>9552534032</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 05:41</td><td>sharadlambe2012@gmail.com</td><td>443201</td><td>cust called from chikli dist Boldanaa    infrmd him about the city in which the  seminar going on ... he said if its come to his city kindly contact </td> </tr>
+ <tr class="odd"><td>Dr PS</td><td>Rathod</td><td>9673860044</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 05:31</td><td>psrathod@bbd.com</td><td>444505</td><td>seminar related</td> </tr>
+ <tr class="even"><td>prakash</td><td>parashar</td><td>9890445343</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 05:17</td><td>prakashparashar@bbd.com</td><td>443405</td><td>seminar related</td> </tr>
+ <tr class="odd"><td>Shiva</td><td>nanda</td><td>9960971155</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 05:13</td><td>shivanand_masne@yahoo.com</td><td>444005</td><td>seminar related</td> </tr>
+ <tr class="even"><td>Dnyaneshwar</td><td>Sarap</td><td>9423028176</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 04:52</td><td>dyaneshwarsarap@bbd.com</td><td>444502</td><td>Query resolved customer will collect form from akola center
+</td> </tr>
+ <tr class="odd"><td>Suresh Kumar</td><td>Garbhe</td><td>9604051051</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 04:16</td><td>SureshKumarGarbhe@gmail.com</td><td>444001</td><td>cust int he said that eh will visits nearest &amp; collect the form </td> </tr>
+ <tr class="even"><td>Nilesh</td><td>Mohod</td><td>9975661550</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 04:06</td><td>nileshmohod1@gmail.com</td><td>444101</td><td>cust is interested he is going to seminar</td> </tr>
+ <tr class="odd"><td>Irshad</td><td>khan</td><td>7709174892</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 04:02</td><td>irshad2448@yahoo.in</td><td>444303</td><td>Registration for seminar</td> </tr>
+ <tr class="even"><td>Prashant</td><td>Vahiti</td><td>9421000111</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 03:58</td><td>prashantbaheti18@gmail.com</td><td>444001</td><td>Cust is interested he is going to akola seminar</td> </tr>
+ <tr class="odd"><td>rajesh</td><td>mankar</td><td>7875449750</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 03:41</td><td>rajesh26@gmail.com</td><td>444105</td><td>buldana malkapur near to akol he said that he will bet back to us </td> </tr>
+ <tr class="even"><td>ranjeet</td><td>sanap</td><td>9764502155</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 03:37</td><td>ranjeetsanap@bbd.com</td><td>443302</td><td>cust is interested for seminar</td> </tr>
+ <tr class="odd"><td>Ashwajeet</td><td>Shirha</td><td>9767868426</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 03:36</td><td>ashwajeetahirah@bbd.com</td><td>444111</td><td>BBD detaisl given</td> </tr>
+ <tr class="even"><td>Dinesh</td><td>Daliya</td><td>7875820002</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 02:27</td><td>dineshdalaiya@bbd.com</td><td>444505</td><td>Cust interested for seminar</td> </tr>
+ <tr class="odd"><td>Rohan </td><td>P Nichal</td><td>9960284590</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:29</td><td>r_rohan2006@rediffmail.com</td><td>444001</td><td>cust is very int , he said he will download online &amp; visit directly on 15-06-13 Parmila Tai Oak Hall</td> </tr>
+ <tr class="even"><td>Shivaji</td><td>Suthar</td><td>8275944911</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:27</td><td>shivajisuthar@bbd.com</td><td>443406</td><td>information given , he will check online</td> </tr>
+ <tr class="odd"><td>Sandeep</td><td>Bandhari</td><td>9420446490</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:20</td><td>Sandeepbandhari@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Vivek </td><td>Govindrao</td><td>9822724442</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:15</td><td>Vivekgovindrao@bbd.com</td><td>444001</td><td>Customer to attend the seminar hence dtls fwdd to kais</td> </tr>
+ <tr class="odd"><td>Manoj</td><td>.</td><td>9372204513</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:13</td><td>Manoj@bbd.com</td><td>444005</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Rajesh </td><td>Jain</td><td>9404717678</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:07</td><td>RajeshJain@bbd.com</td><td>444002</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="odd"><td>Nilesh</td><td> Agrawal</td><td>9403130792</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:06</td><td>Nileshagrawal@bbd.com</td><td>444002</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Kishan</td><td>.</td><td>9270863100</td><td>Akola</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 00:04</td><td>Kishan@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="odd"><td>Ashfaq</td><td>Shah</td><td>9921746427</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 23:25</td><td>ashfaqshah538@rediffmail.com</td><td>444001</td><td>BBD details given</td> </tr>
+ <tr class="even"><td>Anand</td><td>Shingne</td><td>9503020506</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 23:13</td><td>anandsnr62@gmail.com</td><td>444002</td><td>Calling from akola interested to attend the seminar of akola</td> </tr>
+ <tr class="odd"><td>Amol</td><td>Gabhane</td><td>9404874003</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 23:04</td><td>amolgabhane@bbd.com</td><td>444001</td><td>he is interested he is going seminar</td> </tr>
+ <tr class="even"><td>Ajay</td><td>Patil</td><td>9960800811</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 22:49</td><td>patilajaykumar@gmail.com</td><td>444001</td><td>customer wants to BBD details cust will visit BBD center for form collection
+
+</td> </tr>
+ <tr class="odd"><td>Vijay</td><td>Dilip</td><td>9372269713</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 22:36</td><td>Vijaydilip@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Ram </td><td>Navre</td><td>9423445506</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 22:30</td><td>Ramnavre@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="odd"><td>Bhandari</td><td>.</td><td>9561221515</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 22:28</td><td>Bhandari@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Pradeep</td><td>Joshi</td><td>9422937567</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 22:27</td><td>Pradeepjoshi@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="odd"><td>Chandrakant</td><td>Agrawal</td><td>9850536752</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 22:19</td><td>Chandrakantagrawal@bbd.com</td><td>444001</td><td>Cust cald to knw whr frm he will be geting</td> </tr>
+ <tr class="even"><td>Mirza ansar </td><td>Baige</td><td>9028930988</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 22:16</td><td>mabaigekd@gmail.com</td><td>444102</td><td>inform to  cust Akola dc Details</td> </tr>
+ <tr class="odd"><td>Anil</td><td>Bajaj</td><td>8087265264</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:59</td><td>mohakabajaj@gmail.com</td><td>444105</td><td>he is already dealing with many products like colgate and all as a distributor , so interested with BB direct
+</td> </tr>
+ <tr class="even"><td>Santosh</td><td>Santosh</td><td>9665128221</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:52</td><td>santosh@bbd.com</td><td>444001</td><td>customer will download application form online then he will submit
+</td> </tr>
+ <tr class="odd"><td>Yogesh R</td><td>Sharma</td><td>9960589207</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:49</td><td>yogeshrsharma2009@gmail.com</td><td>443201</td><td>cust calling from buldhana interested for seminar in akola</td> </tr>
+ <tr class="even"><td>Chetan</td><td>Chetan</td><td>9881011234</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:44</td><td>cvbhai@gmail.com</td><td>444001</td><td>customer want exact address where he can get application form don’t want online website
+</td> </tr>
+ <tr class="odd"><td>Brij</td><td>mohal </td><td>9823802631</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:43</td><td>Brijmohal@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>DHARMADEEP</td><td>INGLE</td><td>9764820244</td><td>Akola</td><td>Open</td><td>(Application Submitted Online)</td><td>Friday, June 7, 2013 - 21:38</td><td>idhammadeep@gmail.com</td><td>444004</td><td>cust is out of station he will direct go seminar with 1000/-rp</td> </tr>
+ <tr class="odd"><td>Dr. Babsaheb</td><td>.</td><td>9764411911</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:20</td><td>Babsaheb@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Pravin</td><td>deshmukh</td><td>9764400873</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:02</td><td>pravin.deshmukh@bbd.com</td><td>444001</td><td>bigbazaar direct details given</td> </tr>
+ <tr class="odd"><td>Sachin</td><td>Sejav</td><td>9822828667</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 20:57</td><td>sejav.sachin@gmail.com</td><td>444001</td><td>not that much interested as he have to pay 1000 but he will download application form online then he will submit
+</td> </tr>
+ <tr class="even"><td>Amar</td><td>Deshmukh</td><td>9096311526</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 20:53</td><td>amar.deshmukh7@gmail.com</td><td>444407</td><td>want to attend seminar of akola</td> </tr>
+ <tr class="odd"><td>Amit</td><td>Jain</td><td>9423238393</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 20:51</td><td>amitgjain@gmail.com</td><td>443402</td><td>customer will download application form online then he will submit</td> </tr>
+ <tr class="even"><td>Girish</td><td>Lalwani</td><td>9226318131</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 20:46</td><td>girish.lalwani@bigbazaar.com</td><td>441902</td><td>he is interested he is going seminar</td> </tr>
+ <tr class="odd"><td>Satish</td><td>Sarda</td><td>9422162552</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 20:20</td><td>saralxerox@rediffmail.com</td><td>444001</td><td>want to attend the seminar of akola</td> </tr>
+ <tr class="even"><td>Ravindra</td><td>.</td><td>8857070420</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 20:17</td><td>Ravindra@bbd.com</td><td>444101</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="odd"><td>Sachin</td><td>Agarwal</td><td>9960955072</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 20:02</td><td>sachinagrawal12@gmail.com</td><td>444204</td><td>Customer want to go directly in Akola center
+</td> </tr>
+ <tr class="even"><td>Pramod</td><td>.</td><td>9503095432</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:55</td><td>Pramod@bbd.com</td><td>444001</td><td>Gvn Info abt bb direct and abt the application form</td> </tr>
+ <tr class="odd"><td>Amol</td><td>Agarwal</td><td>7254271348</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:55</td><td>jinshakti@gmail.com</td><td>444503</td><td>calling from malegaob want seminar of akola</td> </tr>
+ <tr class="even"><td>Mr.Amit</td><td>Vyas</td><td>9860889996</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:51</td><td>vamit2701@gmail.com</td><td>444004</td><td>he is interested he is going to seminar</td> </tr>
+ <tr class="odd"><td>Vinod</td><td>Raut</td><td>9420704506</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:50</td><td>vinorautakola@rediffmail.com</td><td>444001</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+ <tr class="even"><td>Nandkishore</td><td>Dhahake</td><td>7276126483</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:49</td><td>Nandkishore.Dhahake@bbd.com</td><td>444001</td><td>Cust is interested in BBD he will come to Akola for seminar</td> </tr>
+ <tr class="odd"><td>Deepak</td><td>Chaudhary</td><td>9422725333</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:47</td><td>DeepakChaudhary@bbd.com</td><td>443001</td><td>calling from buldana not int sd he will cb </td> </tr>
+ <tr class="even"><td>Ravi Kumar S </td><td>Joshi</td><td>9422161691</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:35</td><td>ravijoshi91@gmail.com</td><td>444001</td><td>interested to attend seminar in akola</td> </tr>
+ <tr class="odd"><td>dnyaneshwar</td><td>Patil</td><td>9623619249</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:15</td><td>rajedpd@gmail.com</td><td>445206</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+ <tr class="even"><td>Aashis </td><td>Gopal Aarawal</td><td>9028949359</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 19:10</td><td>asahinagarwal@bbd.com</td><td>443301</td><td>cust int for semanir</td> </tr>
+ <tr class="odd"><td>BK </td><td>Gupta</td><td>9923957066</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 18:32</td><td>bharat.gupta255@gmail.com</td><td>443204</td><td>Cust is interested calling form bhuldana want to attend seminar of akola </td> </tr>
+ <tr class="even"><td>shrish Kishore</td><td>Bangle</td><td>9421468911</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 18:31</td><td>Kishoremotilalji@bigbazaardirect.com</td><td>443101</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+ <tr class="odd"><td>Padmakar Ramrao</td><td>Magar</td><td>9175030531</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 18:23</td><td>padmakarmagar@bbd.com</td><td>443001</td><td>Cust called to know info regd the same cust is from buldhana dist info given seminar of akola</td> </tr>
+ <tr class="even"><td>Sanjay </td><td>Bhagat </td><td>9921133349</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 18:13</td><td>callbsanjay@yahoo.com</td><td>444001</td><td>Cust said he will chk the details regading the sameas he is interested to attend the seminar</td> </tr>
+ <tr class="odd"><td>vijay</td><td>patil</td><td>9420951044</td><td>Akola</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 18:11</td><td>vtppatil@rediff.com</td><td>444506</td><td>what about risod taluka?</td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

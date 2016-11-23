@@ -1,0 +1,4 @@
+name = bigbazaarcrm_custom_mail_attachment
+description = Custom Way to mail with attachment .
+package = Custom
+core = 7.x

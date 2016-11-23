@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>First Name</th><th>Last Name</th><th>Mobile No.</th><th>City</th><th>Status</th><th>Application State</th><th>Created On</th><th>Email</th><th>Pin Code</th><th>Query</th><th>Transaction - Order ID</th></tr></thead>    <tbody> <tr class="odd"><td>Chanchlesh</td><td>Kakde</td><td>9595184553</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 17:36</td><td></td><td>440025</td><td>Mohan Hardas no given</td><td> - </td> </tr>
+ <tr class="even"><td>Harpreet</td><td>bhatiya</td><td>9326056151</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 17:24</td><td></td><td>440001</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="odd"><td>Rahul</td><td>Jain</td><td>9372571479</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 16:48</td><td>rahulsjain517@gmail.com</td><td>440002</td><td>Cust wanted to know the comission basis </td><td> - </td> </tr>
+ <tr class="even"><td>Dilip </td><td>Ajmera</td><td>9975758619</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 16:34</td><td>dilipa@bbd.com</td><td>444102</td><td>cust cald to knw about frenchise related inform the same nd he will see the bbd site and if intersted will download the form</td><td> - </td> </tr>
+ <tr class="odd"><td>Vijay</td><td>Joshef</td><td>9158020011</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 16:27</td><td></td><td>440030</td><td>cust want information about BBD information given &amp; mohan no. given	 </td><td> - </td> </tr>
+ <tr class="even"><td>Saroj</td><td>Gupta</td><td>8149195163</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 16:04</td><td></td><td>440001</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="odd"><td>ismail </td><td>Saifee</td><td>9960612252</td><td>Wardha</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 15:05</td><td></td><td>442001</td><td>cust interested for BBD so inmfo given to cust about BBD and given mohan hardas no
+</td><td> - </td> </tr>
+ <tr class="even"><td>Manoj</td><td>Jaswani</td><td>9822221555</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 14:24</td><td></td><td>440013</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="odd"><td>Mundala</td><td>Raju</td><td>7588764053</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 13:56</td><td></td><td>444001</td><td>infrmd details about BBD  .. Cust int he said that he will do it online tomorrow ...</td><td> - </td> </tr>
+ <tr class="even"><td>deepak</td><td>.</td><td>9850987194</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 13:29</td><td></td><td>440016</td><td>cust int for bbd
+info gvn bbd details and  mohans no </td><td> - </td> </tr>
+ <tr class="odd"><td>Vinay</td><td> Mahajan</td><td>9850582902</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 13:16</td><td></td><td>441102</td><td>Given Mohan Hardas no</td><td> - </td> </tr>
+ <tr class="even"><td>Mahesh</td><td>Agrawal</td><td>9823055007</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 13:12</td><td></td><td>440010</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="odd"><td>harim</td><td>khele</td><td>9028622845</td><td>Gondia</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 13:09</td><td></td><td>441601</td><td>cust want information about BBD information given &amp; mohan no. given.	</td><td> - </td> </tr>
+ <tr class="even"><td>Rafik</td><td>Eirani</td><td>9422154066</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 12:50</td><td></td><td>442605</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="odd"><td>Rahul</td><td>jain</td><td>9763760145</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 12:46</td><td></td><td>442401</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="even"><td>mangesh</td><td>.</td><td>9022546402</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 12:33</td><td></td><td>444002</td><td>cust int for bbd
+info gvn bbd details and  mohans no </td><td> - </td> </tr>
+ <tr class="odd"><td>Ashok</td><td>Triplani</td><td>9371144555</td><td>Wardha</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 12:26</td><td></td><td>442001</td><td>cust interested for BBD so inmfo given to cust about BBD and given mohan hardas no
+</td><td> - </td> </tr>
+ <tr class="even"><td>kamlesh</td><td>Tode</td><td>7507771345</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 12:19</td><td></td><td>444001</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="odd"><td>Kapil</td><td>Ahmed</td><td>9890452758</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 12:05</td><td></td><td>442401</td><td>Given Mohan Hardas no.</td><td> - </td> </tr>
+ <tr class="even"><td>snehal</td><td>masakar</td><td>7276463874</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 11:54</td><td></td><td>440017</td><td>cust int for bbd
+info gvn bbd details an s mohans no </td><td> - </td> </tr>
+ <tr class="odd"><td>MA</td><td>9370805027</td><td>9370805027</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 11:52</td><td></td><td>440001</td><td>cust interested for BBD so inmfo given to cust about BBD and given mohan no
+</td><td> - </td> </tr>
+ <tr class="even"><td>Naresh</td><td>tarak</td><td>9765235887</td><td>Wardha</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 11:42</td><td></td><td>440121</td><td>cust int for bbd</td><td> - </td> </tr>
+ <tr class="odd"><td>Anand</td><td>parasad</td><td>9890265443</td><td>Amravati</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 11:40</td><td></td><td>445001</td><td>info gvn regd the bbd concept and website details 
+cust calling from chanderpur</td><td> - </td> </tr>
+ <tr class="even"><td>Monalisha</td><td>das</td><td>9970424858</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 11:31</td><td></td><td>440025</td><td>cust want information about BBD information given &amp; mohan no. given	</td><td> - </td> </tr>
+ <tr class="odd"><td>Mahesh</td><td>Kare</td><td>9322512123</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 11:21</td><td></td><td>400008</td><td>cust want information about BBD information given to cust but he calling Mumbai</td><td> - </td> </tr>
+ <tr class="even"><td>prakash Rameshlal</td><td>chandwani</td><td>9820151716</td><td>Gondia</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 11:11</td><td></td><td>441601</td><td>cust interested for BBD so inmfo given to cust about BBD and given mohan hardas no
+
+</td><td> - </td> </tr>
+ <tr class="odd"><td>Govind</td><td>Dangra</td><td>9850400762</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 10:49</td><td></td><td>445001</td><td>cust calling from atgaon and he is int for bbd </td><td> - </td> </tr>
+ <tr class="even"><td>pravin</td><td>Gupta</td><td>9579102911</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 10:49</td><td></td><td>440010</td><td>cust interested for BBD so inmfo given to cust about BBD and given Mohan no
+</td><td> - </td> </tr>
+ <tr class="odd"><td>CS</td><td>khurana</td><td>9028935328</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 10:45</td><td></td><td>440012</td><td>cust int for  bbd franchise info gvn website details</td><td> - </td> </tr>
+ <tr class="even"><td>Jivani</td><td>madan</td><td>9422154052</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 10:22</td><td></td><td>442605</td><td>cust want information about BBD information given &amp; mohan no. given</td><td> - </td> </tr>
+ <tr class="odd"><td>Avdev</td><td>singhal</td><td>9372290219</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 10:21</td><td></td><td>440018</td><td>info gvn regd the website and concept</td><td> - </td> </tr>
+ <tr class="even"><td>sohan</td><td>tahalramani</td><td>8007859050</td><td>Amravati</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:59</td><td></td><td>444805</td><td>cust interested for BBD so info given to cust BBD and given Mohan no</td><td> - </td> </tr>
+ <tr class="odd"><td>Ravindra </td><td>pawar</td><td>9970320414</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:58</td><td></td><td>444001</td><td>cust want information about BBD information given &amp; mohan no. given.</td><td> - </td> </tr>
+ <tr class="even"><td>Nitin</td><td>AFFERKAR</td><td>9423623556</td><td>Amravati</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:56</td><td></td><td>444805</td><td>CUST WANTS TO BE A FRANCHISE
+INFO GVN ALL DETAILS AN WEBSITE NAME</td><td> - </td> </tr>
+ <tr class="odd"><td>Pratik</td><td>Pratik</td><td>9766632555</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:41</td><td></td><td>440002</td><td>cust interested for BBD so inmfo given to cust about BBD and given Mohan no
+</td><td> - </td> </tr>
+ <tr class="even"><td>Shekhar</td><td>.</td><td>9422303188</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:41</td><td></td><td>440013</td><td>cust want information about BBD information given &amp; mohan no. given.</td><td> - </td> </tr>
+ <tr class="odd"><td>sandeep</td><td>.</td><td>9372390048</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:39</td><td></td><td>440022</td><td>info gnv regarding bbd website details
+and cust also int for buying Proust hence gvn pc sharams no</td><td> - </td> </tr>
+ <tr class="even"><td>zafar </td><td>ahmed</td><td>9579050970</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:32</td><td></td><td>440001</td><td>cust interested for BBD so inmfo given to cust about BBD and given mohan hardas no
+</td><td> - </td> </tr>
+ <tr class="odd"><td>sushil</td><td>agarwal</td><td>9823051035</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:30</td><td></td><td>444001</td><td>cust int for bbd franchise
+info gvn mahan dardas no </td><td> - </td> </tr>
+ <tr class="even"><td>Nishand</td><td>meshram</td><td>9923070022</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:27</td><td></td><td>440001</td><td>Cust want information about BBD information given &amp; mohan no. given</td><td> - </td> </tr>
+ <tr class="odd"><td>Haider</td><td>dhon</td><td>9765859835</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:23</td><td></td><td>440002</td><td>cust want information about BBD information given &amp; mohan no. given</td><td> - </td> </tr>
+ <tr class="even"><td>Chetak</td><td>waghmare </td><td>9923928224</td><td>Wardha</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:09</td><td></td><td>442001</td><td>cust interested for BBD so inmfo given to cust about BBD </td><td> - </td> </tr>
+ <tr class="odd"><td>prem </td><td>tolani</td><td>9823236847</td><td>Gondia</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:09</td><td></td><td>445001</td><td>cust is int in bbd</td><td> - </td> </tr>
+ <tr class="even"><td>Depak </td><td>lalenker</td><td>9423524660</td><td>Akola</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 09:03</td><td></td><td>440011</td><td>info gvn regrading bbd concept
+and gvn mohanhardas no</td><td> - </td> </tr>
+ <tr class="odd"><td>Goldie </td><td>Jain</td><td>7276134090</td><td>Gondia</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 08:52</td><td></td><td>441601</td><td>cust interested for BBD so inmfo given to cust about BBD and given Mohan hardas no
+</td><td> - </td> </tr>
+ <tr class="even"><td>A.k </td><td>pandit</td><td>8600048000</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Sunday, August 11, 2013 - 08:22</td><td></td><td>441002</td><td>cust wants to buy grocery prdu 
+but ifo  gvn regrading bbd direct concept </td><td> - </td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

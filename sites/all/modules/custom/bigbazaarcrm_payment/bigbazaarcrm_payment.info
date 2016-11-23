@@ -1,0 +1,4 @@
+name = Big Bazaar CRM Payment
+description = Big bazaaar CRM Payment Gateway
+core = 7.x
+package = Big bazaaar CRM Payment Gateway

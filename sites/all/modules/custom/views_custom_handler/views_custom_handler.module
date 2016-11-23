@@ -1,0 +1,113 @@
+<?php
+
+/**
+ * Implements hook_views_data().
+ */
+function views_custom_handler_views_data() {
+//  $data['views_custom_handler']['table']['group'] = t('payment Method');
+//  $data['views_custom_handler']['table']['join'] = array(
+//    // Exist in all views.
+//    '#global' => array(),
+//  );
+  
+  $data['views_custom_handler']['documents_upload'] = array(
+    'title' => t('Upload lead documents'),
+    'help' => t('Link to upload lead\'s documents'),
+    'field' => array(
+      'handler' => 'views_handler_documents_upload',
+    ),
+  );
+    
+  $data['views_custom_handler']['table']['group'] = t('Payment');
+  $data['views_custom_handler']['table']['join'] = array(
+    // Exist in all views.
+    '#global' => array(),
+  );
+  
+  $data['views_custom_handler']['payment_method'] = array(
+    'title' => t('Payment Method from Payment Transaction'),
+    'help' => t('Payment Method from Payment Transaction'),
+    'field' => array(
+      'handler' => 'views_handler_payment_type',
+    ),
+  );
+  
+//  $data['views_custom_handler']['table']['group'] = t('Payment Modified By user');
+//  $data['views_custom_handler']['table']['join'] = array(
+//    // Exist in all views.
+//    '#global' => array(),
+//  );
+ 
+  $data['views_custom_handler']['payment_user'] = array(
+    'title' => t('Payment Modified by user from Payment Transaction'),
+    'help' => t('Payment Modified by user from Payment Transaction'),
+    'field' => array(
+      'handler' => 'views_handler_payment_user',
+    ),
+  );
+  
+//  $data['views_custom_handler']['table']['group'] = t('Payment bank name');
+//  $data['views_custom_handler']['table']['join'] = array(
+//    // Exist in all views.
+//    '#global' => array(),
+//  );
+ 
+  $data['views_custom_handler']['payment_bank'] = array(
+    'title' => t('Payment bank from Payment Transaction'),
+    'help' => t('Payment bank from Payment Transaction'),
+    'field' => array(
+      'handler' => 'views_handler_payment_bank',
+    ),
+  );
+  
+//  $data['views_custom_handler']['table']['group'] = t('Payment No');
+//  $data['views_custom_handler']['table']['join'] = array(
+//    // Exist in all views.
+//    '#global' => array(),
+//  );
+ 
+  $data['views_custom_handler']['remaining_payment'] = array(
+    'title' => t('Remaining Payment from Payment Transaction'),
+    'help' => t('Remaining Payment from Payment Transaction'),
+    'field' => array(
+      'handler' => 'views_handler_remaining_payment',
+    ),
+  );
+  
+ 
+  $data['views_custom_handler']['payment_amount'] = array(
+    'title' => t('Payment amount from Payment Transaction'),
+    'help' => t('Payment amount from Payment Transaction'),
+    'field' => array(
+      'handler' => 'views_handler_payment_amount',
+    ),
+  );
+  
+  $data['views_custom_handler']['event_calendar'] = array(
+    'title' => t('Event calendar link'),
+    'help' => t('Renders \'Event Calendar\' link depending on the application status'),
+    'field' => array(
+      'handler' => 'views_handler_event_calendar',
+    ),
+  );
+ 
+  $data['views_custom_handler']['sales_manager_schedule	'] = array(
+    'title' => t('Sales manager schedule link'),
+    'help' => t('Renders \'Sales manager schedule\' link depending on the application status'),
+    'field' => array(
+      'handler' => 'views_handler_sales_manager_schedule',
+    ),
+  );
+  
+  //Add pincode fields in 'Application' node table
+  $data['field_data_field_pin_code']['field_pin_code_value']['relationship'] = array(
+    //'title' => t('@entity using @field', array('@entity' => $entity, '@field' => $label)),
+    'help' => t('Relate pincode field in application node to PINCODE taxonomy'),
+    'handler' => 'views_handler_relationship',
+    'base' => 'taxonomy_term_data',
+    'base field' => 'name',
+    'label' => t('term from Field pincode'),
+  );
+
+  return $data;
+}

@@ -1,0 +1,3 @@
+name = enquiries_report
+description = Provides a really neat widget for your site's sidebar.
+core = 7.x

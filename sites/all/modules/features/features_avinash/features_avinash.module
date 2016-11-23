@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Features Avinash feature.
+ */
+
+include_once 'features_avinash.features.inc';

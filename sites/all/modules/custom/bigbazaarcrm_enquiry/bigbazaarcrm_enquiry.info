@@ -1,0 +1,4 @@
+name = Enquiry Custom
+description = This module will validate phone number and allow anonymous user to post comments on there enquiies.
+package = Custom
+core = 7.x

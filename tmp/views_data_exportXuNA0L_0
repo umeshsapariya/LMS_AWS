@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>First Name</th><th>Last Name</th><th>Mobile No.</th><th>City</th><th>Status</th><th>Application State</th><th>Created On</th></tr></thead>    <tbody> <tr class="odd"><td>Zeeshan</td><td>Khan</td><td>9960205878</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Wednesday, June 12, 2013 - 08:34</td> </tr>
+ <tr class="even"><td>Lucky</td><td>thawani</td><td>8055684845</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 01:01</td> </tr>
+ <tr class="odd"><td>Pankaj</td><td>Chowksey</td><td>9423610240</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 22:19</td> </tr>
+ <tr class="even"><td>SURAJ</td><td>MOHADURE</td><td>8626025597</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 21:55</td> </tr>
+ <tr class="odd"><td>Kusum</td><td>Kalambe</td><td>9921508033</td><td></td><td>Open</td><td>(Payment Received Online)</td><td>Tuesday, June 11, 2013 - 21:12</td> </tr>
+ <tr class="even"><td>Jay </td><td>Joshi</td><td>9890388896</td><td>Amravati</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 20:35</td> </tr>
+ <tr class="odd"><td>Abdul Nazir</td><td>Qureshi</td><td>9970196833</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 20:27</td> </tr>
+ <tr class="even"><td>vishal</td><td>pohekar</td><td>9960555148</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 17:52</td> </tr>
+ <tr class="odd"><td>sachin</td><td>sahu</td><td>9822073286</td><td>Wardha</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 17:28</td> </tr>
+ <tr class="even"><td>ASHISH</td><td>KUMAR</td><td>9373747571</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 17:11</td> </tr>
+ <tr class="odd"><td>roshani</td><td>fating</td><td>9021333207</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 15:54</td> </tr>
+ <tr class="even"><td>roshani</td><td>fating</td><td>9021333207</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 15:53</td> </tr>
+ <tr class="odd"><td>Gopal</td><td>Gomashe</td><td>9922657526</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 13:46</td> </tr>
+ <tr class="even"><td>akhil</td><td>saraf</td><td>9764413332</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 13:22</td> </tr>
+ <tr class="odd"><td>suresh prasad</td><td>tiwari</td><td>7620004189</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 13:20</td> </tr>
+ <tr class="even"><td>mahesh</td><td>tawari</td><td>9822045005</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 13:06</td> </tr>
+ <tr class="odd"><td>Pradip</td><td>Nawalkar</td><td>9689532471</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 12:59</td> </tr>
+ <tr class="even"><td>Sachin</td><td>Chandak</td><td>9881749276</td><td>Amravati</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 12:56</td> </tr>
+ <tr class="odd"><td>Rahul</td><td>Bangadkar</td><td>9890443770</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 12:42</td> </tr>
+ <tr class="even"><td>AKASH</td><td>CHANDAK</td><td>9823355885</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Tuesday, June 11, 2013 - 12:33</td> </tr>
+ <tr class="odd"><td>PANKAJ</td><td>Thakkar</td><td>9960807807</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 11:16</td> </tr>
+ <tr class="even"><td>PANKAJ</td><td>MADHUKAR</td><td>9028403193</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 10:22</td> </tr>
+ <tr class="odd"><td>vishal</td><td>yelkar</td><td>9096555287</td><td>Akola</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 08:57</td> </tr>
+ <tr class="even"><td>Umesh </td><td>Sapariya</td><td>8080808098</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 22:29</td> </tr>
+ <tr class="odd"><td>Umesh </td><td>Sapariya</td><td>8080808087</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 22:28</td> </tr>
+ <tr class="even"><td>MANISH</td><td>KARIYA</td><td>09890938755</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 20:14</td> </tr>
+ <tr class="odd"><td>Uday</td><td>Shah</td><td>9765568820</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 19:12</td> </tr>
+ <tr class="even"><td>Afzal</td><td>Sorathiya</td><td>8055077005</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 18:09</td> </tr>
+ <tr class="odd"><td>Dipesh</td><td>Murarka</td><td>9890356420</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 17:44</td> </tr>
+ <tr class="even"><td>n</td><td>c</td><td>9373103507</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 17:24</td> </tr>
+ <tr class="odd"><td>abcd</td><td>efgh</td><td>1234567892</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 16:50</td> </tr>
+ <tr class="even"><td>abcd</td><td>efgh</td><td>1234567890</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 16:46</td> </tr>
+ <tr class="odd"><td>Sangeeta</td><td>Rao</td><td>9373577102</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 16:08</td> </tr>
+ <tr class="even"><td>Krishna</td><td>Toshniwal</td><td>9673359222</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 15:58</td> </tr>
+ <tr class="odd"><td>SHIVANAND</td><td>MASNE</td><td>9373959986</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 14:55</td> </tr>
+ <tr class="even"><td>Sagar </td><td>Thakare</td><td>9561585204</td><td>Amravati</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 14:48</td> </tr>
+ <tr class="odd"><td>Ravikant</td><td>Bhange</td><td>9260418471</td><td>Amravati</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 14:46</td> </tr>
+ <tr class="even"><td>Vikrant </td><td>Bahirat</td><td>9689227227</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 14:28</td> </tr>
+ <tr class="odd"><td>NARESH</td><td>KEWALRAMANI</td><td>9373071199</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 14:25</td> </tr>
+ <tr class="even"><td>test</td><td>testy</td><td>9223305000</td><td>Akola</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 13:59</td> </tr>
+ <tr class="odd"><td>sumit</td><td>khanchandani</td><td>9665576666</td><td>Nagpur</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 13:18</td> </tr>
+ <tr class="even"><td>Rahul</td><td>Ingle</td><td>7709498444</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 13:18</td> </tr>
+ <tr class="odd"><td>Suresh</td><td>Gurwani</td><td>9322444447</td><td></td><td>Open</td><td>(Application Submitted Online)</td><td>Monday, June 10, 2013 - 13:03</td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

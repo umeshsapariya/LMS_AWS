@@ -1,0 +1,97 @@
+<?php
+/**
+ * Implements hook_schema().
+ */
+function bigbazaarcrm_payment_schema() {
+  $schema = array();
+  
+  $schema['bigbazaarcrm_payment'] = array(
+    'description' => 'Table for bigbazaarcrm payment users.',
+    'fields' => array(
+      'payment_id' => array(
+        'description' => 'The identifier of a payment id.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The nid identifier of a node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+   
+      'payment_method' => array(
+        'description' => 'Payment Method',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'workflow_status' => array(
+        'description' => 'Workflow Status',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'txn_id' => array(
+        'description' => 'Transaction id',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'auth_id_code' => array(
+        'description' => 'Auth ID Code',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'epg_txn_id' => array(
+        'description' => 'Epg Transaction ID',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'rrn' => array(
+        'description' => 'RRN',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'amount' => array(
+        'description' => 'Amount',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => 'Boolean value of a bigbazaarcrm payment for active (1) or pending (0).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'timestamp' => array(
+        'description' => 'Timestamp of when the bigbazaarcrm payment was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    
+    ),
+    'primary key' => array('payment_id'),
+  );
+  
+$schema['bigbazaarcrm_applications'] = array(
+    'description' => 'Table for bigbazaarcrm applications.',
+    'fields' => array(
+      'app_id' => array(
+        'description' => 'The identifier of a payment id.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The nid identifier of a node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('app_id'),
+);
+ return $schema;
+}

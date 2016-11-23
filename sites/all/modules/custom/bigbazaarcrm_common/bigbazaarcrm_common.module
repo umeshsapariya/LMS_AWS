@@ -1,0 +1,1901 @@
+<?php
+
+/**
+ * @author Umesh
+ * @copyright 2013
+ */
+
+/**
+ * hook_menu()
+ */
+function bigbazaarcrm_common_menu() {
+  $items['enquiry'] = array(
+    'title' => 'Enquiry',
+    'page callback' => 'bigbazaarcrm_common_enquiry',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['thank-you/%node'] = array(
+    'title' => 'Thank you',
+    'page callback' => 'bigbazaarcrm_common_page_thankyou',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['regret/%node'] = array(
+    'title' => 'Sorry',
+    'page callback' => 'bigbazaarcrm_common_page_regret',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['welcome-back'] = array(
+    'title' => 'Welcome Back',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bigbazaarcrm_common_verify_mobile_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['download_pdf/%'] = array(
+    'title' => 'Download Your Application Form.',
+    'page callback' => 'bigbazaarcrm_common_download_pdf',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['payment-options'] = array(
+    'title' => 'Congratulations!',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bigbazaarcrm_common_payment_form'),
+    'access callback' => 'payment_options_page_access',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['forgot-application'] = array(
+    'title' => 'Forgot Application',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bigbazaarcrm_forgot_application_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['survey/session'] = array(
+    'title' => 'Survay Session',
+    'page callback' => 'bigbazaarcrm_common_survey_status',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+    'delivery callback' => 'drupal_json_output'
+  );
+  $items['admin/lead_csv_import'] = array(
+    'title' => 'Import Alliance LEADS',
+    'description' => 'Import content from a <abbr title="Comma Separated Values">CSV</abbr> or <abbr title="Tab Separated Values">TSV</abbr> file.',
+    'access arguments' => array('alliance lead generation'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bigbazaar_oxigen_leads_form'),
+    'file' => 'bigbazaarcrm_common.inc',
+  );
+  return $items;
+}
+
+function bigbazaarcrm_common_survey_status() {
+  $flag = TRUE;
+  if (isset($_SESSION['survey_flag'])) {
+    $flag = FALSE;
+  }
+  return array('status' => $flag);
+}
+
+/**
+ * callback of verify-mobile
+ * 
+ */
+function bigbazaarcrm_common_verify_mobile_form($form, $form_state) {
+  $form['enter_details'] = array(
+    '#prefix' => '<div class="enter-details">',
+    '#markup' => t('Enter Details'),
+    '#suffix' => '</div>',
+  );
+
+  $form['mobile'] = array(
+    '#title' => 'Mobile no.',
+    '#title_display' => 'invisible',
+    '#type' => 'textfield',
+    '#attributes' => array(
+      'placeholder' => t('Mobile no'),
+    ),
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+
+  $form['application'] = array(
+    '#title' => 'Application no.',
+    '#title_display' => 'invisible',
+    '#type' => 'textfield',
+    '#attributes' => array(
+      'placeholder' => t('Application no'),
+    ),
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+
+  if (user_access('fill application form')) {
+    //Use different submit handler
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+      '#submit' => array('bigbazaarcrm_common_verify_mobile_form_submit_for_so'),
+    );
+  }
+  else {
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+      '#submit' => array('bigbazaarcrm_common_verify_mobile_form_redirect_submit'),
+    );
+  }
+
+//  $form['submit_pdf'] = array(
+//    '#type' => 'submit',
+//    '#value' => t('Download PDF'),
+//    '#submit' => array('bigbazaarcrm_common_verify_mobile_form_download_pdf'),
+//  );
+
+  $form['forgot_password'] = array(
+    '#type' => 'link',
+    '#title' => t('Forgot Application no.?'),
+    '#href' => 'forgot-application',
+  );
+  return $form;
+}
+
+/**
+ * form_validate
+ * 
+ */
+function bigbazaarcrm_common_verify_mobile_form_validate($form, $form_state) {
+  $mobile = $form_state['values']['mobile'];
+  $application = $form_state['values']['application'];
+  $mob = strlen($mobile);
+
+  if ($mob != 10 || !is_numeric($mobile)) {
+    form_set_error('mobile', 'Please enter 10 Digit Mobile no.');
+  }
+
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  if (empty($nid)) {
+    form_set_error('mobile', 'Sorry, no application for this mobile number');
+  }
+  $node = node_load($nid);
+  if ($node->field_application_number['und'][0]['value'] !== $application) {
+    form_set_error('mobile', 'Sorry, mobile no. and application no. do not match');
+  }
+
+  $pincode = $node->field_pin_code[LANGUAGE_NONE][0]['value'];
+  $pincode_status = bigbazaarcrm_application_get_pincode_status($pincode);
+  if (!$pincode_status[0]) {
+    form_set_error('mobile', 'Sorry, your pincode is not serviceable');
+  }
+
+//  if (isset($node->field_quiz_passed['und']) && $node->field_quiz_passed['und'][0]['value'] == 0) {
+//    form_set_error('mobile', 'Sorry, you have already completed the questionnaire');
+//  }
+//    $pincode = $node->field_pin_code['und'][0]['value'];
+//    $name = $node->field_first_name['und'][0]['value'];
+//    //$result = db_query("select count(Pincode) from pin_code where Pincode = :pin_code",array(':pin_code' => $pincode))->fetchField();   
+//    $result=bigbazaarcrm_application_get_pincode_status($pincode);
+//    if(!$result[0] && $mob == 10 ){
+//    drupal_goto('regret/'.$nid,array('query' => array('error' => $result[1])));
+//    }
+}
+
+/**
+ * Continue application submit handler
+ * for SO/RM 
+ */
+function bigbazaarcrm_common_verify_mobile_form_submit_for_so($form, $form_state) {
+
+  $set_session = FALSE;
+  $mobile = $form_state['values']['mobile'];
+  $application = $form_state['values']['application'];
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  $node = node_load($nid);
+
+  $transaction_exists = bigbazaarcrm_common_check_transaction_for_nid($nid);
+  if (!empty($transaction_exists)) {
+    drupal_set_message(t('You have already made the payment'));
+    return;
+  }
+  else {
+    $workflow_sid = workflow_node_current_state($node);
+    $workflow_state = bigbazaarcrm_application_get_state_name_from_sid($workflow_sid);
+
+    if (!isset($node->field_education_qualification[LANGUAGE_NONE]) || !isset($node->field_occupation[LANGUAGE_NONE])) {
+      $incomplete = TRUE;
+    }
+
+    if (($workflow_state == '(Lead Generated)') || $incomplete) {
+      $url = 'node/' . $nid . '/edit';
+    }
+    else {
+      if ($workflow_state == '(Quiz complete-Ineligible)') {
+        $url = 'thank-you/' . $nid;
+      }
+      else {
+        $set_session = TRUE;
+        $url = 'payment-options';
+      }
+    }
+  }
+  //Store Lead information in SESSION
+  if ($set_session) {
+    $_SESSION['application_info']['nid'] = $nid;
+    $_SESSION['application_info']['application_id'] = $application;
+    $_SESSION['application_info']['mobile'] = $mobile;
+  }
+  drupal_goto($url);
+}
+
+/**
+ * Continue application submit handler
+ * for lead
+ */
+function bigbazaarcrm_common_verify_mobile_form_redirect_submit($form, $form_state) {
+//  $mobile = $form_state['values']['mobile'];
+//  $application = $form_state['values']['application'];
+//  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+//  $node = node_load($nid);
+//  if ($node->field_application_number['und'][0]['value'] == $application) {
+//
+//    $workflow_sid = workflow_node_current_state($node);
+//    $workflow_state = bigbazaarcrm_application_get_state_name_from_sid($workflow_sid);
+//    $workflow_history_sids = bigbazaarcrm_common_get_workflow_history($node->nid);
+//
+//    $kyc_upload_sid = bigbazaarcrm_application_get_sid_from_state_name('(Applied-KYC Uploaded)');
+//    $kyc_pending_sid = bigbazaarcrm_application_get_sid_from_state_name('(Applied-KYC Pending)');
+//
+////Check if state is (Applied-KYC Uploaded)
+//    if ($workflow_sid == $kyc_upload_sid) {
+//      drupal_set_message(t('You have already uploaded your KYC documents'));
+//      return;
+//    }
+//
+////Check if state is (Applied-KYC Pending)
+//    elseif ($workflow_sid == $kyc_pending_sid) {
+//      $url = 'node/add/kyc-upload';
+//    }
+//
+////Check if state has moved ahead of (Applied-KYC Uploaded)
+//    elseif (in_array($kyc_upload_sid, $workflow_history_sids) || in_array($kyc_pending_sid, $workflow_history_sids)) {
+//      drupal_set_message(t('You have already submitted your KYC documents.<br> Your currrent state is @workflow_state', array('@workflow_state' => $workflow_state)));
+//      return;
+//    }
+//
+////Check if state is (Lead Generated)
+//    elseif ($workflow_sid == bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)')) {
+//      $url = 'node/' . $nid . '/edit';
+//    }
+//
+////Check if state is (Quiz incomplete)
+//    elseif ($workflow_sid == bigbazaarcrm_application_get_sid_from_state_name('(Quiz incomplete)')) {
+//      $machine_name = $node->field_occupation[LANGUAGE_NONE][0]['value'];
+//      $quiz_nid = bigbazaarcrm_application_get_quiz_nid_from_machine_name($machine_name);
+//      $url = 'node/' . $quiz_nid . '/take';
+//    }
+//
+////Check if state is (Quiz complete-Ineligible)
+//    elseif ($workflow_sid == bigbazaarcrm_application_get_sid_from_state_name('(Quiz complete-Ineligible)')) {
+////$url = 'regret/' . $nid . '/ineligible';
+//      $url = 'thank-you/' . $nid;
+//    }
+//
+////Check if state is (Quiz complete-Eligible)
+//    elseif ($workflow_sid == bigbazaarcrm_application_get_sid_from_state_name('(Quiz complete-Eligible)') || $workflow_sid == bigbazaarcrm_application_get_sid_from_state_name('(Cheque received)')) {
+//
+////If offline payment is selected, workflow status does not change unless cash is 'Cleared'
+////So check if transaction is made with remote status 'Success'
+//      $transaction_exists = bigbazaarcrm_common_check_transaction_for_nid($nid);
+//      if (!empty($transaction_exists)) {
+//        drupal_set_message(t('You have already made the payment'));
+//        return;
+//      }
+//
+//      global $user;
+//      //$mobile = $user->name;
+//      $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+//      $value = 'auto submit';
+////      $query = array('mobile' => $mobile,
+////        'value' => $value
+////      );
+//      $user = user_load_by_name($mobile);
+//      user_login_finalize();
+//      //drupal_goto('node/' . $nid . '/edit', array('query' => $query));
+//      drupal_goto('payment-options');
+//    }
+//  }
+  ##############################################################
+
+  $mobile = $form_state['values']['mobile'];
+  $application = $form_state['values']['application'];
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  $node = node_load($nid);
+
+  $transaction_exists = bigbazaarcrm_common_check_transaction_for_nid($nid);
+  if (!empty($transaction_exists)) {
+    drupal_set_message(t('You have already made the payment'));
+    return;
+  }
+  else {
+    $workflow_sid = workflow_node_current_state($node);
+    $workflow_state = bigbazaarcrm_application_get_state_name_from_sid($workflow_sid);
+
+    if (!isset($node->field_education_qualification[LANGUAGE_NONE]) || !isset($node->field_occupation[LANGUAGE_NONE])) {
+      $incomplete = TRUE;
+    }
+
+    if (($workflow_state == '(Lead Generated)') || $incomplete) {
+      $url = 'node/' . $nid . '/edit';
+    }
+    else {
+      //Check if state is (Quiz incomplete)
+      if (!isset($node->field_quiz_passed[LANGUAGE_NONE])) {
+        $machine_name = $node->field_occupation[LANGUAGE_NONE][0]['value'];
+        $quiz_nid = bigbazaarcrm_application_get_quiz_nid_from_machine_name($machine_name);
+        $url = 'node/' . $quiz_nid . '/take';
+      }
+      elseif ($workflow_state == '(Quiz complete-Ineligible)') {
+        $url = 'thank-you/' . $nid;
+      }
+      else {
+        $set_session = TRUE;
+        $url = 'payment-options';
+      }
+    }
+  }
+
+
+  ##############################################################
+  global $user;
+  $user = user_load_by_name($mobile);
+  user_login_finalize();
+
+  drupal_goto($url);
+}
+
+function bigbazaarcrm_common_verify_mobile_form_download_pdf($form, $form_state) {
+  $mobile = $form_state['values']['mobile'];
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  drupal_goto('download_pdf/' . $nid, array('query' => array('destination' => 'welcome-back')));
+}
+
+/**
+ * Get Application Nid from Mobile no
+ * 
+ */
+function bigbazaarcrm_common_get_nid_from_mobile_no($mobile) {
+  $query = db_select('field_data_field_mobile_1', 'm');
+  $query->fields('m', array('entity_id'));
+  $query->condition('m.field_mobile_1_value', $mobile);
+  $nid = $query->execute()->fetchField();
+  return $nid;
+}
+
+function bigbazaarcrm_common_enquiry() {
+  drupal_add_js(drupal_get_path('theme', 'bigbazaarcrm') . '/js/form_validate.js');
+  drupal_add_js(drupal_get_path('theme', 'bigbazaarcrm') . '/js/jquery.validate.min.js');
+  module_load_include('inc', 'node', 'node.pages');
+  $new_node = new stdClass;
+  $new_node->type = 'enquiry';
+  $new_node->language = LANGUAGE_NONE;
+  $form = drupal_get_form('enquiry_node_form', $new_node);
+  return $form;
+}
+
+/**
+ * hook_form_alter
+ */
+function bigbazaarcrm_common_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+
+  if ($form_id == 'event_calendar_node_form') {
+    $form['revision_information']['#access'] = FALSE;
+    $form['options']['#access'] = FALSE;
+    $form['#validate'][] = 'bigbazaarcrm_common_event_calendar_node_form_validate';
+    if (user_has_roles(array('Call Center Agent', 'Call Center Supervisor'))) {
+      $form['field_event_completion']['und']['#access'] = FALSE;
+    }
+  }
+  if ($form_id == 'views_exposed_form') {
+
+    /* $form['city']['#prefix'] = '<div id="city_dropdown_replace">';
+      $form['city']['#suffix'] = '</div>';
+
+
+      $form['state']['#ajax'] =  array(
+      'event'    => 'change',
+      'callback' => 'bigbazaarcrm_common_state_city_dependent_dropdown_callback',
+      'wrapper'  => 'city_dropdown_replace',
+      'method'   => 'replace',
+      ); */
+  }
+
+  if ($form_id == 'enquiry_node_form' && !$user->uid) {
+
+    //$form['actions']['submit']['#submit'][2] = 'bigbazaarcrm_common_enquiry_thankyou';
+    $form['actions']['submit']['#value'] = 'Submit Query';
+  }
+}
+
+/*
+ * 
+ * Form validation 
+ */
+
+function bigbazaarcrm_common_event_calendar_node_form_validate(&$form, &$form_state) {
+  $mobile = $form_state['values']['field_mobile_number']['und'][0]['value'];
+  $application_number = $form_state['values']['field_application_no']['und'][0]['value'];
+
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  if (empty($nid)) {
+    form_set_error('field_mobile_number', 'Sorry, no application for this mobile number');
+  }
+  else {
+    $node = node_load($nid);
+    if ($node->field_application_number['und'][0]['value'] !== $application_number) {
+      form_set_error('field_application_no', 'Sorry, mobile no. and application no. do not match');
+    }
+  }
+}
+
+/**
+ *  Dependent State City callback
+ */
+function bigbazaarcrm_common_state_city_dependent_dropdown_callback($form, &$form_state) {
+  $city_options = bigbazaarcrm_common_get_city_list_from_state($form_state['values']['state']);
+  $form['city']['#options'] = $city_options;
+  return $form['city'];
+}
+
+/**
+ * Get City list from State
+ */
+function bigbazaarcrm_common_get_city_list_from_state($state) {
+  $query = db_select('field_data_field_state', 's');
+  $query->join('field_data_field_store_city', 'c', 's.entity_id = c.entity_id');
+  $query->join('taxonomy_term_data', 't', 't.tid = c.field_store_city_tid');
+  $query->fields('c', array('field_store_city_tid'));
+  $query->fields('t', array('name'));
+  $query->condition('s.field_state_tid', $state);
+  $city_list = $query->distinct()->execute()->fetchAll();
+  $city_options = array();
+  foreach ($city_list as $city) {
+    $city_options [$city->field_store_city_tid] = $city->name;
+  }
+  return $city_options;
+}
+
+/**
+ *  Get Taxonomy Name From tid
+ */
+function bigbazaarcrm_common_get_taxonomy_name_from_tid($tid) {
+  $query = db_select('taxonomy_term_data', 't');
+  $query->fields('t', array('name'));
+  $query->condition('t.tid', $tid);
+  $name = $query->execute()->fetch();
+  return $name->name;
+}
+
+function bigbazaarcrm_common_enquiry_thankyou() {
+  drupal_goto('thank-you/234');
+}
+
+function bigbazaarcrm_common_page_thankyou($node) {
+//  drupal_get_messages('status');
+//  $output = '';
+//  $output .= '<div class="thank_you_wrap">Thank you for applying to Big Bazaar Direct. We’ll get back to you shortly.</br>';
+//  if (variable_get('application_node_' . arg(1), 0)) {
+//    $output .= '<p> Your application id is ' . variable_get('application_node_' . arg(1)) . '</p></div>';
+//  }
+  if (arg(2) == 'request') {
+    $status = drupal_get_messages();
+
+    $output = '<div class = "thank-you-quiz"><p>' . $status['status'][0] . '</p>';
+    return $output;
+  }
+
+
+  $output .= '<div class = "thank-you-quiz"><p> Your application number <span class="orng">' . $node->field_application_number[LANGUAGE_NONE][0]['value'] . '</span> has been submitted</p>';
+  $output .= '<p>Our Team will get back to you shortly<p></div>';
+
+  return $output;
+}
+
+function bigbazaarcrm_common_page_regret($node) {
+  drupal_get_messages('status');
+  $output = '';
+
+  if (arg(2) === 'ineligible') {
+    $output .= '<p> Your application id is ' . $node->field_application_number[LANGUAGE_NONE][0]['value'] . '</p></div>';
+    //$output .= '<div class="thank_you_wrap">Sorry, Few eligibility criteria are missing. You cannot proceed!</br>';
+    $output .= '<div class="thank_you_wrap">Thank you for your application our team will contact you shortly</br>';
+
+    return $output;
+  }
+
+  if (isset($_GET['error']) && variable_get('application_node_' . arg(1), 0)) {
+    if ($_GET['error'] == 'no_service') {
+      $output .= '<p> Your application id is ' . variable_get('application_node_' . arg(1)) . '</p></div>';
+      $output .= '<div class="thank_you_wrap">Sorry, we don’t service at this pin code</br>';
+      return $output;
+    }
+    if ($_GET['error'] == 'no_vacancy') {
+      $output .= '<p> Your application id is ' . variable_get('application_node_' . arg(1)) . '</p></div>';
+      $output .= '<div class="thank_you_wrap">Oops, the franchisee seats are full for this pin code, but will still
+get back within x days</br>';
+      return $output;
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * hook_node_preprocess
+ */
+function bigbazaarcrm_common_preprocess_node(&$vars) {
+  $arg0 = arg(0);
+  $arg1 = arg(1);
+  if (isset($arg0) && isset($arg1)) {
+    if (is_numeric($arg1)) {
+      $top_features = drupal_json_decode($vars['field_product_specification'][0]['value']);
+      $product_specs = drupal_json_decode($vars['field_product_long_description'][0]['value']);
+      $top_features_display = bbd_common_get_top_feature_from_json($top_features);
+      $product_specs_display = bbd_common_get_product_specs_from_json($product_specs);
+      $vars['top_features'] = $top_features_display;
+      $vars['product_spec'] = $product_specs_display;
+    }
+  }
+}
+
+/**
+ * 
+ * @param type $top_features
+ * @return string
+ * Returns Top Features
+ * 
+ */
+function bbd_common_get_top_feature_from_json($top_features) {
+  $top_features_output = '<ul>';
+  if (!empty($top_features['feature1'])) {
+    $top_features_output .= '<li>' . $top_features['feature1'] . '</li>';
+  }
+  if (!empty($top_features['feature2'])) {
+    $top_features_output .= '<li>' . $top_features['feature2'] . '</li>';
+  }
+  if (!empty($top_features['feature3'])) {
+    $top_features_output .= '<li>' . $top_features['feature3'] . '</li>';
+  }
+  if (!empty($top_features['feature4'])) {
+    $top_features_output .= '<li>' . $top_features['feature4'] . '</li>';
+  }
+  $top_features_output .= '</ul>';
+  return $top_features_output;
+}
+
+/**
+ * 
+ * @param type $product_specs
+ * @return type
+ * Returns Product Specification
+ */
+function bbd_common_get_product_specs_from_json($product_specs) {
+  $output = '';
+  $header = array(
+    array('data' => '<b>Attribute</b>'),
+    array('data' => '<b>Value</b>'),
+  );
+  $rows = array();
+  foreach ($product_specs['spec'] as $spec) {
+    if (!empty($spec['value'])) {
+      $row = array();
+      $row[] = array('data' => ucfirst($spec['name']));
+      $row[] = array('data' => ucfirst($spec['value']));
+      $rows[] = array('data' => $row);
+    }
+  }
+  if ($rows) {
+    $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  }
+  return $output;
+}
+
+/*
+ * 
+ * Attach KYC documents for PDF generation
+ */
+
+function bigbazaarcrm_common_get_kyc_docs($nid) {
+  $query = db_select('field_data_field_application_refrence', 'a')
+      ->fields('a', array('entity_id'))
+      ->condition('field_application_refrence_target_id', $nid);
+  $res = $query->execute()->fetchField();
+  $node = node_load($res);
+  $files = $node->field_files;
+  $photo = $node->field_kyc_image;
+  foreach ($files['und'] as $value) {
+    $url = file_create_url($value['uri']);
+    $html.='<div class = "field">';
+    $html.='<div class ="field-label"></div>' . '<div class="field-items"><img src =" ' . $url . ' "></div>';
+    $html.='</div>';
+  }
+  foreach ($photo['und'] as $val) {
+    $uri = file_create_url($val['uri']);
+    $html.='<div class = "field">';
+    $html.='<div class ="field-label"></div>' . '<div class="field-items"><img src =" ' . $uri . ' "></div>';
+    $html.='</div>';
+  }
+  return $html;
+}
+
+/*
+ * 
+ * Download your PDF
+ */
+
+function bigbazaarcrm_common_download_pdf($nid) {
+  $node = node_load($nid);
+  $view = node_view($node, 'PDF');
+  $array = $view;
+  foreach ($array as $key => $value) {
+    if (substr($key, 0, 6) == 'field_') {
+      if ($key != 'field_quiz_passed' && $key != 'field_payment_mode') {
+        $array[$key]['#access'] = TRUE;
+      }
+    }
+  }
+  $order_id = bigbazaarcrm_application_get_order_id_from_nid($nid);
+  $quiz_answers = bigbazaarcrm_application_quiz_answers($node);
+  $kyc_upload = bigbazaarcrm_common_get_kyc_docs($nid);
+//$payment_details = bigbazaarcrm_application_payment_details($order_id);
+  $html = render($array) . $quiz_answers . $kyc_upload;
+  if (!empty($order_id)) {
+    $html .= views_embed_view('order_payments_done', 'block_1', $order_id);
+  }
+  $filename = 'Big Bazaar Direct-' . $node->title . '-' . $nid;
+  pdf_using_mpdf_api($html, $filename);
+}
+
+/*
+ * 
+ * Implements hook_node_presave()
+ */
+
+function bigbazaarcrm_common_node_presave($node) {
+  if ($node->type == 'event_calendar') {
+    $mobile = $node->field_mobile_number['und'][0]['value'];
+    $application_nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+    $application_node = node_load($application_nid);
+    $lead_email = $application_node->field_email['und'][0]['value'];
+    $application_number = $application_node->field_application_number['und'][0]['value'];
+    $uid = $node->uid;
+    $user_load = user_load($uid);
+    $author_email = $user_load->mail;
+    //send mail to lead
+    $lead_params = array(
+      'mail_to' => $lead_email,
+      'dynamic' => array('application_id' => $application_number),
+    );
+    //Replace with relevant email template
+    //entity_email_send('forgot_application', $lead_params);
+    drupal_set_message(t('Your event has been created successfully, Our sales team will contact you'));
+
+    //send mail to sales person
+    $author_params = array(
+      'mail_to' => $author_email,
+      'dynamic' => array('application_id' => $application_number),
+    );
+    entity_email_send('lead_generation', $author_params);
+    drupal_set_message('You have an event call, please check your email');
+  }
+//  if ($node->type == 'kyc_upload') {
+//    $nid = $_SESSION['app_nid'];
+//    $app_no = $_SESSION['app_no'];
+//    $node->field_application_refrence['und'][0]['target_id'] = $nid;
+//    $node->title = $app_no;
+//    $app_node = node_load($nid);
+//    $sid = bigbazaarcrm_application_get_sid_from_state_name('(Applied-KYC Uploaded)');
+//    workflow_execute_transition($app_node, $sid, NULL, TRUE);
+//  }
+  if ($node->type == 'application') {
+    if (isset($node->field_franchisee_code['und'][0]['value'])) {
+      if ($node->original->field_franchisee_code['und'][0]['value'] != $node->field_franchisee_code['und'][0]['value']) {
+//        $email_1 = 'bbdirecttechnicalsupport@futureretail.in';
+//        $email_2 = 'bbdtablet.requests@futureretail.in';
+//        $email_3 = 'vikee.mahale@iksula.com';
+//        $email_4 = 'Shobhit.Sharma@futureretail.in,Bharat.Kabra@futureretail.in,Maqsud.Shaikh@futuregroup.in,Archana.Singh@futureretail.in';
+
+        $email_1 = variable_get('login_creation_email_list','bbdirecttechnicalsupport@futureretail.in,bbdtablet.requests@futureretail.in,vikee.mahale@iksula.com,Shobhit.Sharma@futureretail.in,Bharat.Kabra@futureretail.in,Maqsud.Shaikh@futuregroup.in,Archana.Singh@futureretail.in');
+        $dynamic['franchisee_code'] = $node->field_franchisee_code['und'][0]['value'];
+        $dynamic['name'] = $node->title;
+        $dynamic['address1'] = $node->field_address_1['und'][0]['value'];
+        $dynamic['pin_code'] = $node->field_pin_code['und'][0]['value'];
+        $dynamic['mobile'] = $node->field_mobile_1['und'][0]['value'];
+        $dynamic['email'] = $node->field_email['und'][0]['value'];
+        $dynamic['state'] = $node->field_state_list['und'][0]['value'];
+        $dynamic['city'] = $node->field_city['und'][0]['value'];
+
+        bigbazaarcrm_common_make_franchisee_db_entry($node);
+
+        $params_1 = array(
+          'mail_to' => $email_1,
+          'dynamic' => $dynamic,
+        );
+
+//        $params_2 = array(
+//          'mail_to' => $email_2,
+//          'dynamic' => $dynamic,
+//        );
+//
+//        $params_3 = array(
+//          'mail_to' => $email_3,
+//          'dynamic' => $dynamic,
+//        );
+//
+//        $params_4 = array(
+//          'mail_to' => $email_4,
+//          'dynamic' => $dynamic,
+//        );
+        entity_email_send('login_creation', $params_1);
+//        entity_email_send('login_creation', $params_2);
+//        entity_email_send('login_creation', $params_3);
+//        entity_email_send('login_creation', $params_4);
+      }
+    }
+  }
+}
+
+function payment_options_page_access() {
+  global $user;
+
+  if (user_access('fill application form')) {
+    return TRUE;
+  }
+
+  if (!user_has_roles('Lead')) {
+    return FALSE;
+  }
+
+  $mobile = $user->name;
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  if (empty($nid)) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * 
+ * callback of payment menu
+ */
+function bigbazaarcrm_common_payment_form($form, $form_state) {
+//  $options = array(
+//    0 => 'Make payment',
+//    1 => 'Web call',
+//    2 => 'Telephone call'
+//  );
+//  $form['payment'] = array(
+//    '#type' => 'radios',
+//    '#title' => t('Choose one'),
+//    '#options' => $options,
+//    '#required' => TRUE,
+//    '#ajax' => array(
+//      'callback' => 'bigbazaarcrm_common_payment_js',
+//      'wrapper' => 'bigbazaarcrm-common-payment',
+//      'method' => 'replace',
+//      'effect' => 'fade',
+//    ),
+//  );
+  if (user_access('fill application form')) {
+
+    if (isset($_SESSION['application_info'])) {
+      $application_id = $_SESSION['application_info']['application_id'];
+
+      $items = array('Your application number <span class="orng">' . $application_id . '</span> has been successfully submitted',
+        'You can pay now and become our Franchisee immediately',
+        'Hurry up, as we have limited allotments per pin code<br />',
+      );
+
+      $form['congratulations'] = array(
+        '#theme' => 'item_list',
+        '#items' => $items,
+        '#attributes' => array('class' => 'congratulations'),
+      );
+
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Pay and become our Online Franchisee now'),
+        '#prefix' => '<div class = "payment-buttons">',
+        '#suffix' => '</div>',
+      );
+
+      return $form;
+    }
+    else {
+      drupal_set_title('Page not found');
+      $form['markup'] = array(
+        '#markup' => t('The requested page could not be found.'),
+      );
+      return $form;
+    }
+  }
+
+  global $user;
+  $mobile = $user->name;
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  $node = node_load($nid);
+  $pincode = $node->field_pin_code[LANGUAGE_NONE][0]['value'];
+  $state_city = bigbazaarcrm_application_get_state_city_from_pincode($pincode);
+
+  $so_rm = bigbazaarcrm_common_get_so_rm_from_pincode($pincode, TRUE, TRUE);
+
+  if (!empty($so_rm)) {
+    $so_name = ucwords(str_replace('_', ' ', $so_rm->so_name));
+    $rm_name = ucwords(str_replace('_', ' ', $so_rm->rm_name));
+    $so_rm_details = 'You can also contact our team members<br/> 
+                     <span class="orng">' . $so_name . ' (' . $so_rm->so_mobile . ') /'
+        . $rm_name . ' (' . $so_rm->rm_mobile . ')</span><br/>'
+        . 'to discuss this further';
+  }
+
+  $items = array('Your application number <span class="orng">' . $node->field_application_number[LANGUAGE_NONE][0]['value'] . '</span> has been successfully submitted',
+    'You can pay now and become our Franchisee immediately',
+    'Hurry up, as we have limited allotments per pin code<br />',
+    $so_rm_details
+  );
+
+  $form['congratulations'] = array(
+    '#theme' => 'item_list',
+    '#items' => $items,
+    '#attributes' => array('class' => 'congratulations'),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Pay and become our Online Franchisee now'),
+    '#prefix' => '<div class = "payment-buttons">'
+  );
+
+  $form['meet_us_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Courier the Documents to Head office'),
+    '#suffix' => '</div>',
+    //'#name' => t('meet_us_name'),
+    '#ajax' => array(
+      'callback' => 'meet_us_ajax_callback',
+      'wrapper' => 'bigbazaarcrm-common-payment'
+    )
+  );
+
+  $form['meet_us_fieldset'] = array(
+    '#prefix' => '<div id="bigbazaarcrm-common-payment">',
+    '#suffix' => '</div>',
+  );
+
+  $form['meet_us_fieldset'] = array(
+    '#prefix' => '<div id="bigbazaarcrm-common-payment">',
+    '#suffix' => '</div>',
+  );
+
+  if (isset($form_state['triggering_element']) && $form_state['triggering_element']['#value'] == 'Courier the Documents to Head office') {
+
+    if ($state_city[0] == 'Rajasthan') {
+      $form['meet_us_fieldset']['address'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div id="address-head">',
+        '#suffix' => '</div>',
+        '#markup' => 'You can also meet us at any of our below registration centre from 15/12/2104 to 23/12/2104, between 10.30 AM to 7.00 PM.<br>Do carry following documents to complete the registration quickly:'
+      );
+    }
+    else {
+      $form['meet_us_fieldset']['address'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div id="address-head">',
+        '#suffix' => '</div>',
+        '#markup' => '<b>You can also courier the below documents to:</b><br>
+                      Commercial Team, Big bazaar.Com<br>
+                      Future Retail Limited<br>
+                      4th Floor, Tower C,<br>
+                      247 Park, LBS Marg, Vikhroli (West),<br>
+                      Mumbai – 400083<br>'
+      );
+    }
+
+    $items = array(
+      '0' => array(
+        'data' => 'INR 25,000 Cheque OR DD in favor of Future Retail Limited payable at Mumbai',
+        'class' => array('item-1')
+      ),
+      '1' => array(
+        'data' => 'KYC documents',
+        'class' => array('item-2'),
+        'children' => array(
+          '0' => array(
+            'data' => 'ID Proof',
+          ),
+          '1' => array(
+            'data' => '2 Photographs',
+          ),
+          '2' => array(
+            'data' => 'Pan card',
+          ),
+          '3' => array(
+            'data' => 'Cancelled cheque with your name',
+          ),
+          '4' => array(
+            'data' => 'Address Proof: (Copy of any one of the following)',
+          ),
+          '5' => array(
+            'data' => '  Voter’s Id/ Driving License/  Adhar Card/ Passport / Electricity Bill / Telephone Bill / Rent agreement',
+          ),
+        ),
+      ),
+    );
+    $form['meet_us_fieldset']['documents'] = array(
+      '#theme' => 'item_list',
+      '#items' => $items,
+      '#attributes' => array('class' => 'documents'),
+      '#type' => 'ol'
+    );
+
+    $form['meet_us_fieldset']['note'] = array(
+      '#type' => 'markup',
+      '#markup' => '(Please note: Mention your application number behind all documents and kindly self attest all the documents)',
+      '#prefix' => '<div id = "note">',
+      '#suffix' => '</div>'
+    );
+
+
+    if ($state_city[0] == 'Rajasthan') {
+      $form['meet_us_fieldset']['address_list'] = array(
+        '#type' => 'markup',
+        '#markup' => '<div class="lms-location">
+  <table width="100%">
+    <tbody>
+      <tr>
+        <td class="col first"><h1 class="loc">Ajmer</h1>
+          <h2 class="f-name">Sandeep Singh</h2>
+          <p class="f-mob">9672982075</p></td>
+        <td class="col"><h1 class="loc">Bhilwara</h1>
+          <h2 class="f-name">Devendra Sharma</h2>
+          <p class="f-mob">8766698053 / 9261302147</p></td>
+        <td class="col"><h1 class="loc">Jaipur</h1>
+          <h2 class="f-name">Gaurav Chandel</h2>
+          <p class="f-mob">9309292666 / 9829800388</p></td>
+        <td class="col"><h1 class="loc">Jaipur</h1>
+          <h2 class="f-name">Himanshu Pancholi</h2>
+          <p class="f-mob">9772525111 / 8766662652</p></td>
+      </tr>
+      <tr>
+        <td class="col"><h1 class="loc">Jodhpur</h1>
+          <h2 class="f-name">Rambaboo Patel</h2>
+          <p class="f-mob">9549876719</p></td>
+        <td class="col"><h1 class="loc">Kota</h1>
+          <h2 class="f-name">Sarvesh Pandey</h2>
+          <p class="f-mob">9654504316</p></td>
+        <td class="col"><h1 class="loc">Udaipur</h1>
+          <h2 class="f-name">Mohan Singh Nirvan</h2>
+          <p class="f-mob">9887420564</p></td>
+        <td class="col"><h1 class="loc">Ganganagar</h1>
+          <h2 class="f-name">Vijendra Singh</h2>
+          <p class="f-mob">9785538715</p></td>
+      </tr>
+      <tr>
+        <td class="col contactus"><p class="address">To speak with our business advisors,<br />
+            call on</p>
+          <h1 class="cont-nmbr">09223305000</h1></td>
+        <td class="col last">&nbsp;</td>
+        <td class="col last">&nbsp;</td>
+        <td class="col last">&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+</div>'
+      );
+    }
+  }
+  return $form;
+}
+
+function meet_us_ajax_callback(&$form, &$form_state) {
+  return $form['meet_us_fieldset'];
+}
+
+function bigbazaarcrm_common_payment_form_submit($form, &$form_state) {
+
+  //If SO/RM is filling the form
+  if (user_access('fill application form')) {
+    if (isset($_SESSION['application_info'])) {
+      $nid = $_SESSION['application_info']['nid'];
+      $mobile = $_SESSION['application_info']['mobile'];
+
+      if (!empty($nid)) {
+        $value = 'auto submit';
+        $query = array('mobile' => $mobile,
+          'value' => $value
+        );
+        drupal_goto('node/' . $nid . '/edit', array('query' => $query));
+      }
+    }
+  }
+
+  global $user;
+  $mobile = $user->name;
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  if (!empty($nid)) {
+    $value = 'auto submit';
+    $query = array('mobile' => $mobile,
+      'value' => $value
+    );
+    drupal_goto('node/' . $nid . '/edit', array('query' => $query));
+  }
+}
+
+function bigbazaarcrm_common_checkout_complete_message($order_id, $status) {
+  $data = _get_application_no_and_nid_from_order_id($order_id);
+  $app_no = $data[0]->field_application_number_value;
+  $nid = $data[0]->entity_id;
+  unset($_SESSION['app_nid']);
+  unset($_SESSION['app_no']);
+  $_SESSION['app_nid'] = $nid;
+  $_SESSION['app_no'] = $app_no;
+
+  if (isset($_SESSION['application_info'])) {
+    unset($_SESSION['application_info']);
+  }
+
+  if ($status == 'pending' || $status == 'completed' || $status == 'checkout_complete') {
+    $payment = partial_payment_check_payment_done($order_id);
+    $payment_method = bigbazaarcrm_common_get_payment_method_from_transaction_id($payment[0]);
+    if (empty($payment)) {
+      drupal_set_title('Sorry');
+      $response = 'Your payment was not successful. Please contact your bank for further details. To resubmit your application, call 0922 330 5000.';
+    }
+    else {
+      if ($payment_method == 'partial_payment_online' || $payment_method == 'commerce_icici_payment' || $payment_method == 'ccavenue_one_lakh' || $payment_method == 'ccavenue') {
+//Change status to (Applied-KYC Pending)
+        $node = node_load($nid);
+        $sid = bigbazaarcrm_application_get_sid_from_state_name('(Applied-KYC Pending)');
+        workflow_execute_transition($node, $sid, NULL, TRUE);
+      }
+
+      drupal_set_title('Thank You');
+      //$response = "we have received the payment and your application form number is " . $app_no . " The receipt has been sent to your email ID. " . l(t('here'), 'download_pdf/' . $nid) . " to download the Application form";
+      global $base_url;
+      $response = <<<EOD
+<div class="inner-basic-pg thank-you-pg">
+  <div class="para para1">
+    <h1 class="head-msg-txt">Thank you for registering</h1>
+    <h3 class="app-id">Your applicant id is: $app_no</h3>
+EOD;
+      if ($payment_method !== 'cheque_payment') {
+        $response.=<<<EOD
+    <p class="kyc-doc"><b>You can either upload your KYC Documents<br>
+      or courier it to our below given address</b></p>
+EOD;
+      }
+      $response.='</div>
+  <div class="para para2">';
+
+      if ($payment_method !== 'cheque_payment') {
+        $response .= <<<EOD
+    <div class="upld-doc">
+      <button type="button" value="Upload Documents" name="ud" class="btn btn-primary form-submit">Upload Documents</button>
+    </div>
+EOD;
+      }
+      if ($payment_method == 'cheque_payment') {
+        $response .= <<<EOD
+    <div class="msg optn1">
+      <p>You are just one step away from completing application and becoming Big Bazaar Franchisee.</p>
+      <p><b>Hurry!! we have limited seats per pin code. All you need to do is send Cheque/DD and KYC documents quickly.</b></p>
+      <p>Once we receive the cheque and documents, you will receive the agreement and welcome kit. A relationship manager will be assigned to help you do business.</p>
+      <p><b>Get started, courier the following documents:</b></p>
+      <p>INR 25,000 Cheque &amp; DD in favour of Future Retail Limited payable at Mumbai</p>
+      <span class="label-head" style="margin-top:10px;">KYC Documents:</span>  
+      <ul class="doc-req" style="margin-bottom: 0;">
+        <li>ID Proof</li>
+        <li>2 Photographs</li>
+        <li>Pan card</li>
+        <li style="padding-bottom: 0;">Cancelled cheque with your name</li>
+      </ul>      
+      <span class="label-head" style="margin-top:10px;">Address Proof:(Copy of any one of the following)</span>
+      <ul class="doc-req" style="margin-bottom: 0;">
+        <li>Voter's Id</li>
+        <li>Driving License</li>
+        <li>Adhar card</li>
+        <li>Passport</li>
+        <li>Electricity bill</li>
+        <li>Telephone bill </li>
+        <li>Rent agreement</li>
+      </ul>
+      <p>(Please note: Mention your application number behind all documents and kindly self attest all the documents)</p><p>       
+      </p><p><b>Kindly courier the above documents to:</b><br>
+          Commercial team, Big bazaar.Com<br>
+          Future Retail Limited<br>
+          4th Floor, Tower C, <br>
+          247 Park, LBS Marg, Vikhroli (West),<br>
+          Mumbai – 400083 </p>      
+            
+    </div>
+EOD;
+      }
+
+      if ($payment_method == 'partial_payment_online') {
+        $response .= <<<EOD
+    <div class="msg optn2">
+      <p>You are just one step away from completing application and becoming Big Bazaar Online Franchisee.</p>
+      <p><b>Hurry!! Upload and send the copy of KYC documents quickly.</b></p>
+      <p>Once we receive the cheque and documents, you will receive the agreement and welcome kit. A relationship manager will be assigned to help you do business.</p>
+      <p><b>Get started, Upload now or courier the following documents:</b></p>
+      <span class="label-head" style="margin-top:10px;">KYC Documents:</span>  
+      <ul class="doc-req" style="margin-bottom: 0;">
+        <li>ID Proof</li>
+        <li>2 Photographs</li>
+        <li>Pan card</li>
+        <li style="padding-bottom: 0;">Cancelled cheque with your name</li>
+      </ul>      
+      <span class="label-head" style="margin-top:10px;">Address Proof:(Copy of any one of the following)</span>
+      <ul class="doc-req" style="margin-bottom: 0;">
+        <li>Voter's Id</li>
+        <li>Driving License</li>
+        <li>Adhar card</li>
+        <li>Passport</li>
+        <li>Electricity bill</li>
+        <li>Telephone bill </li>
+        <li>Rent agreement</li>
+      </ul>
+      <p>(Please note: Mention your application number behind all documents and kindly self attest all the documents)</p><p>       
+      </p><p><b>Kindly courier the above documents to:</b><br>
+          Commercial team, Big bazaar.Com<br>
+          Future Retail Limited<br>
+          4th Floor, Tower C, <br>
+          247 Park, LBS Marg, Vikhroli (West),<br>
+          Mumbai – 400083 </p>
+      </div>
+EOD;
+      }
+      if ($payment_method == 'commerce_icici_payment' || $payment_method == 'ccavenue_one_lakh') {
+        $response .= <<<EOD
+    <div class="msg optn3">
+      <p>You are just one step away from completing application and becoming Big Bazaar Franchisee.</p>
+      <p><b>Hurry!! Upload and send the copy of KYC documents quickly.</b></p>
+      <p>Once we receive the cheque and documents, you will receive the agreement and welcome kit. A relationship manager will be assigned to help you do business.</p>
+      <p><b>Get started, Upload now or courier the following documents:</b></p>
+      <span class="label-head" style="margin-top:10px;">KYC Documents:</span>  
+      <ul class="doc-req" style="margin-bottom: 0;">
+        <li>ID Proof</li>
+        <li>2 Photographs</li>
+        <li>Pan card</li>
+        <li style="padding-bottom: 0;">Cancelled cheque with your name</li>
+      </ul>      
+      <span class="label-head" style="margin-top:10px;">Address Proof:(Copy of any one of the following)</span>
+      <ul class="doc-req" style="margin-bottom: 0;">
+        <li>Voter's Id</li>
+        <li>Driving License</li>
+        <li>Adhar card</li>
+        <li>Passport</li>
+        <li>Electricity bill</li>
+        <li>Telephone bill </li>
+        <li>Rent agreement</li>
+      </ul>
+      <p>(Please note: Mention your application number behind all documents and kindly self attest all the documents)</p><p>       
+      </p><p><b>Kindly courier the above documents to:</b><br>
+          Commercial team, Big bazaar.Com<br>
+          Future Retail Limited<br>
+          4th Floor, Tower C, <br>
+          247 Park, LBS Marg, Vikhroli (West),<br>
+          Mumbai – 400083 </p>
+      </div>
+EOD;
+      }
+
+      $response .='</div>
+</div>';
+    }
+  }
+  else {
+    drupal_set_title('Sorry');
+    $response = 'Your payment was not successful. Please contact your bank for further details. To resubmit your application, call 0922 330 5000.';
+  }
+
+  return $response;
+}
+
+/*
+ * Forgot Application Number 
+ * 
+ */
+
+function bigbazaarcrm_forgot_application_form($form, $form_state) {
+  $form['mobile'] = array(
+    '#type' => 'textfield',
+    '#attributes' => array(
+      'placeholder' => t('Mobile no'),
+    ),
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * form_validate
+ * 
+ */
+function bigbazaarcrm_forgot_application_form_validate($form, $form_state) {
+  $mobile = $form_state['values']['mobile'];
+  $mob = strlen($mobile);
+
+  if ($mob != 10 || !is_numeric($mobile)) {
+    form_set_error('mobile', 'Please enter 10 Digit Mobile no.');
+  }
+
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  if (empty($nid)) {
+    $url = 'apply-online';
+    form_set_error('mobile', 'Sorry, no application for this mobile number');
+  }
+}
+
+/**
+ * form_submit
+ * 
+ */
+function bigbazaarcrm_forgot_application_form_submit($form, $form_state) {
+  $mobile = $form_state['values']['mobile'];
+  $nid = bigbazaarcrm_common_get_nid_from_mobile_no($mobile);
+  $node = node_load($nid);
+  $email = $node->field_email['und'][0]['value'];
+  $application_id = $node->field_application_number['und'][0]['value'];
+  //send sms
+  $tokens = array('application_id' => $application_id);
+  sms_configuration_helper_for_sms_template($mobile, 'forgot_application', $tokens);
+  //send mail
+  $params = array(
+    'mail_to' => $email,
+    'dynamic' => array('application_id' => $application_id),
+  );
+  entity_email_send('forgot_application', $params);
+  drupal_set_message('Your application number has been sent to your registered email id and sms notification on your mobile number');
+}
+
+/*
+ * 
+ */
+
+function bigbazaarcrm_common_get_payment_method_from_transaction_id($transaction_id) {
+  $query = db_select('commerce_payment_transaction', 'c');
+  $query->fields('c', array('payment_method'));
+  $query->condition('transaction_id', $transaction_id);
+  $payment_method = $query->execute()->fetchField();
+
+  return $payment_method;
+}
+
+/**
+ * 
+ * @param type $vocal_name
+ * 
+ */
+function bigbazaarcrm_common_get_term_id_from_name($name, $vocal_name) {
+  $vid = taxonomy_vocabulary_machine_name_load($vocal_name)->vid;
+  $query = db_select('taxonomy_term_data', 't');
+  $query->fields('t', array('tid'));
+  $query->condition('t.name', $name);
+  $query->condition('t.vid', $vid);
+  $tid = $query->execute()->fetchField();
+  return $tid;
+}
+
+/**
+ * Implements hook_user_login
+ */
+function bigbazaarcrm_common_user_login(&$edit, $account) {
+  if (user_has_roles(array('Territory Manager', 'Finance Team', 'Call Center Agent'))) {
+    $edit['redirect'] = "user/" . $account->uid . '/leads';
+  }
+//  if (user_has_roles('Call Center Agent')) {
+//    $edit['redirect'] = "user/" . $account->uid.'/search';
+//  }
+}
+
+/**
+ * 
+ * Check if user has roles
+ */
+function user_has_roles($roles) {
+  return !!count(array_intersect(is_array($roles) ? $roles : array($roles), array_values($GLOBALS['user']->roles)));
+}
+
+function bigbazaarcrm_common_quiz_begin($quiz, $rid) {
+  
+}
+
+/**
+ * @param $nid
+ * nid of the node whose history is required
+ * 
+ * @return array
+ * Array of sid(states)through which node has gone
+ */
+function bigbazaarcrm_common_get_workflow_history($nid) {
+
+  $query = db_select('workflow_node_history', 'wh');
+  $query->fields('wh', array('old_sid'));
+  $query->condition('nid', $nid);
+  $result = $query->execute()->fetchAllKeyed(0, 0);
+
+  return $result;
+}
+
+/**
+ * 
+ * @param $nid
+ * nid of the Application node
+ * 
+ * @return
+ * Array of Transaction id's
+ */
+function bigbazaarcrm_common_check_transaction_for_nid($nid) {
+  $query = db_select('commerce_line_item', 'cli');
+  $query->join('field_data_commerce_node_checkout_node', 'n', 'cli.line_item_id = n.entity_id');
+  $query->join('commerce_payment_transaction', 't', 't.order_id = cli.order_id');
+  $query->fields('t', array('transaction_id'));
+  $query->condition('n.commerce_node_checkout_node_nid', $nid);
+  $query->condition('t.remote_status', 'Success');
+  $result = $query->execute()->fetchField();
+
+  return $result;
+}
+
+function bigbazaarcrm_common_get_so_rm_from_pincode($pincode, $so = TRUE, $rm = FALSE) {
+  if (!$so && !$rm) {
+    $so = TRUE;
+  }
+
+  $vid = taxonomy_vocabulary_machine_name_load('PINCODE')->vid;
+  $query = db_select('taxonomy_term_data', 't');
+
+//JOIN for City
+  $query->join('field_data_field_pincode_city', 'fpc', 't.tid = fpc.entity_id');
+
+//JOIN for SO agent    
+  $query->join('field_data_field_so_agent', 'fso', 't.tid = fso.entity_id');
+
+  if ($so) {
+//For SO agent fields
+    $query->join('users', 'uso', 'uso.uid = fso.field_so_agent_uid');
+    $query->leftJoin('field_data_field_user_mobile', 'fsomob', 'uso.uid = fsomob.entity_id');
+  }
+
+  if ($rm) {
+//JOIN for RM
+    $query->join('field_data_field_regional_manager', 'frm', 'fso.field_so_agent_uid = frm.entity_id');
+
+//For RM fields
+    $query->join('users', 'urm', 'urm.uid = frm.field_regional_manager_uid');
+    $query->leftJoin('field_data_field_user_mobile', 'frmmob', 'urm.uid = frmmob.entity_id');
+  }
+
+  $query->condition('t.vid', $vid);
+  $query->condition('t.name', $pincode);
+
+  $query->addField('fpc', 'field_pincode_city_value', 'city');
+
+  if ($so) {
+    $query->addField('uso', 'name', 'so_name');
+    $query->addField('uso', 'mail', 'so_email');
+    $query->addField('uso', 'uid', 'so_uid');
+    $query->addExpression("ifnull(fsomob.field_user_mobile_value, '')", 'so_mobile');
+  }
+  if ($rm) {
+    $query->addField('urm', 'name', 'rm_name');
+    $query->addField('urm', 'mail', 'rm_email');
+    $query->addField('urm', 'uid', 'rm_uid');
+
+    $query->addExpression("ifnull(frmmob.field_user_mobile_value, '')", 'rm_mobile');
+  }
+
+  $result = $query->execute()->fetch();
+
+  return $result;
+}
+
+function bigbazaarcrm_common_get_zm_sh_from_pincode($pincode, $zm = TRUE, $sh = FALSE) {
+
+  if (!$zm && !$sh) {
+    $zm = TRUE;
+  }
+
+  $vid = taxonomy_vocabulary_machine_name_load('PINCODE')->vid;
+  $query = db_select('taxonomy_term_data', 't');
+
+//JOIN for City
+  $query->join('field_data_field_pincode_city', 'fpc', 't.tid = fpc.entity_id');
+
+//JOIN for SO agent    
+  $query->join('field_data_field_so_agent', 'fso', 't.tid = fso.entity_id');
+//JOIN for RM
+  $query->join('field_data_field_regional_manager', 'frm', 'fso.field_so_agent_uid = frm.entity_id');
+
+//JOIN for ZM
+  $query->join('field_data_field_zonal_manager', 'fzm', 'frm.field_regional_manager_uid = fzm.entity_id');
+
+  if ($zm) {
+//For ZM fields
+    $query->join('users', 'uzm', 'uzm.uid = fzm.field_zonal_manager_uid');
+    $query->leftJoin('field_data_field_user_mobile', 'fzmmob', 'uzm.uid = fzmmob.entity_id');
+  }
+
+  if ($sh) {
+//JOIN for SH
+    $query->join('field_data_field_state_head', 'fsh', 'fzm.field_zonal_manager_uid = fsh.entity_id');
+
+//For SH fields
+    $query->join('users', 'ush', 'ush.uid = fsh.field_state_head_uid');
+    $query->leftJoin('field_data_field_user_mobile', 'fshmob', 'ush.uid = fshmob.entity_id');
+  }
+
+  $query->condition('t.vid', $vid);
+  $query->condition('t.name', $pincode);
+
+  $query->addField('fpc', 'field_pincode_city_value', 'city');
+
+  if ($zm) {
+    $query->addField('uzm', 'name', 'zm_name');
+    $query->addField('uzm', 'mail', 'zm_email');
+    $query->addExpression("ifnull(fzmmob.field_user_mobile_value, '')", 'zm_mobile');
+  }
+  if ($sh) {
+    $query->addField('ush', 'name', 'sh_name');
+    $query->addField('ush', 'mail', 'sh_email');
+
+    $query->addExpression("ifnull(fshmob.field_user_mobile_value, '')", 'sh_mobile');
+  }
+
+  $result = $query->execute()->fetch();
+
+  return $result;
+}
+
+function bigbazaarcrm_common_get_lms_from_pincode($pincode) {
+  $vid = taxonomy_vocabulary_machine_name_load('PINCODE')->vid;
+  $query = db_select('taxonomy_term_data', 't');
+
+//JOIN for City
+  $query->join('field_data_field_pincode_city', 'fpc', 't.tid = fpc.entity_id');
+
+//JOIN for SO agent    
+  $query->join('field_data_field_lms_agent', 'flms', 't.tid = flms.entity_id');
+
+//For LMS agent fields
+  $query->join('users', 'ulms', 'ulms.uid = flms.field_lms_agent_uid');
+  $query->leftJoin('field_data_field_user_mobile', 'flmsmob', 'ulms.uid = flmsmob.entity_id');
+
+  $query->condition('t.vid', $vid);
+  $query->condition('t.name', $pincode);
+
+  $query->addField('fpc', 'field_pincode_city_value', 'city');
+
+  $query->addField('ulms', 'name', 'lms_name');
+  $query->addField('ulms', 'mail', 'lms_email');
+  $query->addField('ulms', 'uid', 'lms_uid');
+
+  $query->addField('flmsmob', 'field_user_mobile_value', 'lms_mobile');
+
+  $result = $query->execute()->fetch();
+  return $result;
+}
+
+/**
+ * Feed importer Related changes start from here
+ * Template menu alter
+ */
+function bigbazaarcrm_common_menu_alter(&$items) {
+  $items['import/%/template']['page callback'] = 'bigbazaarcrm_common_importer_template';
+}
+
+function bigbazaarcrm_common_importer_template($importer_id) {
+
+  $importer = feeds_importer($importer_id);
+  if ($importer->parser instanceof FeedsCSVParser) {
+    $mappings = feeds_importer($importer_id)->processor->config['mappings'];
+    $sources = $uniques = array();
+    foreach ($mappings as $mapping) {
+      if (!empty($mapping['unique'])) {
+        $uniques[] = check_plain($mapping['source']);
+      }
+      else {
+        $sources[] = check_plain($mapping['source']);
+      }
+    }
+    $sep = ',';
+    $columns = array();
+    foreach (array_merge($uniques, $sources) as $col) {
+      if (strpos($col, $sep) !== FALSE) {
+        $col = '"' . str_replace('"', '""', $col) . '"';
+      }
+      $columns[] = $col;
+    }
+
+    switch ($importer_id) {
+      case 'franchisee_database_importer':
+        $image = array('Device type', 'Device date', 'Device IMEI');
+        array_splice($columns, 3, 0, $image);
+        break;
+    }
+    drupal_add_http_header('Cache-Control', 'max-age=60, must-revalidate');
+    drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $importer_id . '_template.csv"');
+    drupal_add_http_header('Content-type', 'text/csv; charset=utf-8');
+    print implode($sep, $columns);
+    return;
+  }
+  return drupal_not_found();
+}
+
+/**
+ *  Implements hook_feeds_presave
+ */
+function bigbazaarcrm_common_feeds_presave(FeedsSource $source, $entity, $item) {
+
+  if ($entity->feeds_item->id == 'franchisee_database_importer') {
+    /*
+     * Logic : Remove logic and empty value should not update
+     */
+    $mappings = feeds_importer($entity->feeds_item->id)->processor->config['mappings'];
+    foreach ($mappings as $mapping) {
+      $final_mappings[strtolower($mapping['source'])] = $mapping;
+    }
+    foreach ($item as $key => $value) {
+
+      $value = trim($value);
+      if (array_key_exists($key, $final_mappings)) {
+
+        $field_name = $final_mappings[$key]['target'];
+        $field_name = str_replace(array(':end', ':start'), '', $field_name);
+        if ($value === '' || $value === FALSE) {
+          unset($entity->{$field_name});
+        }
+        if (in_array($value, array('<remove>', '&lt;remove&gt;'))) {
+          unset($entity->{$field_name}[LANGUAGE_NONE]);
+        }
+      }
+    } //END of foreach
+
+    /*
+     *   STRAT: Logic for field collection 
+     */
+    if ($entity->field_mobile_app['und'][0]['value'] === "0") {
+      unset($entity->field_mobile_app_date['und']);
+    }
+    if ($entity->field_inshop_branding['und'][0]['value'] === "0") {
+      unset($entity->field_inshop_branding_date['und']);
+    }
+    if ($entity->field_glow_sign_board['und'][0]['value'] === "0") {
+      unset($entity->field_glow_sign_board_date['und']);
+    }
+
+    if (!empty($item['device imei']) && !empty($item['device type'])) {
+      $franchisee_code = $item['franchisee code'];
+      $device_imei = explode("|", $item['device imei']);
+      $device_date = explode("|", $item['device date']);
+      $device_type = explode("|", $item['device type']);
+      for ($i = 0; $i < count($device_imei); $i++) {
+        $collection_id = check_franchisee_imei_exist($franchisee_code, $device_imei[$i]);
+        if (empty($collection_id)) {
+          $field_collection_value = entity_create('field_collection_item', array('field_name' => 'field_device_information'));
+          $field_collection_value->setHostEntity('node', $entity);
+          $field_collection_value->field_device_type['und'][0]['value'] = ucfirst(strtolower($device_type[$i]));
+          $field_collection_value->field_device_date['und'][0]['value'] = strtotime($device_date[$i]);
+          $field_collection_value->field_device_imei['und'][0]['value'] = $device_imei[$i];
+          $field_collection_value->save();
+        }
+        else {
+          $field_collection_value = field_collection_item_load($collection_id);
+          $field_collection_value->field_device_type['und'][0]['value'] = ucfirst(strtolower($device_type[$i]));
+          $field_collection_value->field_device_date['und'][0]['value'] = strtotime($device_date[$i]);
+          $field_collection_value->field_device_imei['und'][0]['value'] = $device_imei[$i];
+          $field_collection_value->save();
+        }
+      }
+    }
+
+    /*
+     *   END: Logic for field collection 
+     */
+  } // END of frnanchisee_data_import if condition
+}
+
+//END of feed presave
+
+
+function check_franchisee_imei_exist($franchisee_code, $device_imei) {
+  $query = db_select('node', 'n');
+  $query->join('field_data_field_device_information', 'fdn', 'fdn.entity_id=n.nid');
+  $query->join('field_data_field_device_imei', 'fdm', 'fdm.entity_id=fdn.field_device_information_value');
+  $query->fields('fdn', array('field_device_information_value'));
+  $query->condition('n.title', $franchisee_code);
+  $query->condition('fdm.field_device_imei_value', $device_imei);
+  $res = $query->execute()->fetchField();
+  return $res;
+}
+
+function bigbazaarcrm_common_make_franchisee_db_entry($application_node) {
+  $franchisee_code = $application_node->field_franchisee_code['und'][0]['value'];
+
+  $nid = db_query('SELECT nid FROM {node} WHERE title = :title', array(':title' => $franchisee_code))->fetchField();
+
+  $new = 1;
+  if ($nid) {
+    $new = 0;
+  }
+
+  if ($new) {
+    $node = new stdClass();
+    $node->title = $franchisee_code;
+    $node->type = 'franchisee_data';
+    node_object_prepare($node); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
+  }
+  else {
+    $node = node_load($nid);
+  }
+  $so_rm = bigbazaarcrm_common_get_so_rm_from_pincode($application_node->field_pin_code['und'][0]['value'], TRUE, TRUE);
+
+  $node->field_franchisee_first_name[LANGUAGE_NONE][0]['value'] = $application_node->field_first_name['und'][0]['value'];
+  $node->field_franchisee_last_name[LANGUAGE_NONE][0]['value'] = $application_node->field_last_name['und'][0]['value'];
+  $node->field_franchisee_phone_no[LANGUAGE_NONE][0]['value'] = $application_node->field_mobile_1['und'][0]['value'];
+  $node->field_franchisee_email[LANGUAGE_NONE][0]['value'] = $application_node->field_email['und'][0]['value'];
+  $node->field_franchisee_pincode[LANGUAGE_NONE][0]['value'] = $application_node->field_pin_code['und'][0]['value'];
+  $node->field_franchisee_state[LANGUAGE_NONE][0]['value'] = $application_node->field_state_list['und'][0]['value'];
+  $node->field_franchisee_city[LANGUAGE_NONE][0]['value'] = $application_node->field_city['und'][0]['value'];
+  $node->field_address[LANGUAGE_NONE][0]['value'] = $application_node->field_address_1['und'][0]['value'];
+
+  if (!empty($so_rm->so_uid)) {
+    $node->field_franchisee_so[LANGUAGE_NONE][0]['uid'] = $so_rm->so_uid;
+  }
+  if (!empty($so_rm->rm_uid)) {
+    $node->field_franchisee_rm[LANGUAGE_NONE][0]['uid'] = $so_rm->rm_uid;
+  }
+
+  if ($new) {
+    $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+    $node->uid = 0; // Root user as Author
+    $node->status = 1; //(1 or 0): published or not
+    $node->promote = 0; //(1 or 0): promoted to front page
+
+    $node = node_submit($node); // Prepare node for saving
+  }
+  node_save($node);
+}
+
+/**
+ * Implements hook_commerce_cart_order_id()
+ * @param type $uid
+ */
+function bigbazaarcrm_common_commerce_cart_order_id($uid) {
+
+  $account = user_load($uid);
+  if (user_access('fill application form', $account)) {
+
+    if (isset($_SESSION['application_info'])) {
+
+      $nid = $_SESSION['application_info']['nid'];
+      $node = node_load($nid);
+      // First attempt to load the Leads order
+      $order = commerce_cart_order_load_custom($node->uid);
+
+
+      // If no order existed, create one now.
+      if (empty($order)) {
+
+        $order = commerce_cart_order_new($node->uid);
+        $order->data['last_cart_refresh'] = REQUEST_TIME;
+      }
+
+      return intval($order->order_id);
+    }
+  }
+}
+
+function commerce_cart_order_load_custom($uid) {
+  // Create an array of valid shopping cart order statuses.
+  $status_ids = array_keys(commerce_order_statuses(array('cart' => TRUE)));
+
+  $order_id = db_query('SELECT order_id FROM {commerce_order} WHERE uid = :uid AND status IN (:status_ids) ORDER BY order_id DESC', array(':uid' => $uid, ':status_ids' => $status_ids))->fetchField();
+
+  // If a valid cart order ID exists for the user, return it now.
+  if (!empty($order_id)) {
+    return commerce_order_load($order_id);
+  }
+
+  return FALSE;
+}
+
+/**
+ * 
+ * @param type $name
+ * @return type
+ */
+function get_tid_from_term_name($name) {
+  $vocabulary = taxonomy_vocabulary_machine_name_load('alliance_partner');
+  $query = db_select('taxonomy_term_data', 'tid');
+  $query->fields('tid', array('tid'));
+  $query->condition('vid', $vocabulary->vid);
+  $query->condition('name', $name);
+  $result = $query->execute()->fetchField();
+  return isset($result) ? $result : '';
+}
+
+#####################################################################################################33
+
+function get_nid_from_application_no($application_no) {
+  $query = db_select('node', 'c');
+  $query->join('field_data_field_application_number', 'a', 'a.entity_id=c.nid');
+  $query->condition('field_application_number_value', $application_no);
+  $query->fields('c', array('nid'));
+  $r = $query->execute()->fetch();
+  $nid = $r->nid;
+  return $nid;
+}
+
+function get_pid() {
+  $query = db_select('commerce_product', 'c');
+  $query->fields('c', array('product_id'));
+  $query->condition('c.type', 'commerce_node_checkout');
+  $r = $query->execute()->fetch();
+  return $r->product_id;
+}
+
+/**
+ * 
+ * @param type $application_no
+ * @param type $product- product object
+ */
+//function commerce_node_checkout_node_insert($application_no, $product) {
+//  $product_id = $r->product_id;
+//  $node = get_nid_from_application_no($application_no);
+//  commerce_node_checkout_add_node_import($node, $product);
+//  $mobile_no = $node->field_mobile_1['und'][0]['value'];
+//  // $form_state['redirect'] = 'checkout';
+//  return $node;
+//}
+function get_uid_from_mobile_no($mobile) {
+  $r = db_select('users', 'u');
+  $r->fields('u', array('uid'));
+  $r->condition('u.name', $mobile);
+  $s = $r->execute()->fetch();
+  return ($s->uid);
+}
+
+/**
+ * Adds a node to a line item and the user's cart
+ *
+ * @param object $node
+ *   The node object to be associated with the line item
+ * @param object $product
+ *   The product chosen by the user (optional)
+ *
+ * @return object
+ *   Returns the commerce_order object
+ */
+function commerce_node_checkout_add_node_import($application_no, $product, $amount) {
+  $product_id = $product->product_id;
+  $nid = get_nid_from_application_no($application_no);
+  // dpm($application_no,'$application_no in func');
+  $node = node_load($nid);
+  //dpm($node,'$node in func');
+  //commerce_node_checkout_add_node_import($node, $product);
+  $mobile_no = $node->field_mobile_1['und'][0]['value'];
+// Create our new line item.
+  //  dpm($mobile_no,'$mobile_no in func');
+  $line_item = commerce_product_line_item_new($product, 1, 0, array(), 'commerce_node_checkout');
+  $user_id = get_uid_from_mobile_no($mobile_no);
+  $line_item->commerce_unit_price['und'][0]['amount'] = $amount *100;
+  $line_item->commerce_unit_price['und'][0]['data']['components'][0]['price']['amount'] = $amount *100;
+  // Set the node_reference field value.
+  $line_item->commerce_node_checkout_node[LANGUAGE_NONE][0]['nid'] = $node->nid;
+  // Add to cart.
+  $line_item = commerce_cart_product_add($user_id, $line_item, FALSE);
+  // Load the order for returning it.
+  //commerce_line_item_save($line_item);
+  //  dpm($line_item,'$line_item in func');
+  // dpm($user_id,'$user_id in func');
+  $order = commerce_cart_order_load($user_id);
+  // dpm($order,'$order in func');
+  $result['user_id'] = $user_id;
+  $result['node'] = $node;
+  $result['order'] = $order;
+  return $result;
+}
+
+function customer_create_profile($node, $user_id) {
+  $profile = commerce_customer_profile_new('billing', $user_id);
+//dpm($node,'$node in func2');
+//dpm($user_id,'$user_id in func2');
+  //$profile->uid = $user_id;
+  $profile->commerce_customer_address[LANGUAGE_NONE][0] = addressfield_default_values();
+  $profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'] = $node->field_first_name[LANGUAGE_NONE][0]['value'] . ' ' . $node->field_middle_name[LANGUAGE_NONE][0]['value'] . ' ' . $node->field_last_name[LANGUAGE_NONE][0]['value']; //change here
+  $profile->commerce_customer_address[LANGUAGE_NONE][0]['country'] = 'IN';
+  $profile->commerce_customer_address[LANGUAGE_NONE][0]['administrative_area'] = $node->field_state_list[LANGUAGE_NONE][0]['value'];
+  $profile->commerce_customer_address[LANGUAGE_NONE][0]['locality'] = $node->field_city['und'][0]['value'];
+  $profile->commerce_customer_address[LANGUAGE_NONE][0]['postal_code'] = $node->field_pin_code['und'][0]['value'];
+  $profile->commerce_customer_address[LANGUAGE_NONE][0]['thoroughfare'] = $node->field_address_1[LANGUAGE_NONE][0]['value'];
+  $profile->commerce_customer_address[LANGUAGE_NONE][0]['premise'] = $node->field_address_2[LANGUAGE_NONE][0]['value'];
+  commerce_customer_profile_save($profile);
+  //dpm($profile,'$profile in func');
+  return $profile;
+}
+
+function check_application_no_exists($id) {
+  $q = db_select('field_data_field_application_number', 'f');
+  $q->fields('f', array('field_application_number_value', 'entity_id'));
+  $q->condition('f.field_application_number_value', $id);
+  $r = $q->execute()->fetchAssoc();
+  return $r;
+}
+
+function check_fr_code_exists_for_agent($agent_id) {
+  $q = db_select('field_data_field_application_number', 'f');
+  $q->join('field_data_field_franchisee_code', 'fc', 'f.entity_id = fc.entity_id');
+  $q->fields('f', array('field_application_number_value', 'entity_id'));
+  $q->fields('fc', array('field_franchisee_code_value', 'entity_id'));
+  $q->condition('f.field_application_number_value', $agent_id);
+  $r = $q->execute()->fetchAssoc();
+  return $r;
+}
+
+function check_franchisee_code_exists($fr_code) {
+  $q = db_select('field_data_field_franchisee_code', 'f');
+  $q->fields('f');
+  $q->condition('f.field_franchisee_code_value', $fr_code);
+  $r = $q->execute()->fetchAll();
+  return $r;
+}
+
+function payment_transaction($order, $status) {
+  $charge = commerce_payment_order_balance($order);
+  $payment_method = commerce_payment_method_load('cheque_payment');
+  $order->field_payment_mode[LANGUAGE_NONE][0]['value'] = 'BANK_PARTIAL_PAYMENT'; // Save Payment Type
+  $transaction = commerce_payment_transaction_new('cheque_payment', $order->order_id);
+  $transaction->instance_id = $payment_method['instance_id'];
+  $transaction->amount = $charge['amount'];
+  $transaction->currency_code = $charge['currency_code'];
+  $transaction->remote_status = t('Success');
+  if ($status) {
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+  }
+  else {
+    $transaction->status = COMMERCE_PAYMENT_STATUS_PENDING;
+  }
+  $transaction->message = t('This order is waiting for the cheque to be cashed.');
+  commerce_payment_transaction_save($transaction);
+}
+
+function bigbazaarcrm_common_check_transaction_for_nid_import($nid) {
+  $query = db_select('commerce_line_item', 'cli');
+  $query->join('field_data_commerce_node_checkout_node', 'n', 'cli.line_item_id = n.entity_id');
+  $query->join('commerce_payment_transaction', 't', 't.order_id = cli.order_id');
+  $query->fields('t', array('transaction_id'));
+  $query->condition('n.commerce_node_checkout_node_nid', $nid);
+  //$query->condition('t.status', 'pending');
+  $result = $query->execute()->fetchField();
+
+  return $result;
+}

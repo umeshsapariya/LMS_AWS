@@ -1,0 +1,4 @@
+name="sms Configuration"
+description="Configuration of sms templates and triggers"
+core="7.x"
+package="Custom"

@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>First Name</th><th>Last Name</th><th>Mobile No.</th><th>City</th><th>Status</th><th>Application State</th><th>Created On</th><th>Email</th><th>Pin Code</th><th>Query</th></tr></thead>    <tbody> <tr class="odd"><td>Pramod</td><td>Rathor</td><td>9923374601</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Wednesday, June 19, 2013 - 10:52</td><td>rathorp39@yahoo.in</td><td>440010</td><td></td> </tr>
+ <tr class="even"><td>Saurabh</td><td>Harishchand</td><td>9890750520</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Wednesday, June 19, 2013 - 10:47</td><td></td><td>440015</td><td></td> </tr>
+ <tr class="odd"><td>Shabbir</td><td>Calcuttawala</td><td>9823067954</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Wednesday, June 19, 2013 - 10:33</td><td>abdqad@rediffmail.com</td><td>440002</td><td></td> </tr>
+ <tr class="even"><td>Hakimuddin</td><td>Amin</td><td>9970163252</td><td>Akola</td><td>Open</td><td>(Application Submitted offline)</td><td>Wednesday, June 12, 2013 - 10:20</td><td>hakim_amin2008@rediffmail.com</td><td>444001</td><td>cust want to know about interview details info given to cust within 21 days bb direct call and given all details</td> </tr>
+ <tr class="odd"><td>Prakashchandra</td><td>Sharma</td><td>9325560002</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Tuesday, June 11, 2013 - 11:08</td><td>phsharma55@gmail.com</td><td>440012</td><td>name</td> </tr>
+ <tr class="even"><td>Abhinay </td><td>deva</td><td>9423109829</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Monday, June 10, 2013 - 18:38</td><td>abhinaydeva@gmail.com</td><td>441102</td><td>Email id changed as per physical form</td> </tr>
+ <tr class="odd"><td>Pankaj </td><td>Takkamore</td><td>9970464123</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Monday, June 10, 2013 - 13:29</td><td>pankaj.takkamore@bbd.com</td><td>441106</td><td>email</td> </tr>
+ <tr class="even"><td>Chetan</td><td>Samarth</td><td>9764487935</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Saturday, June 8, 2013 - 13:44</td><td>Chetan6791@gmail.com</td><td>440001</td><td>Changed the email id as per Physical form</td> </tr>
+ <tr class="odd"><td>Sanjay</td><td>munot</td><td>9423622854</td><td>Amravati</td><td>Open</td><td>(Application Submitted offline)</td><td>Saturday, June 8, 2013 - 06:02</td><td>sanjumunot@yahoo.in</td><td>444601</td><td>Cust interested in seminar</td> </tr>
+ <tr class="even"><td>Pravin </td><td>gawande</td><td>9422806514</td><td>Nagpur</td><td>Open</td><td>(Application Submitted offline)</td><td>Saturday, June 8, 2013 - 04:06</td><td>pravinngawande@gmail.com</td><td>440034</td><td>Customer interested in seminar</td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

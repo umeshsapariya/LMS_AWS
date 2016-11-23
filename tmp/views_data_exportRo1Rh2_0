@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <table>
+    <thead><tr><th>First Name</th><th>Last Name</th><th>Mobile No.</th><th>City</th><th>Status</th><th>Application State</th><th>Created On</th><th>Email</th><th>Pin Code</th><th>Query</th></tr></thead>    <tbody> <tr class="odd"><td>Mohan Satyanarayan</td><td>Chitlange</td><td>9822727043</td><td>Wardha</td><td>Open</td><td>No state</td><td>Friday, June 14, 2013 - 13:26</td><td></td><td>440001</td><td>Want to attend the seminar of Akola </td> </tr>
+ <tr class="even"><td>Vaibhav</td><td>Kapse</td><td>9850052403</td><td>Wardha</td><td>Open</td><td>No state</td><td>Friday, June 14, 2013 - 00:03</td><td>vaibhavkapse16@gmail.com</td><td>442001</td><td>I want detail information about this business and how much margin I will get if I selected in Big bazaar direct ? Is there need of shop in market area ?</td> </tr>
+ <tr class="odd"><td>Vijay</td><td>Mutha</td><td>9860620420</td><td>Wardha</td><td>Open</td><td>No state</td><td>Wednesday, June 12, 2013 - 14:26</td><td>kunal.silverstar.mutha@gmail.com</td><td>442301</td><td>want to attend the seminar amravati is possible</td> </tr>
+ <tr class="even"><td>sachin</td><td>sahu</td><td>9822073286</td><td>Wardha</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 17:28</td><td></td><td>442001</td><td>about margin</td> </tr>
+ <tr class="odd"><td>Sandeep </td><td>Kamble</td><td>9860141569</td><td>Wardha</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 14:12</td><td>SandeepKamble@bbd.com</td><td>442301</td><td>Customer agreed but not able to join the same as he is in wardha and Nearest seminar is Nagpur only which is 75 km hence he will think and the call again on bbd
+</td> </tr>
+ <tr class="even"><td>sourabh</td><td>rustam</td><td>9325420042</td><td>Wardha</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 14:01</td><td></td><td>442001</td><td>seminar related nagpur</td> </tr>
+ <tr class="odd"><td>Kiran</td><td>Thakre</td><td>7588187428</td><td>Wardha</td><td>Open</td><td>No state</td><td>Tuesday, June 11, 2013 - 12:07</td><td>cat_thakare@yahoo.com</td><td>442101</td><td>Customer wanted to know about seminar .....sajid </td> </tr>
+ <tr class="even"><td>Sachin</td><td>chandan girwar</td><td>9860526273</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 19:35</td><td>Sachin_chandangiwar@rediffmail.com</td><td>442001</td><td>Customer interested for seminar </td> </tr>
+ <tr class="odd"><td>Anil</td><td>Mokati</td><td>9422141691</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 17:46</td><td></td><td>442302</td><td>Cust will callback wether he is interested for attending the seminar or no</td> </tr>
+ <tr class="even"><td>Dipesh</td><td>Murarka</td><td>9890356420</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 17:44</td><td>dipesh.murarka@gmail.com</td><td>442001</td><td>I am a computer dealer in Wardha
+Let me know if i can be a franchisee for Big Bazaar.</td> </tr>
+ <tr class="odd"><td>Chancrakant</td><td>Bhoot</td><td>9420310001</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 16:51</td><td>ChancrakantBhoot@bbd.com</td><td>445001</td><td>BBD details Given</td> </tr>
+ <tr class="even"><td>Arpit</td><td>batra</td><td>8055162929</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 16:32</td><td>a.batra25@gmail.com</td><td>442301</td><td>Seminar </td> </tr>
+ <tr class="odd"><td>mahesh</td><td>rajesh</td><td>8806116900</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 14:37</td><td></td><td>440001</td><td>cust int for seminar</td> </tr>
+ <tr class="even"><td>Shivkumar</td><td>Murarka</td><td>9422142942</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 14:34</td><td>anuragmurarka21@yahoo.com</td><td>442006</td><td>BBD details given</td> </tr>
+ <tr class="odd"><td>Milind Prakash</td><td>Gungawar</td><td>9325092560</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 14:20</td><td>MilindPrakash@bbd.com</td><td>442001</td><td>want to attend seminar in nagpur</td> </tr>
+ <tr class="even"><td>Navneet</td><td>Sawal</td><td>9175677177</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 12:51</td><td></td><td>442001</td><td>Cust will visit Nagpur&#039;s session 3pm.</td> </tr>
+ <tr class="odd"><td>Punit</td><td>Pathak</td><td>9850044593</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 12:35</td><td>punitpathak@bigbazaar.com</td><td>440001</td><td>cust want only information</td> </tr>
+ <tr class="even"><td>Atul </td><td>Bobde</td><td>9850334373</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 12:12</td><td>atulbobde3478@gmail.com</td><td>445001</td><td> franchise </td> </tr>
+ <tr class="odd"><td>Akhil</td><td>Saraf</td><td>8625018886</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 11:42</td><td></td><td>442001</td><td>WIll visit to Nagpur Seminar @ 3PM </td> </tr>
+ <tr class="even"><td>Kishore</td><td>Kothari</td><td>8378045971</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 11:11</td><td>KishoreKothari@bbd.com</td><td>442301</td><td>want to attend seminar in nagpur</td> </tr>
+ <tr class="odd"><td>Jitendra</td><td>Chaudhary</td><td>9703204078</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 11:05</td><td>jitendra.chaudhary@bbd.com</td><td>442001</td><td>BBD details Given</td> </tr>
+ <tr class="even"><td>Hitesh </td><td>Rathi</td><td>9823214303</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 10:59</td><td>hitesh.rathi@gmail.com</td><td>442001</td><td>Cust cald to knw the timing of akola frm wardha customer is there he will attend the seminar at akola </td> </tr>
+ <tr class="odd"><td>piyush</td><td>maheshwari</td><td>9881080007</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 10:41</td><td>sankalpsales.enquiry@gmail.com</td><td>442101</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Dr.Temchand</td><td>Vardhe</td><td>8767356986</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 10:27</td><td>temchandvardhe@bbd.com</td><td>442001</td><td>BBD details Given</td> </tr>
+ <tr class="odd"><td>Rahul</td><td>Mundada</td><td>9970065874</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 10:11</td><td>rahulmundada1983@gmail.com</td><td>442001</td><td>Will attend the seminar</td> </tr>
+ <tr class="even"><td>Umesh</td><td>Rawoot</td><td>8928072869</td><td>Wardha</td><td>Open</td><td>No state</td><td>Monday, June 10, 2013 - 09:27</td><td>uraut10@yahoomail.com</td><td>442301</td><td>want to attend seminar</td> </tr>
+ <tr class="odd"><td>Nandkishore</td><td>Gayakwad</td><td>7588187860</td><td>Wardha</td><td>Open</td><td>No state</td><td>Sunday, June 9, 2013 - 13:08</td><td>nandujigayakwad@gmail.com</td><td>442101</td><td>want to attend the seminar of amravati</td> </tr>
+ <tr class="even"><td>sanjay</td><td>r</td><td>9422140222</td><td>Wardha</td><td>Open</td><td>(Payment Received Online)</td><td>Sunday, June 9, 2013 - 12:27</td><td>sanjayragrawal@yahoo.com</td><td>442001</td><td>About detail of big bazar direct concept</td> </tr>
+ <tr class="odd"><td>Yogesh Rajeshwarao</td><td>Nagtode</td><td>8484806262</td><td>Wardha</td><td>Open</td><td>No state</td><td>Sunday, June 9, 2013 - 10:34</td><td>yogesh.nagtode677@gmail.com</td><td>442001</td><td>wanted to attend seminar in nagpur</td> </tr>
+ <tr class="even"><td>Manoj</td><td>More</td><td>7798309768</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 21:29</td><td>manojm@bbd.com</td><td>440056</td><td>Cust is interested for seminar</td> </tr>
+ <tr class="odd"><td>Pawan</td><td>Chande</td><td>9890360102</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 19:44</td><td>pawanchande@bbd.com</td><td>440018</td><td>Cust interested for seminar</td> </tr>
+ <tr class="even"><td>Poonam</td><td>.</td><td>7875593221</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 19:08</td><td>Poonam@bbd.com</td><td>441904</td><td>Customer asked abt the big bazaar products </td> </tr>
+ <tr class="odd"><td>Vijay</td><td>.</td><td>9763340179</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 17:52</td><td>Vijay@bbd.com</td><td>442201</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Santhosh</td><td>Agrawal</td><td>9921962666</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 12:15</td><td>SanthoshAgrawal@bbd.com</td><td>445109</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="odd"><td>yashwanth </td><td>Kumar</td><td>9370031056</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 02:27</td><td>yashwanthKumar@bigbazaar.com</td><td>441002</td><td>customer called from wardha infrmd him to visit tomorrow nearest bbd center &amp; collect the form    inst to visit nagpur  he want timing 12.30pm kindly do the needful</td> </tr>
+ <tr class="even"><td>Ali </td><td>chanawar</td><td>7588187981</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 01:59</td><td>Alichanawar@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="odd"><td>Pravin </td><td>.</td><td>9325273187</td><td>Wardha</td><td>Open</td><td>No state</td><td>Saturday, June 8, 2013 - 01:14</td><td>Pravin@bbd.com</td><td>442401</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>pramod</td><td>Kelkar</td><td>9860145007</td><td>Wardha</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:24</td><td>pramodKelkar@bigbazaardirect.com</td><td>442001</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+ <tr class="odd"><td>Ravi </td><td>Batra</td><td>9623771164</td><td>Wardha</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 21:00</td><td>Ravibatra@bbd.com</td><td>444001</td><td>gvn dtls of bb direct
+</td> </tr>
+ <tr class="even"><td>Chetan</td><td>Kadu</td><td>9890634635</td><td>Wardha</td><td>Open</td><td>No state</td><td>Friday, June 7, 2013 - 18:42</td><td>kaduchetan@hotmail.com</td><td>442202</td><td>customer wants to BBD details cust will visit BBD center for form collection
+</td> </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

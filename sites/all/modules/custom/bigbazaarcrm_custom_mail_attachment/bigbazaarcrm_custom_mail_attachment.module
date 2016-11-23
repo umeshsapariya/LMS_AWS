@@ -1,0 +1,313 @@
+<?php
+/*
+ * @file
+ * Custom Module to send mail with attachment
+ */
+
+
+// send mail after quiz completion
+
+function send_mail_after_quiz_completion($params){
+  // CALL_BACK to generate the PDF file and Place on sites/default
+  $my_module = 'cheque_payment';
+  $my_mail_token = microtime();
+  list($microSec, $timeStamp) = explode(" ", microtime());
+  $date = date('d/m/Y',$timeStamp);
+  $filename = generate_pdf_after_quiz_completion($params['nid']).'.pdf';    
+  $to = $params['mail_to']; //gets the current user's mail address
+  $from = 'support@bigbazaaragent.com'; //admin's mail address
+  $subject = 'Bigbazaar Online Franchisee application '. $params['dynamic'] . ' successfully completed.';
+  $body_1 = '<div>Namaste!</div><div><span style="font-size: 13px;">Congratulations! Your application '.$params['dynamic'].' is successfully completed on '. $date .'.</span></div><div>&nbsp;</div><div><span style="font-size: 13px;">You can become an online franchisee instantly by paying Rs 1, 00,000/- online.</span></div><div><span style="font-size: 13px;">Rs.50000/- Refundable Security deposit</span></div><div>Rs 50000/- Set up charges.</div>';
+  $body_2 = '<div>&nbsp;</div><div><span style="font-size: 13px;">Online Franchisees are appointed on a first pay first serve basis.</span></div><div><span style="font-size: 13px;">Hurry only a few seats in your pin code</span></div><div><span style="font-size: 13px;">In case you would like to contact us, feel free to email us at support@bigbazaaragent.com or call us on 09223305000 (8:00 AM &ndash; 10:00 PM, 7days a week).</span></div><div>&nbsp;</div><div>Team Big Bazaar.com</div>';
+  $body_3 = '<div>&nbsp;</div><div><span style="font-size: 13px;">You can also choose to block your seat for 48 Hrs by paying refundable Rs 5000/- &amp; Meet us at our Registration Centre for further discussion.</span></div><div><span style="font-size: 13px;">Online Franchisees are appointed on a first pay first serve basis.</span></div><div><span style="font-size: 13px;">Hurry only a few seats in your pin code are available</span></div><div><span style="font-size: 13px;">In case you would like to contact us, feel free to email us at support@bigbazaaragent.com or call us on 09223305000 (8:00 AM &ndash; 10:00 PM, 7days a week).</span></div><div>&nbsp;</div><div>Team BigBazaar.com</div>';
+  if ($params['city'] == 'Rajasthan') {
+    $body = $body_1.$body_3;  
+  }
+  else {
+    $body = $body_1.$body_2;      
+  }
+  global $base_url;
+  $body .= "<div>Click here to download your Application form <a href = '$base_url/sites/default/files/pdf_using_mpdf/$filename'>$filename</a></div>";
+  $language = language_default();
+  $attachment = array(
+    'filecontent' => file_get_contents('sites/default/files/pdf_using_mpdf/' . $filename),
+    'filename' => $filename,
+    'filemime' => 'application/pdf',
+  );
+  $message = array(
+    'id' => 'yoo',
+    'to' => $to,
+    'subject' => $subject,
+    'body' => $body,
+    'headers' => array(
+    'From' => 'Big Bazaar.com' . '<' . $from . '>', 
+    'Sender' => 'Big Bazaar.com', 
+    ),
+    );
+
+  $message['params']['attachments'][]  = array(
+    'filename' =>  $filename,
+    'filecontent' => file_get_contents('sites/default/files/pdf_using_mpdf/' . $filename),
+    'mime' => 'application/pdf',
+    'Content-type' => 'application',
+    'encoding' => 'base64',
+    'disposition' => 'attachment',
+    'list' => TRUE
+    );
+ 
+  $system = drupal_mail_system($my_module, $my_mail_token);
+  //unlink('sites/default/files/pdf_using_mpdf/' . $filename);
+  $message = $system->format($message);
+  $system->mail($message);
+ 
+}
+
+// generate PDF After quiz completion
+
+function generate_pdf_after_quiz_completion($nid){
+  $node = node_load($nid);
+  $view = node_view($node, 'PDF');
+  $array = $view;
+  foreach ($array as $key => $value) {
+    if (substr($key, 0, 6) == 'field_') {
+      if ($key != 'field_quiz_passed' && $key != 'field_payment_mode') {
+        $array[$key]['#access'] = TRUE;
+      }
+    }
+  }
+  $order_id = bigbazaarcrm_application_get_order_id_from_nid($nid);
+  $quiz_answers = bigbazaarcrm_application_quiz_answers();
+  //$payment_details = bigbazaarcrm_application_payment_details($order_id);
+  $html = render($array) . $quiz_answers;
+  if (!empty($order_id)) {
+    $html .= views_embed_view('order_payments_done', 'block_1', $order_id);
+  }
+  $filename = 'Big Bazaar Direct-' . $node->title . '-' . $nid;
+  _pdf_using_mpdf_generator_new($html,$filename);
+  return $filename;
+}
+
+//Duplicate function _pdf_using_mpdf_generator from module pdf_using_mpdf
+function _pdf_using_mpdf_generator_new($html, $filename = NULL) {
+  if (pdf_using_mpdf_library_exist() == TRUE) {
+  // International Paper Sizes ( width x height).
+  $paper_size = array(
+    '4A0' => array('w' => 1682, 'h' => 2378),
+    '2A0' => array('w' => 1189, 'h' => 1682),
+    'A0' => array('w' => 841, 'h' => 1189),
+    'A1' => array('w' => 594, 'h' => 841),
+    'A2' => array('w' => 420, 'h' => 594),
+    'A3' => array('w' => 297, 'h' => 420),
+    'A4' => array('w' => 210, 'h' => 297),
+    'A5' => array('w' => 148, 'h' => 210),
+    'A6' => array('w' => 105, 'h' => 148),
+    'A7' => array('w' => 74, 'h' => 105),
+    'A8' => array('w' => 52, 'h' => 74),
+    'A9' => array('w' => 37, 'h' => 52),
+    'A10' => array('w' => 26, 'h' => 37),
+
+    'B0' => array('w' => 1000, 'h' => 1414),
+    'B1' => array('w' => 707, 'h' => 1000),
+    'B2' => array('w' => 500, 'h' => 707),
+    'B3' => array('w' => 353, 'h' => 500),
+    'B4' => array('w' => 250, 'h' => 353),
+    'B5' => array('w' => 176, 'h' => 250),
+    'B6' => array('w' => 125, 'h' => 176),
+    'B7' => array('w' => 88, 'h' => 125),
+    'B8' => array('w' => 62, 'h' => 88),
+    'B9' => array('w' => 44, 'h' => 62),
+    'B10' => array('w' => 31, 'h' => 44),
+
+    'C0' => array('w' => 917, 'h' => 1297),
+    'C1' => array('w' => 648, 'h' => 917),
+    'C2' => array('w' => 458, 'h' => 648),
+    'C3' => array('w' => 324, 'h' => 458),
+    'C4' => array('w' => 229, 'h' => 324),
+    'C5' => array('w' => 162, 'h' => 229),
+    'C6' => array('w' => 114, 'h' => 162),
+    'C7' => array('w' => 81, 'h' => 114),
+    'C8' => array('w' => 57, 'h' => 81),
+    'C9' => array('w' => 40, 'h' => 57),
+    'C10' => array('w' => 28, 'h' => 40),
+
+    'RA0' => array('w' => 860, 'h' => 1220),
+    'RA1' => array('w' => 610, 'h' => 860),
+    'RA2' => array('w' => 430, 'h' => 610),
+    'SRA0' => array('w' => 900, 'h' => 1280),
+    'SRA1' => array('w' => 640, 'h' => 900),
+    'SRA2' => array('w' => 450, 'h' => 640),
+
+    'Letter' => array('w' => 215.9, 'h' => 279.4),
+    'Legal' => array('w' => 215.9, 'h' => 355.6),
+    'Ledger' => array('w' => 279.4, 'h' => 431.8),
+  );
+
+  $root_path = drupal_get_path('module', 'pdf_using_mpdf');
+  $module_path = drupal_get_path('module', 'pdf_using_mpdf');
+  global $theme_path;
+
+  $page = variable_get('pdf_using_mpdf_pdf_page_size');
+  $font_size = variable_get('pdf_using_mpdf_pdf_font_size');
+  $font_style = variable_get('pdf_using_mpdf_pdf_default_font');
+
+  // DEFAULT PDF margin Values.
+  $margin_top = variable_get('pdf_using_mpdf_margin_top', 16);
+  $margin_right = variable_get('pdf_using_mpdf_margin_right', 15);
+  $margin_bottom = variable_get('pdf_using_mpdf_margin_bottom', 16);
+  $margin_left = variable_get('pdf_using_mpdf_margin_left', 15);
+  $margin_header = variable_get('pdf_using_mpdf_margin_header', 9);
+  $margin_footer = variable_get('pdf_using_mpdf_margin_footer', 9);
+
+  // Creating Instance of mPDF Class Library.
+  $mpdf = new mPDF(
+    '',
+    array($paper_size[$page]['w'], $paper_size[$page]['h']),
+    $font_size,
+    $font_style,
+    $margin_left,
+    $margin_right,
+    $margin_top,
+    $margin_bottom,
+    $margin_header,
+    $margin_footer
+  );
+
+  // set document DPI
+  $mpdf->dpi = (int) variable_get('pdf_using_mpdf_dpi', 96);
+
+  // Set image DPI
+  $mpdf->img_dpi = (int) variable_get('pdf_using_mpdf_img_dpi', 96);
+
+  // Enabling header option if available.
+  $header = variable_get('pdf_using_mpdf_pdf_header');
+  if (isset($header) && $header != NULL) {
+    $header = token_replace($header);
+    $mpdf->SetHTMLHeader($header);
+  }
+
+  // Enabling Footer option if available.
+  $footer = variable_get('pdf_using_mpdf_pdf_footer');
+  if (isset($footer) && $footer != NULL) {
+    $footer = token_replace($footer);
+    $mpdf->SetHTMLFooter($footer);
+  }
+
+  // Setting Watermark Text to PDF.
+  $watermark_option = variable_get('pdf_using_mpdf_watermark_option');
+  $watermark_opacity = variable_get('pdf_using_mpdf_watermark_opacity');
+
+  // For watermark Text.
+  if ($watermark_option == 'text') {
+    $text = variable_get('pdf_using_mpdf_pdf_watermark_text');
+    if (isset($text) && $text != NULL) {
+      $mpdf->SetWatermarkText($text, $watermark_opacity);
+      $mpdf->showWatermarkText = TRUE;
+    }
+  }
+  // For watermark Image.
+  else {
+    $image_id = variable_get('pdf_using_mpdf_watermark_image');
+    if (isset($image_id) && $image_id != NULL) {
+      // Load the file via file.fid.
+      $file = file_load($image_id);
+      if (is_object($file)) {
+        $file->status = FILE_STATUS_PERMANENT;
+        file_save($file);
+        file_usage_add($file, 'pdf_using_mpdf', 'image', $image_id);
+
+        $image_path = file_create_url($file->uri);
+        $mpdf->SetWatermarkImage($image_path, $watermark_opacity, '', 'P');
+        $mpdf->showWatermarkImage = TRUE;
+      }
+    }
+  }
+
+  // Setting Title to PDF.
+  $title = variable_get('pdf_using_mpdf_pdf_set_title');
+  if (isset($title) && $title != NULL) {
+    $mpdf->SetTitle($title);
+  }
+
+  // Setting Author to PDF.
+  $author = variable_get('pdf_using_mpdf_pdf_set_author');
+  if (isset($author) && $author != NULL) {
+    $mpdf->SetAuthor($author);
+  }
+
+  // Setting Subject to PDF.
+  $subject = variable_get('pdf_using_mpdf_pdf_set_subject');
+  if (isset($subject) && $subject != NULL) {
+    $mpdf->SetSubject($subject);
+  }
+
+  // Setting creator to PDF.
+  $creator = variable_get('pdf_using_mpdf_pdf_set_creator');
+  if (isset($creator) && $creator != NULL) {
+    $mpdf->SetCreator($creator);
+  }
+
+  // Setting Password to PDF.
+  $password = variable_get('pdf_using_mpdf_pdf_password');
+  if (isset($password) && $password != NULL) {
+    // Print and Copy is allowed.
+    $mpdf->SetProtection(array('print', 'copy'), $password, $password);
+  }
+
+  // Setting CSS stylesheet to PDF.
+  $stylesheet = variable_get('pdf_using_mpdf_pdf_css_file');
+  $stylesheet_content = NULL;
+  if (isset($stylesheet) && $stylesheet != NULL) {
+    $css_file_module = file_scan_directory($module_path, '/.*\.css$/');
+    $css_file_theme = file_scan_directory($theme_path, '/.*\.css$/');
+    // Check module directory
+    if (isset($css_file_module[$module_path . '/' . $stylesheet])) {
+      $stylesheet_content = file_get_contents($module_path . '/' . $stylesheet);
+      $mpdf->WriteHTML($stylesheet_content, 1);
+    }
+    // Check theme directory
+    elseif (isset($css_file_theme[$theme_path . '/' . $stylesheet])) {
+      $stylesheet_content = file_get_contents($theme_path . '/' . $stylesheet);
+      $mpdf->WriteHTML($stylesheet_content, 1);
+    }
+    else {
+      drupal_set_message(t('CSS style Sheet mentioned in PDF setting was not found.'), 'warning');
+      return TRUE;
+    }
+  }
+
+  // Writing html content for pdf buffer.
+  $mpdf->WriteHTML($html);
+
+  // Generating PDF File.
+          $folder = pdf_using_mpdf_get_folder();
+      if (is_dir(drupal_realpath($folder)) ) {
+        if (!pdf_using_mpdf_is_writable(drupal_realpath($folder))) { die('not writtable');
+          if (drupal_rmdir($folder)) {
+            drupal_mkdir($folder);
+            drupal_chmod($folder, 0777);
+          }
+          else {
+            drupal_set_message(t("Please ensure that public folder is writable."));
+            exit;
+          }
+        }
+      } else {
+        if (pdf_using_mpdf_is_writable(drupal_realpath(file_build_uri('public://')))) {
+          drupal_mkdir($folder);
+          drupal_chmod($folder, 0777);
+        }
+        else {
+          drupal_set_message(t("Please ensure that public folder is writable."));
+          exit;
+        }
+      }
+      // Save to server 'Public file system path'.
+      $path = $folder . '/' . $filename . '.pdf';
+      $mpdf->Output($path , 'F');
+      //drupal_goto($_SERVER['HTTP_REFERER']);
+  return TRUE;
+  }
+  else{
+    return FALSE;  
+  }
+}

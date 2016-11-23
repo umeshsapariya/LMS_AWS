@@ -1,0 +1,483 @@
+<?php
+
+/**
+ * Implementing hook_init
+ */
+function bigbazaarcrm_enquiry_init() {
+  global $user;
+  global $base_url;
+  $request_uri = $_SERVER['REQUEST_URI'];
+  $referer_url = explode("?", $_SERVER['HTTP_REFERER']);
+  if (!menu_get_item($_GET['q'])) {
+    $number = explode("-", $request_uri);
+    if (isset($number[1]) && is_numeric($number[1]) && isset($user->roles[4]) && strlen($number[1]) == 10) {
+      drupal_goto("user/" . $user->uid . "/add-enquiry", $options = array("query" => array("mobile-number" => $number[1])));
+    }
+  }
+  else if (!user_is_logged_in() && $referer_url[0] != $base_url . "/submit/number" && (arg(0) == "enquiry" || arg(0) == "leave-comment")) {
+    //drupal_goto("submit/number");
+  }
+}
+
+/**
+ * Implement hook_boot
+ */
+function bigbazaarcrm_enquiry_boot() {
+  global $conf;
+  if (arg(0) == "enquiry" || arg(0) == "leave-comment") {
+    $conf['cache'] = FALSE;
+  }
+}
+
+/**
+ * Implementing hook_menu
+ */
+function bigbazaarcrm_enquiry_menu() {
+  
+  $items['user/%user/add-enquiry'] = array (
+    'title' => 'Add Enquiry',
+    'page callback' => 'add_enquiry_form',
+    'access callback' => 'access_add_enquiry_form',
+    'access arguments' => array(1),
+    'weight' => 50,
+    'type' => MENU_LOCAL_TASK,
+  );
+  
+  $items['submit/number'] = array(
+    'title' => 'Submit Your Number',
+    'page callback' => 'get_number_form', 
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['leave-comment/%'] = array(
+    'title' => 'Leave your message',
+    'page callback' => 'get_comment_form',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['enquiry-redirect'] = array(
+    'title' => 'Page Not Found',
+    'page callback' => 'page_not_found_redirect',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  return $items;
+}
+
+/**
+ * Menu callback: dashboard change-password.
+ */
+function get_number_form () {
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/form_validate.js');
+	drupal_add_js(drupal_get_path('theme','bigbazaarcrm').'/js/jquery.validate.min.js');
+  $form = array();
+  $form = drupal_render(drupal_get_form('check_number_exists_form'));
+  return $form;
+}
+
+/**
+ * Getting the form for checking mobile
+ * number exists in the database or not.
+ */
+function check_number_exists_form ($form, &$form_state) {
+  $form['phone_number'] = array(
+    '#title' => t('Phone Number'),
+    '#description' => t("Please enter your mobile number, don't use +91 for mobile numbers. For ex:- 9223305000"),
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#maxlength' => 10,
+  );
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+    '#submit' => array("_check_number_exists_form"),
+  );
+  return $form;
+}
+
+/**
+ * submit handler for check number exist form. 
+ */
+function _check_number_exists_form ($form, &$form_state) {
+  if ((strlen($form_state['values']['phone_number']) == 10 || strlen($form_state['values']['phone_number']) == 11) && is_numeric($form_state['values']['phone_number'])) {
+    $phone_number = $form_state['values']['phone_number'];
+    $data = check_phone_number($phone_number);
+    if (isset($data['nid'])){
+     $alias = array (
+        'source' => "leave-comment/" . $data['nid'],
+        'alias' => "reply-" . str_replace(" ", "-", strtolower($data['title'])),
+      );
+      path_save($alias);
+      $node = node_load($data['nid']);
+      workflow_execute_transition($node, 22, $comment = "Changing current state to open for the user doing query again.", TRUE);
+      drupal_goto ("leave-comment/" . $data['nid']);
+    }
+    else {
+      drupal_goto("enquiry" , array ("query" => array("mobile-number" => $phone_number)));
+    }
+  }
+  else {
+    form_set_error('phone_number', "Please enter correct phone number it should be of 10 digits and contain numbers only.");
+  }
+}
+
+/**
+ * Querying db to check phone number exists or not 
+ */
+function check_phone_number ($phone_number) {
+  $data = "";
+  $content = array();
+  $result = db_query("select n.nid, n.title from field_data_field_tel_no tel join node n where n.nid = tel.entity_id and tel.field_tel_no_value = :number", array(':number' => $phone_number));
+  foreach($result as $results) {
+    $data = $results;
+  }
+  if (!is_null($data->nid)) {
+    $content["nid"] = $data->nid;
+    $content["title"] = $data->title;
+    return $content;
+  }
+  return;  
+}
+
+/**
+ * It will return comment form for
+ * enquiry if phone number exists. 
+ */
+function get_comment_form ($nid) {
+  return drupal_render(drupal_get_form("comment_node_enquiry_form", (object) array('nid' => $nid)));;
+}
+
+/**
+ * Implements hook_form_alter 
+ */
+function bigbazaarcrm_enquiry_form_alter (&$form, &$form_state, $form_id) {
+	global $user;
+  if ($form['form_id']['#value'] == "comment_node_enquiry_form") {
+    $form['#after_build'][] = 'comment_form_after_build';
+    $form['#submit'][] = 'redirect_user_to_home_page';
+  }
+  
+  if ($form["#id"] == "enquiry-node-form") {
+    if (arg(0) == 'enquiry' && is_numeric(arg(1))) {
+      $form['field_tel_no']['und'][0]['value']['#default_value'] = arg(1);
+    }
+    if (isset($_GET['mobile-number'])) {
+      $form['field_tel_no']['und'][0]['value']['#default_value'] = $_GET['mobile-number'];
+    }
+
+    if (isset($user->roles[6])) {
+      $form['field_source_enquiry']['und']['#default_value'][0] = 'BBD Center';
+      $form['field_source_enquiry']['#access'] = FALSE;
+    }
+
+    if ($user->uid) {
+      $form['field_comment']['und'][0]['value']['#title'] = t('Notes');
+      $form['field_comment']['und'][0]['value']['#default_value'] = '';
+      unset($form['field_source']['und']['#options']['System']);
+      unset($form['field_source']['und']['#options']['Enquiry on Website']);
+      // if agent create lead it shoudl assign to him by default.
+      if ($user->roles[4] && $form['nid']['#value'] == NULL) {
+        $form['field_assign_status']['und']['#default_value'] = array(0 => $user->uid);
+      }
+			else if ($user->roles[11] && $form['nid']['#value'] == NULL) {
+        $form['field_assign_status']['und']['#default_value'] = array(0 => $user->uid);
+      }
+    }
+    if ($form['nid']['#value'] == NULL) {
+      $form['actions']['submit']['#submit'][] = 'bigbazaarcrm_enquiry_aftersave';
+    }
+    else {
+      //Date field validation for date must not be greate than 15 days for now.
+      $form['#validate'][] = 'bigbazaarcrm_enquiry_datevalidate';
+    }
+  }
+	//Hide mandatory email field for call center agent
+	if(isset($user->roles[4]) && $form_id == 'enquiry_node_form') {
+		$form['field_email']['und'][0]['value']['#required'] = FALSE;
+		$form['field_follow_up_date']['und'][0]['#required'] = FALSE;
+		$form['field_follow_up_date']['und'][0]['#default_value']['value'] = '';
+		/*$form['field_follow_up_date']['und'][0]['#date_is_default'] = FALSE;
+		$form['field_follow_up_date']['und']['#required'] = 0;*/
+	}
+}
+
+/**
+ * Date field validation for date must not be greate than 15 days for now.
+ */
+function bigbazaarcrm_enquiry_datevalidate($form, &$form_state) {
+  $date = $form_state['values']['field_follow_up_date']['und'][0]['value'];
+	$start = strtotime("now");
+	$end = strtotime($date);
+	$diff = ceil(($end - $start) / 86400);
+  if ($diff < 0 && $date != '') {
+    form_set_error("field_follow_up_date", t("Follow up date cannot be in the past"));
+  }
+  elseif ($diff > 15) {
+    form_set_error("field_follow_up_date", t("Follow up date cannot be greater than 15 days from today"));
+	}
+}
+
+/*
+ * Implements hook_node_presave()
+ */
+function bigbazaarcrm_enquiry_node_presave($node) {
+	global $user;
+	if($node->type == 'enquiry') {
+    $node->title = $node->field_first_name['und'][0]['value'].'-'.$node->field_last_name['und'][0]['value'];
+    // Set the Source Value.
+    // Website : anonymous user
+    // Phone : call center agent - 4
+    // BBD Center : BBD center agent - 6
+    if (isset($user->roles[4])) {
+      $node->field_source_enquiry['und'][0]['value'] = 'Phone';
+    }
+    elseif (isset($user->roles[6])){
+      $node->field_source_enquiry['und'][0]['value'] = 'BBD Center';
+			assign_unique_application_number($node->field_tel_no[und][0][value]);
+    }
+	}
+  if ($node->type == 'application') {
+    $node->title = $node->field_first_name['und'][0]['value'] . ' ' .$node->field_last_name['und'][0]['value'];
+  }
+}
+
+/**
+ * After build comment form function.
+ */
+function comment_form_after_build (&$form, &$form_state, $form_id) {
+  $form['comment_body']['und'][0]['#title'] = 'Message';
+  $form['comment_body']['und']['#title'] = 'Message';
+  unset($form['comment_body']['und'][0]['format']);
+  return $form;
+}
+
+/**
+ * redirecting user to home page after 
+ * comment form submission.
+ */
+function redirect_user_to_home_page ($form, &$form_state) {
+	drupal_get_messages('status');
+  $enquiry_node_id = $form_state['values']['nid'];
+  db_query("UPDATE {field_data_field_enquiry_status} SET field_enquiry_status_value='Open' WHERE entity_id = " . $enquiry_node_id);
+  db_query("DELETE FROM {field_data_field_follow_up_date} WHERE entity_id = ". $enquiry_node_id .";DELETE FROM {field_data_field_assign_status} WHERE entity_id = ". $enquiry_node_id .";");
+  field_cache_clear();
+  $form_state['redirect'] = "thank-you-message";
+
+}
+
+/**
+ * Function for acces control of add
+ * enquiry form for call center agent.
+ */
+function access_add_enquiry_form ($user) {
+  if (isset ($user->roles[4]) || isset ($user->roles[11])) {
+    return TRUE;
+  }
+}
+
+/**
+ * Adding enquiry form on user dasbhoard page.
+ */
+function add_enquiry_form () {  
+  global $user;
+  $node_type = 'enquiry';
+  $node = (object) array(
+    'uid' => $user->uid,
+    'name' => (isset($user->name) ? $user->name : ''),
+    'type' => $node_type,
+    'language' => LANGUAGE_NONE
+  );
+  $form_state['build_info']['args'] = array($node);
+  form_load_include($form_state, 'inc', 'node', 'node.pages');
+  return drupal_build_form($node_type . '_node_form', $form_state);
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function bigbazaarcrm_enquiry_block_info() {
+  $blocks = array();
+  $blocks['search_link_form'] = array(
+    'info' => t('This block will provide search link for the user.'),
+  );
+  return $blocks;
+}
+
+/**
+ * Provides the blocks view
+ * Implements hook_block_view().
+ */
+function bigbazaarcrm_enquiry_block_view($delta = '') {
+  global $user;
+  $block = array();
+  switch ($delta) {
+    case "search_link_form" :
+      $block['subject'] = "Click here for search page";
+      $block['content'] = l("Search here", "user/" . $user->uid . "/search");
+    break;
+  }      
+  return $block;  
+}
+
+/**
+ * Override hook_nodeapi
+ */
+/*function bigbazaarcrm_enquiry_node_insert ($node) {
+  global $user;
+  if ($node->type == "application") {
+    $phone_number = check_phone_number($node->field_mobile_1['und'][0]['value']);
+    if (!isset($phone_number['nid'])) {
+      $nodes = new stdClass();
+      $nodes->type = "enquiry";
+      $nodes->uid = $user->uid;
+      $nodes->title = $node->title;
+      $nodes->field_tel_no['und'][0]['value'] = $node->field_mobile_1['und'][0]['value'];
+      if (arg(0) != "apply-online") {
+        $nodes->field_source['und'][0]['value'] = "store";
+      }
+      $nodes->field_city_list['und'][0]['value'] = $node->field_city_list['und'][0]['value'];
+    }
+  }
+}*/
+
+/**
+ * It will add create history whene nquiry node is created.
+ */
+function bigbazaarcrm_enquiry_aftersave($form, &$form_state) {
+  global $user;
+  if (!$user->uid) {
+    $form_state['redirect']  = 'thank-you-message';
+  }
+  elseif (isset($user->roles[11])) {
+    $form_state['redirect']  = 'user/'. $user->uid.'/manage-enquiries-supervisor';
+  }
+  elseif (isset($user->roles[4])) {
+    $form_state['redirect']  = 'user/'. $user->uid.'/manage-enquiries-agent';
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * It will add update history for node enquiry.
+ */
+function bigbazaarcrm_enquiry_node_update($node) {
+  if($node->type == 'enquiry') {
+    global $user;
+    $comment = "";
+    $source = "";
+	
+	if (isset($user->roles[11])) {
+		$assign_user = user_load($node->field_assign_status['und'][0]['target_id']);
+		if($node->submit == 'Save') {
+			$comment = $node->field_comment['und'][0]['value'];
+		}else {
+			$comment = "Supervisor assigned the lead to agent ' ". $assign_user->name ." '.";
+		}
+    $source = "System";
+  }
+  else {
+    $comment = $node->field_comment['und'][0]['value'];
+    $source = $node->field_source['und'][0]['value'];
+  }
+    $comment = (object) array(
+      'nid' => $node->nid,
+      'cid' => 0,
+      'pid' => 0,
+      'uid' => $user->uid,
+      'mail' => '',
+      'is_anonymous' => $user->uid ? 0 : 1,
+      'homepage' => '',
+      'status' => COMMENT_PUBLISHED,
+      'language' => LANGUAGE_NONE,
+      'comment_body' => array(
+       LANGUAGE_NONE => array(
+         0 => array (
+           'value' => $comment,
+           'format' => 'filtered_html'
+         )
+        )
+      ),
+      'field_comment_source' => array(
+       LANGUAGE_NONE => array(
+         0 => array (
+           'value' => $source,
+         )
+        )
+      ),
+    );
+    comment_submit($comment);
+    comment_save($comment);
+  }
+}
+
+/**
+  * Implements hook_views_pre_render().
+  */
+function bigbazaarcrm_enquiry_views_pre_render(&$view) {
+	if($view->name == 'data_entry_operator') {
+		if($view->exposed_data['field_mobile_1_value'] == '' && $view->exposed_data['field_application_number_value'] == '' && $view->exposed_data['field_receipt_number_value'] == '') {
+			unset($view->result);
+		}
+	}
+}
+
+/**
+  * Get Order ID & Transaction ID to display at enquiry report
+  */
+function bigbazaarcrm_enquiry_get_transaction_id($application_id){
+	// Get Order ID
+	$app_id = get_application_reference_id($application_id);
+	$query = db_select("field_data_field_receipt_number","o");
+	$query->condition("o.entity_id",$app_id);
+	$query->fields("o",array("field_receipt_number_value"));
+	$order_id = $query->execute()->fetchField();
+
+	// Get transaction ID
+	$query = db_select("commerce_payment_transaction","t");
+	$query->condition("t.order_id",$order_id);
+	$query->fields("t",array("transaction_id"));
+	$transaction_id = $query->execute()->fetchField();
+	if($order_id && $transaction_id) {
+		return 'O-ID : '.$order_id. ' T-ID : '.$transaction_id;
+	}else {
+		return ' - ';
+	}
+}
+
+/**
+  * Get assigned by name & date for call center agent view.
+  *
+  * @param
+  * 	$nid - node ID.
+  *
+  * @param
+  * 	$opt - Return option value
+  * 	
+  * @return
+  * 	Returns date / Name based upon the condition.
+	*/
+function bigbazaarcrm_enquiry_get_assignedby_name_date($nid, $opt) {
+	$comment = db_select('comment', 'cmt')
+		->fields('cmt', array('changed', 'name'))
+		->condition('subject', 'Supervisor assigned the lead', 'LIKE')
+		->condition('nid', $nid)
+		->range(0, 1)
+		->execute()->fetchAll();
+		
+	if ($opt == 'date') {
+		if(count($comment) > 0) {
+			return $comment[0]->changed;
+		}
+	} elseif ($opt == 'name') {
+		if(count($comment) > 0) {
+			return $comment[0]->name;
+		}
+	}
+}

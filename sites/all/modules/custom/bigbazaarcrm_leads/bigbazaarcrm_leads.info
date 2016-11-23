@@ -1,0 +1,6 @@
+name = Bigbazaarcrm Leads
+description = Bigbazaarcrm Leads Management.
+core = 7.x
+package = Custom
+
+

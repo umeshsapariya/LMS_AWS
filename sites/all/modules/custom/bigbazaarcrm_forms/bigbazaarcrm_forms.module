@@ -1,0 +1,549 @@
+<?php
+
+/**
+ * hook_menu()
+ */
+function bigbazaarcrm_forms_menu() {
+  $items['submit-request'] = array(
+    'title' => 'Speak to our Business Advisors',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bigbazaarcrm_forms_request_form'),
+    'access arguments' => array('access content'),
+  );
+  $items['escalation-matrix/%'] = array(
+    'title' => 'Escalation matrix',
+    'page callback' => 'escalation_matrix_send_notifications',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+  );
+  return $items;
+}
+
+function bigbazaarcrm_forms_request_form($form, $form_state) {
+
+  $form['title_header'] = array(
+    '#markup' => '<div class = "leave-your-details">Leave us your details and our team will contact you</div>',
+  );
+
+  $form['field_first_name'] = array(
+    '#title' => 'First Name',
+    '#title_display' => 'invisible',
+    '#description' => '',
+    '#required' => true,
+    '#type' => 'textfield',
+    //'#default_value' => NULL,
+    '#size' => '30',
+    '#maxlength' => '255',
+    '#attributes' => array('placeholder' => 'First Name')
+  );
+  $form['field_last_name'] = array(
+    '#title' => 'Last Name',
+    '#title_display' => 'invisible',
+    '#description' => '',
+    '#required' => true,
+    '#type' => 'textfield',
+    //'#default_value' => NULL,
+    '#size' => '60',
+    '#maxlength' => '255',
+    '#attributes' => array('placeholder' => 'Last Name')
+  );
+
+  $format = 'd/m/Y';
+  $form['field_date_of_birth'] = array(
+    '#type' => 'date_text', // types 'date_text' and 'date_timezone' are also supported. See .inc file.
+    '#title' => t('Date Of Birth'),
+    '#title_display' => 'invisible',
+    //'#prefix' => '<div>DOB Format : DD/MM/YYYY</div>',
+    '#attributes' => array('placeholder' => 'Date Of Birth'),
+    //'#default_value' => $date, 
+    '#date_format' => $format,
+    '#date_timezone' => 'Asia/Kolkata',
+      //'#date_label_position' => 'within', // See other available attributes and what they do in date_api_elements.inc
+  );
+  $form['field_mobile_1'] = array(
+    '#title' => 'Mobile Number',
+    '#title_display' => 'invisible',
+    '#description' => 'The Mobile number should be of 10 digits',
+    '#required' => true,
+    '#type' => 'textfield',
+    //'#default_value' => NULL,
+    '#size' => 60,
+    '#maxlength' => 10,
+    '#attributes' => array('placeholder' => 'Mobile Number')
+  );
+  $form['field_email'] = array(
+    '#title' => 'Email',
+    '#title_display' => 'invisible',
+    '#description' => '',
+    '#required' => true,
+    '#type' => 'textfield',
+    //'#default_value' => NULL,
+    '#size' => '60',
+    '#maxlength' => '255',
+    '#attributes' => array('placeholder' => 'Email')
+  );
+  $form['field_pin_code'] = array(
+    '#title' => 'PIN Code',
+    '#title_display' => 'invisible',
+    '#description' => '',
+    '#required' => true,
+    '#type' => 'textfield',
+    //'#default_value' => NULL,
+    '#size' => '60',
+    '#maxlength' => 6,
+    '#attributes' => array('placeholder' => 'PIN Code')
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit Request',
+  );
+
+  $form['call_us'] = array(
+    '#markup' => '<div class = "call-email">Call us on 9223005000 between 8 AM to 10 PM</div>',
+  );
+
+  $form['email_us'] = array(
+    '#markup' => '<div class = "call-email">Email us your query at support@bigbazaardirect.com</div>',
+  );
+
+  $form['#attached']['js']['jQuery(document).ready(function(jQuery) {jQuery(".container-inline-date").find("input[name=\'field_date_of_birth[date]\']").attr("placeholder", "Date of Birth")});'] = array('type' => 'inline');
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'bigbazaarcrm_forms') . '/bigbazaarcrm_forms.css',
+  );
+
+
+  return $form;
+}
+
+function bigbazaarcrm_forms_request_form_validate($form, $form_state) {
+
+  $pincode = $form_state['values']['field_pin_code'];
+  $first_name = $form_state['values']['field_first_name'];
+  $last_name = $form_state['values']['field_last_name'];
+  $dob = $form_state['values']['field_date_of_birth'];
+  $email = $form_state['values']['field_email'];
+  $mobile = $form_state['values']['field_mobile_1'];
+  $mobile_status = bigbazaarcrm_application_check_mobile_exists($mobile);
+
+  $mobile_check = preg_match('/^([0-9]{10})$/', $mobile);
+  $pincode_check = preg_match('/^([0-9]{6})$/', $pincode);
+  $email_check = preg_match("/^[_\.0-9a-zA-Z-]+@([0-9a-zA-Z]+\.)+[a-zA-Z]{2,6}$/i", $email);
+
+  $dob = $form_state['values']['field_date_of_birth'];
+  $dob_check = bigbazaarcrm_application_check_age($dob, 18);
+
+  if (!$dob_check) {
+    form_set_error('field_date_of_birth', ' You must be at least 18 years of age');
+  }
+
+  if (!$pincode_check) {
+    form_set_error('field_pin_code', ' Please enter a valid 6 digit Pin Code');
+  }
+
+  if (!$mobile_check) {
+    form_set_error('field_mobile_1', 'Please enter a valid 10 digit mobile no');
+  }
+
+  if ($mobile_status) {
+    form_set_error('field_mobile_1', 'The mobile number already exists');
+  }
+
+  if (!$email_check) {
+    form_set_error('field_email', 'Please enter a valid email address (eg:bbd@gmail.com)');
+  }
+}
+
+function bigbazaarcrm_forms_request_form_submit($form, $form_state, $external = NULL) {
+  $pincode = $form_state['values']['field_pin_code'];
+  $pincode_status = bigbazaarcrm_application_get_pincode_status($pincode);
+
+  foreach ($form_state['values'] as $key => $value) {
+    $fs['values'][$key][LANGUAGE_NONE][0]['value'] = $value;
+  }
+  $fs['values']['field_date_of_birth'][LANGUAGE_NONE][0]['value2'] = $fs['values']['field_date_of_birth'][LANGUAGE_NONE][0]['value'];
+  if ($pincode_status[0]) {
+    ################# Create User ##########################################
+    $name = $form_state['values']['field_mobile_1'];
+
+    $user_detail = db_select('users', 'u')
+        ->fields('u', array('name'))
+        ->condition('u.name', $name, '=')
+        ->execute()
+        ->fetchAssoc();
+
+    if (!$user_detail) {
+      //This will generate a random password
+      $password = user_password(8);
+      $rid = user_role_load_by_name('Lead')->rid;
+      //set up the user fields
+      $fields = array(
+        'name' => $name,
+        //'mail' => $form_state['values']['field_email'][LANGUAGE_NONE][0]['value'],
+        'pass' => $password,
+        'status' => 1,
+        'init' => 'email address',
+        'roles' => array(
+          $rid => 'Lead',
+        ),
+      );
+
+      //the first parameter is left blank so a new user is created
+      $account = user_save('', $fields);
+      ###############################################
+      $false = FALSE;    //Added to identify oxigen load on the following function
+      $source  = $fs['values']['source'][LANGUAGE_NONE][0]['value'];
+      $term_source = taxonomy_get_term_by_name($source);
+      $term_source_tid = key($term_source);
+      $return = bigbazaarcrm_application_create_application_node($fs, $false, $account->uid, $term_source_tid);
+      $node = $return[0];
+      $application_id = $return[1];
+
+      //Set status to (Lead Generated)
+      $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+      workflow_execute_transition($node, $sid, NULL, TRUE);
+
+      $so_rm = bigbazaarcrm_common_get_so_rm_from_pincode($pincode, TRUE, TRUE);
+      $lms = bigbazaarcrm_common_get_lms_from_pincode($pincode);
+      
+      
+      if (!empty($so_rm)) {
+        $so_name = ucwords(strtok($so_rm->so_name, '_'));
+        $rm_name = ucwords(strtok($so_rm->rm_name, '_'));
+        $so_mobile = $so_rm->so_mobile;
+        $rm_mobile = $so_rm->rm_mobile;
+        $so_email = $so_rm->so_email;
+        $rm_email = $so_rm->rm_email;
+        $city = $so_rm->city;
+        $so_rm_details = 'You can also contact our team members <span class="orng">'
+            . $so_name . '(' . $so_mobile . ') / '
+            . $rm_name . '(' . $rm_mobile . ') </span>'
+            . 'to discuss this further';
+        
+        $tokens = array('application_id' => $application_id,
+        'lead_name' => $form_state['values']['field_first_name'],
+        'so_name' => $so_name,
+        'so_mobile' => $so_mobile,
+        'rm_name' => $rm_name,
+        'rm_mobile' => $rm_mobile,
+      );
+      //Send SMS to Lead
+      sms_configuration_helper_for_sms_template($node->field_mobile_1[LANGUAGE_NONE][0]['value'], 'lead_generation', $tokens);
+
+
+      //Send Email to Lead
+      $params = array(
+        'mail_to' => $form_state['values']['field_email'],
+        'dynamic' => $tokens,
+      );
+      entity_email_send('lead_generation', $params);
+
+        $tokens_am = array('application_id' => $application_id,
+          'lead_name' => $form_state['values']['field_first_name'],
+          'lead_mobile' => $node->field_mobile_1[LANGUAGE_NONE][0]['value'],
+          'pincode' => $pincode,
+            //'am_name' => $rm_name,
+            //'city' => $city,
+        );
+        sms_configuration_helper_for_sms_template($rm_mobile, 'lead_generation_message_to_am', $tokens_am);
+
+        $params = array(
+          'mail_to' => $rm_email,
+          'dynamic' => $tokens_am,
+        );
+        entity_email_send('lead_generation_email_to_am', $params);
+      }
+      if (!empty($lms)) {
+        //Send Email/SMS to LMS agent
+        $lms_name = ucwords(strtok($lms->lms_name, '_'));
+
+        //$so_mobile = $so_rm->so_mobile;
+        $lms_mobile = $lms->lms_mobile;
+        $lms_email = $lms->lms_email;
+
+        $tokens_lms = array('application_id' => $application_id,
+          'lead_name' => $form_state['values']['field_first_name'],
+          'lead_mobile' => $node->field_mobile_1[LANGUAGE_NONE][0]['value'],
+          'pincode' => $pincode,
+        );
+        sms_configuration_helper_for_sms_template($lms_mobile, 'lead_generation_message_to_lms', $tokens_lms);
+
+        $params = array(
+          'mail_to' => $lms_email,
+          'dynamic' => ($tokens_lms),
+        );
+        entity_email_send('lead_generation_email_to_lms', $params);
+      }
+      if ($external) {
+        return TRUE;
+      }
+      else {
+        drupal_set_message($so_rm_details);
+        drupal_goto('thank-you/' . $node->nid . '/request');
+      }
+    }
+  }
+  else {
+    $source  = $fs['values']['source'][LANGUAGE_NONE][0]['value'];
+    $term_source = taxonomy_get_term_by_name($source);
+    $term_source_tid = key($term_source);
+    $return = bigbazaarcrm_application_create_application_node($fs, FALSE, FALSE, $term_source_tid);
+    $node = $return[0];
+    $application_id = $return[1];
+
+    //Set status to (Lead Generated)
+    $sid = bigbazaarcrm_application_get_sid_from_state_name('(Lead Generated)');
+    workflow_execute_transition($node, $sid, NULL, TRUE);
+    if ($external) {
+      return TRUE;
+    }
+    else {
+      if ($pincode_status[1] == 'no_service') {
+        drupal_set_message('Sorry, we don’t service at this pin code', 'error');
+      }
+      else {
+        drupal_set_message('Oops, the franchisee seats are full for this pin code, but will still get back within x days', 'error');
+      }
+    }
+  }
+}
+
+/**
+ * Default value for SO/RM on leads view
+ */
+function bigbazaarcrm_forms_form_views_exposed_form_alter(&$form, &$form_state, $form_id) {
+
+  if ($form['#id'] == 'views-exposed-form-leads-page') {
+
+    global $user;
+
+    if (in_array('Territory Manager', $user->roles)) {
+
+      $so_has_pincode = db_query('SELECT field_so_agent_uid FROM {field_data_field_so_agent} WHERE field_so_agent_uid = :uid', array(':uid' => $user->uid))->fetchField();
+      if ($so_has_pincode && !isset($form_state['view']->exposed_input['field_so_agent_uid'])) {
+        // $form_state['view']->exposed_input only hold the value when you have applied any filter. Initially it doesn't hold any value. while $form_state['input'] hold the actual filter value to be applied.
+        $form_state['input']['field_so_agent_uid'] = $user->uid;
+      }
+    }
+    elseif (in_array('Area manager', $user->roles)) {
+      if (!isset($form_state['view']->exposed_input['field_regional_manager_uid'])) {
+        // $form_state['view']->exposed_input only hold the value when you have applied any filter. Initially it doesn't hold any value. while $form_state['input'] hold the actual filter value to be applied.
+        $form_state['input']['field_regional_manager_uid'] = $user->uid;
+      }
+    }
+  }
+}
+
+/**
+ * Callback for Escalation matrix notifications
+ */
+function escalation_matrix_send_notifications($key) {
+
+  if ($key == 'lms') {
+    $vid = db_query('SELECT vid FROM {taxonomy_vocabulary} WHERE name = :name', array(':name' => 'PINCODE'))->fetchField();
+
+    $states = array('(Lead Generated)',
+      '(Called - Not reachable)',
+    );
+
+    $query = db_select('workflow_states', 'ws')
+        ->fields('ws', array('sid'))
+        ->condition('state', $states, 'IN');
+    $sids = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+
+    $fifteen_days = strtotime('-15 days');
+    $one_days = strtotime('-1 days');
+    $two_days = strtotime('-2 days');
+    $three_days = strtotime('-3 days');
+
+    ###### TESTING ############
+//    $fifteen_days = strtotime('-3 hours');
+//    $one_days = strtotime('-1 minutes');
+//    $two_days = strtotime('-2 minute');
+//    $three_days = strtotime('-3 minute');
+
+    $query = db_select('workflow_node', 'wn');
+    $query->join('node', 'n', 'n.nid = wn.nid');
+    $query->join('field_data_field_pin_code', 'fp', 'fp.entity_id = n.nid');
+    $query->join('field_data_field_application_number', 'fa', 'fa.entity_id = n.nid');
+    $query->join('field_data_field_mobile_1', 'fm', 'fm.entity_id = n.nid');
+
+
+    $query->join('taxonomy_term_data', 't', 't.name = fp.field_pin_code_value');
+    $query->join('field_data_field_vacancy', 'v', 'v.entity_id = t.tid');
+    $query->fields('fp', array('field_pin_code_value'));
+    $query->fields('n', array('title'));
+    $query->fields('fa', array('field_application_number_value'));
+    $query->fields('fm', array('field_mobile_1_value'));
+    $query->fields('wn', array('stamp'));
+
+    $query->condition('t.vid', $vid);
+    $query->condition('wn.sid', $sids, 'IN');
+    $query->condition('wn.stamp', array($fifteen_days, $one_days), 'BETWEEN');
+
+//$query->groupBy('fp.field_pin_code_value');
+    $res = $query->execute()->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_GROUP);
+
+    //Loop through each pincode
+    foreach ($res as $pincode => $val) {
+
+      $so_rm = bigbazaarcrm_common_get_so_rm_from_pincode($pincode, TRUE, TRUE);
+
+      if (!empty($so_rm)) {
+        $so_name = strtok($so_rm->so_name, '_');
+        $rm_name = strtok($so_rm->rm_name, '_');
+
+        $so_mobile = $so_rm->so_mobile;
+        $rm_mobile = $so_rm->rm_mobile;
+        $so_email = $so_rm->so_email;
+        $rm_email = $so_rm->rm_email;
+        $rm_city = $so_rm->city;
+
+
+        //Loop through all leads of a pincode
+        foreach ($val as $k => $lead) {
+
+          $lead_mobile = $lead['field_mobile_1_value'];
+          $lead_name = $lead['title'];
+          $application_no = $lead['field_application_number_value'];
+
+          //If (24 + 24 + 24) hours have passed, inform NH(National Head) 3rd level escalation
+          if ($lead['stamp'] < $three_days) {
+
+            //Send SMS to NH
+            $sh_nh = bigbazaarcrm_common_get_zm_sh_from_pincode($pincode, FALSE, TRUE);
+            if (!empty($sh_nh)) {
+              //$zm_name = strtok($zm_sh->zm_name, '_');
+              $sh_name = strtok($sh_nh->sh_name, '_');
+              //$zm_mobile = $zm_sh->zm_mobile;
+              $sh_mobile = $sh_nh->sh_mobile;
+              //$sh_mobile = 8080779113;
+              //$zm_email = $zm_sh->zm_email;
+              $sh_email = $sh_nh->sh_email;
+              $sh_city = $sh_nh->city;
+
+              $tokens = array(
+                'nh_name' => $sh_name,
+                'tm_name' => $so_name,
+                'lead_name' => $lead_name,
+                'lead_mobile' => $lead_mobile,
+                'application_no' => $application_no,
+                'pincode' => $pincode,
+                'city' => $sh_city,
+              );
+              //$tokens_zm = $tokens + array('zm_name' => $zm_name);
+              //$tokens_sh = $tokens + array('zm_name' => $sh_name);
+         
+              //sms_configuration_helper_for_sms_template($sh_mobile, 'message_to_nh', $tokens);
+              //Send Email to ZM and SH
+              /* $params = array(
+                'mail_to' => $zm_email,
+                'dynamic' => $tokens_zm,
+                ); */
+              //entity_email_send('email_to_zm', $params);
+              $params = array(
+                'mail_to' => $sh_email,
+                'dynamic' => $tokens,
+              );
+              //Removing Email to NH temporarily
+              //entity_email_send('email_to_nh', $params);
+            }
+          }
+
+          //Else If (48 + 24) hours have passed, inform ZM(Zonal Manager) 2nd level escalation
+          elseif ($lead['stamp'] < $two_days) {
+
+            //Send SMS to ZM
+            $zm = bigbazaarcrm_common_get_zm_sh_from_pincode($pincode, TRUE, FALSE);
+            $zm_name = $zm->zm_name;
+            $zm_city = $zm->city;
+            $zm_mobile = $zm->zm_mobile;
+            //$zm_mobile = 8879656422;
+            $zm_email = $zm->zm_email;
+            $tokens = array(
+              'zm_name' => $zm_name,
+              'tm_name' => $so_name,
+              'lead_name' => $lead_name,
+              'lead_mobile' => $lead_mobile,
+              'application_no' => $application_no,
+              'pincode' => $pincode,
+              'city' => $zm_city,
+            );
+            //sms_configuration_helper_for_sms_template($zm_mobile, 'message_to_zm', $tokens);
+            //Send Email to RM
+            $params = array(
+              'mail_to' => $zm_email,
+              'dynamic' => $tokens,
+            );
+            entity_email_send('email_to_zm', $params);
+          }
+
+          //Else (24) hours have passed, inform AM(Area Manager) 1st level escalation
+          else {
+            //Send SMS to AM  
+            $tokens = array(
+              'am_name' => $rm_name,
+              'tm_name' => $so_name,
+              'lead_name' => $lead_name,
+              'lead_mobile' => $lead_mobile,
+              'application_no' => $application_no,
+              'pincode' => $pincode,
+              'city' => $rm_city,
+            );
+            sms_configuration_helper_for_sms_template($rm_mobile, 'message_to_am', $tokens);
+            //Send Email to AM
+            $params = array(
+              'mail_to' => $rm_email,
+              'dynamic' => $tokens,
+            );
+            entity_email_send('email_to_am', $params);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_block_info().
+ *
+ */
+function bigbazaarcrm_forms_block_info() {
+  $blocks['lead_application_info'] = array(
+    'info' => t('Shows current lead related information to SO'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ */
+function bigbazaarcrm_forms_block_view($delta = '') {
+  // The $delta parameter tells us which block is being requested.
+  switch ($delta) {
+    case 'lead_application_info':
+      // The subject is displayed at the top of the block. Note that it
+      // should be passed through t() for translation. The title configured
+      // for the block using Drupal UI supercedes this one.
+      $block['subject'] = t('Current lead');
+      $block['content'] = bigbazaarcrm_forms_lead_block_content(); // The content of the block
+      break;
+  }
+  return $block;
+}
+
+function bigbazaarcrm_forms_lead_block_content() {
+  if (isset($_SESSION['application_info'])) {
+    $items = array('Application id : ' . $_SESSION['application_info']['application_id'],
+      'Mobile : ' . $_SESSION['application_info']['mobile'],
+    );
+
+    $output['lead_info'] = array(
+      '#theme' => 'item_list',
+      '#items' => $items,
+    );
+
+    return $output;
+  }
+}

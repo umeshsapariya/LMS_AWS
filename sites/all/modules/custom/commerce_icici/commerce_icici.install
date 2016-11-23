@@ -1,0 +1,31 @@
+<?php
+/*
+ * Create table to store ccavenue transaction.
+ */
+
+/*
+ * Implementes hook_schema().
+ */
+function commerce_icici_schema() {
+   
+   $schema['online_transaction'] = array(
+    'fields' => array(
+    'id' => array('type'=> 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+    'application_id' => array('type'=> 'varchar', 'length' => 255),
+    'transaction_id' => array('type'=> 'varchar', 'length' => 255),
+    'amount' => array('type'=> 'varchar', 'length' => 255),
+    'response' => array('type' => 'text','length' => 4000),
+    'verification_response' => array('type' => 'text','length' => 4000),
+    'status' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+    'pay_txn' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+    'bank' => array('type'=> 'varchar', 'length' => 255),
+    'created' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+    'updated' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+    ),
+     'primary key' => array('id'),
+       
+  );
+  
+   return $schema;
+}
+
