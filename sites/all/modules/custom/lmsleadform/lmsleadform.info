@@ -1,0 +1,6 @@
+; $Id$
+name = LMS LEAD Form API
+description = Example LMS LEAD Form API.
+package = Build a Module
+core = 7.x
+files[] = lmsleadform.module
