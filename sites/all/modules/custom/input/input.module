@@ -117,6 +117,9 @@ function input_form_alter(&$form, &$form_state, $form_id) {
 
     case 'lead_status_node_form':
       dsm($form);
+      $form['field_lslead_name']['und'][0]['value']['#value'] = $form['title']['#default_value'];
+      $form['field_lslead_name']['und'][0]['#disabled'] = TRUE;
+       $form['field_lead_current_status']['und'][0]['#disabled'] = TRUE;
       break;
   }
 
