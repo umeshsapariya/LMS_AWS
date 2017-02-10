@@ -51,8 +51,8 @@ function input_simple_form($form, &$form_submit) {
 function input_form_alter(&$form, &$form_state, $form_id) {
   dsm($form_id);
   switch ($form_id) {
-    case 'search_block_form':
-      //$form['#submit'][] = 'input_search_submit';
+    case 'ezone_leads_node_form':
+      dsm($form);
       break;
   }
   return;
