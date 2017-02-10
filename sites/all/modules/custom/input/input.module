@@ -113,6 +113,11 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       //dsm($form);
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
+
+
+    case 'lead_status_node_form':
+      dsm($form);
+      break;
   }
 
 
