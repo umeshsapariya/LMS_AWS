@@ -120,6 +120,24 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       $form['field_lslead_name']['und'][0]['value']['#value'] = $form['title']['#default_value'];
       $form['field_lslead_name']['und'][0]['#disabled'] = TRUE;
        $form['field_lead_current_status']['und'][0]['#disabled'] = TRUE;
+
+       //add ajax
+       $form['field_lsupdate_status']['und']['#ajax'] = array(
+        'callback' => 'ezoneleadstatus_callback',
+        'wrapper' => 'ezoneleadstatus_wrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+      );
+       $form['field_lscurrent_status']['und'][0]['value']['#prefix'] = '<div id="ezoneleadstatus_wrapper">';
+      $form['field_lscurrent_status']['und'][0]['value']['#suffix'] = '</div>';
+
+        if (isset($form_state['values']['field_lsupdate_status']['und'][0]['value'])) { 
+               $form['field_lscurrent_status']['und'][0]['value']['#value'] = t('status').$form_state['values']['field_lsupdate_status']['und'][0]['value'];
+
+             }
+             else{
+              $form['field_lscurrent_status']['und'][0]['value']['#default_value'] = t('status').$form['field_lsupdate_status']['und']['#default_value'][0];
+             }
       break;
   }
 
@@ -140,4 +158,9 @@ function ezonename_callback($form, $form_state) {
 function ezonelast_callback($form, $form_state) {
   //dsm($form_state);
   return $form['field_ezonelead_status']['und']['form']['field_lslast_name'];
+}
+
+function ezoneleadstatus_callback($form, $form_state) {
+  //dsm($form_state);
+  return $form['field_lscurrent_status'];
 }
