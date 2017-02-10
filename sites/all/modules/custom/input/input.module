@@ -70,7 +70,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
   //dsm($form_id);
   switch ($form_id) {
     case 'ezone_leads_node_form':
-      dsm($form);
+      //dsm($form);
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       //add ajax for lead status
       $form['field_ezonefirst_name']['und'][0]['value']['#ajax'] = array(
@@ -116,7 +116,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
 
 
     case 'lead_status_node_form':
-      dsm($form);
+      //dsm($form);
       $form['field_lslead_name']['und'][0]['value']['#value'] = $form['title']['#default_value'];
       $form['field_lslead_name']['und'][0]['#disabled'] = TRUE;
        $form['field_lead_current_status']['und'][0]['#disabled'] = TRUE;
