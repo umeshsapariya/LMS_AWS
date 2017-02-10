@@ -40,3 +40,21 @@ function lmsleadform_simple_form($form, &$form_submit) {
   );
   return $form;
 }
+
+/**
+ * Implements hook_form_alter().
+ *
+ * To find the $form_id, you can ether add an echo $form_id; to print
+ * a list of ids to the browser, or use Firebug to inspect the element and
+ * conver the 'id' of the form to use underscores.
+ */
+function lmsleadform_form_alter(&$form, &$form_state, $form_id) {
+  dsm($form_id);
+  switch ($form_id) {
+    case 'ezone_leads_node_form':
+      //dsm($form);
+      //$form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
+      break;
+  }
+  return;
+}

@@ -1,0 +1,6 @@
+; $Id$
+name = testm
+description = testm.
+package = Build a Module
+core = 7.x
+files[] = testm.module
