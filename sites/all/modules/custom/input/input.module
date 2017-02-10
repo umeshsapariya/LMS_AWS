@@ -72,6 +72,21 @@ function input_form_alter(&$form, &$form_state, $form_id) {
     case 'ezone_leads_node_form':
       dsm($form);
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
+      //add ajax for lead status
+      $form['field_ezonefirst_name']['und'][0]['value']['#ajax'] = array(
+        'callback' => 'ezonename_callback',
+        'wrapper' => 'ezonename_wrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+      );
+
+      $form['field_ezonelead_status']['und']['form']['field_lsfirst_name']['und'][0]['value']['#prefix'] = '<div id="ezonename_wrapper">';
+      $form['field_ezonelead_status']['und']['form']['field_lsfirst_name']['und'][0]['value']['#suffix'] = '</div>';
+      if (isset($form_state['values']['field_ezonefirst_name']['und'][0]['value'])) { 
+               $form['field_ezonelead_status']['und']['form']['field_lsfirst_name']['und'][0]['value']['#value'] = $form_state['values']['field_ezonefirst_name']['und'][0]['value'];
+
+             }
+
       break;
 
     case 'big_bazaar_leads_node_form':
@@ -91,4 +106,10 @@ function input_form_alter(&$form, &$form_state, $form_id) {
 
 function input_node_submit_page_ezone($form, &$form_state) {
   $form_state['redirect'] = 'input/thanku';
+}
+
+//lead status callback
+function ezonename_callback($form, $form_state) {
+  //dsm($form_state);
+  return $form['field_ezonelead_status']['und']['form']['field_lsfirst_name'];
 }
