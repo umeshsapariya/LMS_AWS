@@ -18,14 +18,14 @@ function input_menu() {
     'description' => 'Example of using the Form API.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('input_simple_form'),
-    'access callback' => TRUE,
+    //'access callback' => TRUE,
   );
   $items['input/thanku'] = array(
     'title' => 'Lead Successfully Registered Thank You.',
     'description' => 'Lead Successfully Registered Thank You.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('thanku_message'),
-    'access callback' => TRUE,
+    //'access callback' => TRUE,
   );
   return $items;
 }
@@ -78,5 +78,5 @@ function input_form_alter(&$form, &$form_state, $form_id) {
 }
 
 function input_node_submit_page_ezone($form, &$form_state) {
-  $form_state['redirect'] = '/input/thanku';
+  $form_state['redirect'] = 'input/thanku';
 }
