@@ -20,6 +20,14 @@ function input_menu() {
     'page arguments' => array('input_simple_form'),
     'access callback' => TRUE,
   );
+
+  $items['input/thanku'] = array(
+    'title' => 'Thank You.',
+    'description' => 'Lead Successfully registered, Thank You.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('thanku_message'),
+    'access callback' => TRUE,
+  );
   
   $items['input/leadthanku'] = array(
     'title' => 'Thank You.',
