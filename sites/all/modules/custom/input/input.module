@@ -132,7 +132,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       $form['field_lscurrent_status']['und'][0]['value']['#suffix'] = '</div>';
 
         if (isset($form_state['values']['field_lsupdate_status']['und'][0]['value'])) { 
-               $form['field_lscurrent_status']['und'][0]['value']['#value'] = t('status').$form_state['values']['field_lsupdate_status']['und'][0]['value'];
+               $form['field_lscurrent_status']['und'][0]['value']['#value'] = $form_state['values']['field_lsupdate_status']['und'][0]['value'];
 
              }
              else{
