@@ -119,7 +119,9 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       //dsm($form);
       $form['field_lslead_name']['und'][0]['value']['#value'] = $form['title']['#default_value'];
       $form['field_lslead_name']['und'][0]['#disabled'] = TRUE;
-       $form['field_lscurrent_status']['und'][0]['#disabled'] = TRUE;
+      $form['field_lscurrent_status']['und'][0]['#disabled'] = TRUE;
+
+      $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
 
        //add ajax
        $form['field_lsupdate_status']['und']['#ajax'] = array(
