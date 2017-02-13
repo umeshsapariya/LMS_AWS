@@ -136,7 +136,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
 
              }
              else{
-              $form['field_lscurrent_status']['und'][0]['value']['#default_value'] = t('status').$form['field_lsupdate_status']['und']['#default_value'][0];
+              $form['field_lscurrent_status']['und'][0]['value']['#default_value'] = $form['field_lsupdate_status']['und']['#default_value'][0];
              }
       break;
   }
