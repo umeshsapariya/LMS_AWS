@@ -36,7 +36,7 @@ function thanku_message($form, &$form_submit) {
   $build = array(
     'header_text' => array(
       '#type' => 'markup',
-      '#markup' => '<p>' . t('Your details successfully registered, we will get back to you shortly.') . '</p>',
+      '#markup' => '<p>' . t('Your details are successfully registered, we will get back to you shortly.') . '</p>',
     ),    
   );
   return $build;
