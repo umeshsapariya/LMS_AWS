@@ -21,7 +21,7 @@ function input_menu() {
     'access callback' => TRUE,
   );
   $items['input/thanku'] = array(
-    'title' => 'Lead Successfully Registered Thank You.',
+    'title' => 'Thank You.',
     'description' => 'Lead Successfully Registered Thank You.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('thanku_message'),
@@ -36,7 +36,7 @@ function thanku_message($form, &$form_submit) {
   $build = array(
     'header_text' => array(
       '#type' => 'markup',
-      '#markup' => '<p>' . t('will you get back to you shortly.') . '</p>',
+      '#markup' => '<p>' . t('Your details successfully registered, we will get back to you shortly.') . '</p>',
     ),    
   );
   return $build;
