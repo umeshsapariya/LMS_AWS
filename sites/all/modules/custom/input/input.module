@@ -20,13 +20,15 @@ function input_menu() {
     'page arguments' => array('input_simple_form'),
     'access callback' => TRUE,
   );
-  $items['input/thanku'] = array(
+  
+  $items['input/leadthanku'] = array(
     'title' => 'Thank You.',
-    'description' => 'Lead Successfully Registered Thank You.',
+    'description' => 'Lead Successfully updated Thank You.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('thanku_message'),
+    'page arguments' => array('leadthanku_message'),
     'access callback' => TRUE,
   );
+
   return $items;
 }
 /**
@@ -37,6 +39,19 @@ function thanku_message($form, &$form_submit) {
     'header_text' => array(
       '#type' => 'markup',
       '#markup' => '<p>' . t('Your details are successfully registered, we will get back to you shortly.') . '</p>',
+    ),    
+  );
+  return $build;
+}
+
+/**
+ * Lead Thanku massage.
+ */
+function leadthanku_message($form, &$form_submit) {
+  $build = array(
+    'header_text' => array(
+      '#type' => 'markup',
+      '#markup' => '<p>' . t('Lead status are successfully updated.') . '</p>',
     ),    
   );
   return $build;
@@ -121,7 +136,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       $form['field_lslead_name']['und'][0]['#disabled'] = TRUE;
       $form['field_lscurrent_status']['und'][0]['#disabled'] = TRUE;
 
-      $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
+      $form['actions']['submit']['#submit'][] = 'input_node_submit_page_leadpage';
 
        //add ajax
        $form['field_lsupdate_status']['und']['#ajax'] = array(
@@ -149,6 +164,10 @@ function input_form_alter(&$form, &$form_state, $form_id) {
 
 function input_node_submit_page_ezone($form, &$form_state) {
   $form_state['redirect'] = 'input/thanku';
+}
+
+function input_node_submit_page_leadpage($form, &$form_state) {
+  $form_state['redirect'] = 'input/leadthanku';
 }
 
 //lead status callback
