@@ -166,7 +166,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       break;
 
       case 'home_town_node_form':
-      //dsm($form);
+      dsm($form);
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
   }
