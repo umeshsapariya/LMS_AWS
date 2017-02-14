@@ -166,7 +166,36 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       break;
 
       case 'home_town_node_form':
-      dsm($form);
+      //dsm($form);
+
+       $form['field_htfirst_name']['und'][0]['value']['#ajax'] = array(
+        'callback' => 'htname_callback',
+        'wrapper' => 'htname_wrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+      );
+
+      $form['field_htlead_status']['und']['form']['field_lsfirst_name']['und'][0]['value']['#prefix'] = '<div id="htname_wrapper">';
+      $form['field_htlead_status']['und']['form']['field_lsfirst_name']['und'][0]['value']['#suffix'] = '</div>';
+      if (isset($form_state['values']['field_htfirst_name']['und'][0]['value'])) { 
+               $form['field_htlead_status']['und']['form']['field_lsfirst_name']['und'][0]['value']['#value'] = $form_state['values']['field_htfirst_name']['und'][0]['value'];
+
+             }
+    //last name
+        $form['field_htlast_name']['und'][0]['value']['#ajax'] = array(
+        'callback' => 'htlast_callback',
+        'wrapper' => 'htlast_wrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+      );
+       $form['field_htlead_status']['und']['form']['field_lslast_name']['und'][0]['value']['#prefix'] = '<div id="htlast_wrapper">';
+      $form['field_htlead_status']['und']['form']['field_lslast_name']['und'][0]['value']['#suffix'] = '</div>';
+       
+       if (isset($form_state['values']['field_htlast_name']['und'][0]['value'])) { 
+               $form['field_htlead_status']['und']['form']['field_lslast_name']['und'][0]['value']['#value'] = $form_state['values']['field_htlast_name']['und'][0]['value'];
+
+             }
+
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
   }
@@ -197,4 +226,14 @@ function ezonelast_callback($form, $form_state) {
 function ezoneleadstatus_callback($form, $form_state) {
   //dsm($form_state);
   return $form['field_lscurrent_status'];
+}
+//home town lead status callback
+function htname_callback($form, $form_state) {
+  //dsm($form_state);
+  return $form['field_htlead_status']['und']['form']['field_lsfirst_name'];
+}
+
+function htlast_callback($form, $form_state) {
+  //dsm($form_state);
+  return $form['field_htlead_status']['und']['form']['field_lslast_name'];
 }
