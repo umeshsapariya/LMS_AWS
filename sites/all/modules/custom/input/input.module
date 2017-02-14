@@ -90,7 +90,7 @@ function input_simple_form($form, &$form_submit) {
  * conver the 'id' of the form to use underscores.
  */
 function input_form_alter(&$form, &$form_state, $form_id) {
-  dsm($form_id);
+  //dsm($form_id);
   switch ($form_id) {
     case 'ezone_leads_node_form':
       //dsm($form);
@@ -163,6 +163,11 @@ function input_form_alter(&$form, &$form_state, $form_id) {
              else{
               $form['field_lscurrent_status']['und'][0]['value']['#default_value'] = $form['field_lsupdate_status']['und']['#default_value'][0];
              }
+      break;
+
+      case 'home_town_node_form':
+      //dsm($form);
+      $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
   }
 
