@@ -93,7 +93,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
   //dsm($form_id);
   switch ($form_id) {
     case 'ezone_leads_node_form':
-      dsm($form);
+      //dsm($form);
       $form['field_ezoneadd_more_fields']['und'][0]['#title'] = t('');
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       //add ajax for lead status
@@ -129,12 +129,14 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       break;
 
     case 'big_bazaar_leads_node_form':
-      dsm($form);
+      //dsm($form);
+      $form['field_bbadd_more_fields']['und'][0]['#title'] = t('');
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
 
     case 't24_leads_node_form':
-      dsm($form);
+      //dsm($form);
+      $form['field_t24add_more_fields']['und'][0]['#title'] = t('');
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
 
@@ -167,8 +169,8 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       break;
 
       case 'home_town_node_form':
-      dsm($form);
-
+      //dsm($form);
+      $form['field_htadd_more_fields']['und'][0]['#title'] = t('');
        $form['field_htfirst_name']['und'][0]['value']['#ajax'] = array(
         'callback' => 'htname_callback',
         'wrapper' => 'htname_wrapper',
