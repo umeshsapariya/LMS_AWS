@@ -90,10 +90,10 @@ function input_simple_form($form, &$form_submit) {
  * conver the 'id' of the form to use underscores.
  */
 function input_form_alter(&$form, &$form_state, $form_id) {
-  dsm($form_id);
+  //dsm($form_id);
   switch ($form_id) {
     case 'ezone_leads_node_form':
-      //dsm($form);
+      dsm($form);
       $form['field_ezoneadd_more_fields']['und'][0]['#title'] = t('');
       unset($form['actions']['preview']);
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
