@@ -243,6 +243,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
              }
 
       unset($form['actions']['preview']);
+      $form['actions']['submit']['#value'] = 'Create Lead';
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
       
