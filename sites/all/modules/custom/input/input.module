@@ -295,3 +295,9 @@ function fslast_callback($form, $form_state) {
   //dsm($form_state);
   return $form['field_fslead_status']['und']['form']['field_lslast_name'];
 }
+//disable password required block
+function input_menu_alter(&$items) {
+   // Example - disable the page at node/add
+   //dsm($items);
+   $items['user/password']['access callback'] = FALSE;
+}
