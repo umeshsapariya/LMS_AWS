@@ -247,6 +247,12 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       $form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       break;
       
+      case 'user_login':
+      //unset($form['actions']['preview']);
+      //$form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
+      dsm($form);
+      break;
+      
   }
 
 
