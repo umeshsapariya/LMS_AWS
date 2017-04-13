@@ -308,3 +308,8 @@ function input_menu_alter(&$items) {
    //dsm($items);
    $items['user/password']['access callback'] = FALSE;
 }
+function input_page_alter(&$page) {
+dsm($page);
+global $user;
+dsm($user);
+}
