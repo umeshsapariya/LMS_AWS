@@ -308,13 +308,3 @@ function input_menu_alter(&$items) {
    //dsm($items);
    $items['user/password']['access callback'] = FALSE;
 }
-//hide block in dashboard
-function input_page_alter(&$page) {
-dsm($page);
-global $user;
-dsm($user);
-
-if (in_array('administrator', $user->roles) || in_array('ezone', $user->roles)) {
-  //unset($page['content']['dashboard']['dashboard_sidebar']['user_online']);
-  //unset($page['content']['dashboard']['dashboard_sidebar'][2]['user_online']);
-}
