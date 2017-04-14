@@ -214,6 +214,9 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       
       case 'future_services_node_form':
       dsm($form);
+      //hide date of birth wrapper
+      unset($form['field_fsdate_of_birth']['und'][0]['#theme_wrappers'][0]);
+      //ajax
       $form['field_fsfirst_name']['und'][0]['value']['#ajax'] = array(
         'callback' => 'fsname_callback',
         'wrapper' => 'fsname_wrapper',
