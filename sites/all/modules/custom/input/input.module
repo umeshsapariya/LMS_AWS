@@ -173,7 +173,10 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       break;
 
       case 'home_town_node_form':
-      dsm($form);
+      //dsm($form);
+      //hide date of birth wrapper
+      unset($form['field_htdate_of_birth']['und'][0]['#theme_wrappers'][0]);
+      //ajax
       unset($form['actions']['preview']);
       $form['field_htadd_more_fields']['und'][0]['#title'] = t('');
        $form['field_htfirst_name']['und'][0]['value']['#ajax'] = array(
