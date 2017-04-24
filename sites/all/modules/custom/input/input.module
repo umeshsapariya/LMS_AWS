@@ -253,7 +253,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
 }
 
 function input_node_submit_page_ezone($form, &$form_state) {
-  $form_state['redirect'] = 'input/thanku';
+  $form_state['redirect'] = 'content/thank-you';
 }
 
 function input_node_submit_page_leadpage($form, &$form_state) {
