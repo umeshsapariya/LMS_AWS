@@ -314,18 +314,14 @@ function input_menu_alter(&$items) {
    $items['user/password']['access callback'] = FALSE;
 }
 function input_page_alter(&$page) {
-dsm($page);
+//dsm($page);
 global $user;
-dsm($user);
-if (in_array('future_services_travel', $user->roles)) { 
+//dsm($user);
+if (in_array('future_services_travel', $user->roles) || in_array('hometown_master', $user->roles)) { 
     for ($fst = 0; $fst <= 10; $fst++){ 
   unset($page['content']['dashboard']['dashboard_main'][$fst]);
   unset($page['content']['dashboard']['dashboard_sidebar'][$fst]);
   }
-}
-if (in_array('hometown_master', $user->roles)) {  
-  unset($page['content']['dashboard']['dashboard_main'][0]);
-  unset($page['content']['dashboard']['dashboard_sidebar'][0]);
 }
 
 }
