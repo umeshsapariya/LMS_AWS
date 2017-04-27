@@ -304,13 +304,15 @@ function input_menu_alter(&$items) {
 //hide in dashboard
 function input_page_alter(&$page) {
 //dsm($page);
-global $user;
+//global $user;
 //dsm($user);
-if (in_array('future_services_travel', $user->roles) || in_array('hometown_master', $user->roles) || in_array('future services all master', $user->roles) || in_array('future services common', $user->roles)) { 
+//if (in_array('future_services_travel', $user->roles) || in_array('hometown_master', $user->roles) || in_array('future services all master', $user->roles) || in_array('future services common', $user->roles)) { 
+
+ //if (user_has_role(array('future_services_travel', 'hometown_master'))) {
     for ($fst = 0; $fst <= 10; $fst++){ 
   unset($page['content']['dashboard']['dashboard_main'][$fst]);
   unset($page['content']['dashboard']['dashboard_sidebar'][$fst]);
   }
-}
+//}
 
 }
