@@ -317,10 +317,11 @@ function input_page_alter(&$page) {
 dsm($page);
 global $user;
 dsm($user);
-if (in_array('future_services_travel', $user->roles)) {  
-  unset($page['content']['dashboard']['dashboard_main'][0]);
-  unset($page['content']['dashboard']['dashboard_sidebar'][0]);
-  
+if (in_array('future_services_travel', $user->roles)) { 
+    for ($fst = 0; $fst <= 10; $fst++){ 
+  unset($page['content']['dashboard']['dashboard_main'][$fst]);
+  unset($page['content']['dashboard']['dashboard_sidebar'][$fst]);
+  }
 }
 if (in_array('hometown_master', $user->roles)) {  
   unset($page['content']['dashboard']['dashboard_main'][0]);
