@@ -303,9 +303,9 @@ function input_menu_alter(&$items) {
 }
 //hide in dashboard
 function input_page_alter(&$page) {
-//dsm($page);
+dsm($page);
 global $user;
-//dsm($user);
+dsm($user);
 if (in_array('future services all master', $user->roles)) {  
   unset($page['content']['dashboard']['dashboard_main'][0]);
   unset($page['content']['dashboard']['dashboard_sidebar'][0]);
