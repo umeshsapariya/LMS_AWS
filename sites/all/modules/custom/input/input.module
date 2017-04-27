@@ -303,17 +303,14 @@ function input_menu_alter(&$items) {
 }
 //hide in dashboard
 function input_page_alter(&$page) {
-dsm($page);
+//dsm($page);
 global $user;
-dsm($user);
-if (in_array('future services all master', $user->roles)) {  
-  unset($page['content']['dashboard']['dashboard_main'][0]);
-  unset($page['content']['dashboard']['dashboard_sidebar'][0]);
-  
-}
-if (in_array('future services common', $user->roles)) {  
-  unset($page['content']['dashboard']['dashboard_main'][0]);
-  unset($page['content']['dashboard']['dashboard_sidebar'][0]);
+//dsm($user);
+if (in_array('future_services_travel', $user->roles) || in_array('hometown_master', $user->roles) || in_array('future services all master', $user->roles) || in_array('future services common', $user->roles)) { 
+    for ($fst = 0; $fst <= 10; $fst++){ 
+  unset($page['content']['dashboard']['dashboard_main'][$fst]);
+  unset($page['content']['dashboard']['dashboard_sidebar'][$fst]);
+  }
 }
 
 }
