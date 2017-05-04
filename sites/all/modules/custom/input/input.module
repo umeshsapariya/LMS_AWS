@@ -228,6 +228,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
           return $entry['value'];
           }, $l));
           $form['field_type_fs']['und'][0]['value']['#default_value'] = $g;
+          dsm($g);
           }
           }
       
