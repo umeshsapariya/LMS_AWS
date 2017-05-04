@@ -224,7 +224,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
           foreach ($checktaxofield as $value){
           if(is_array($value)){
           $l = $value['und'];
-          $g = implode(', ', array_map(function ($entry) {
+          $g .= implode(', ', array_map(function ($entry) {
           return $entry['value'];
           }, $l));
           dsm($g);
