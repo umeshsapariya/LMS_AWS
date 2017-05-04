@@ -217,6 +217,10 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       
       case 'future_services_node_form':
       dsm($form);
+      //type FS value
+      $nodetaxo = node_load(['nid']['#value']);
+      dsm($nodetaxo);
+      $form['field_type_fs']['und'][0]['value']['#default_value'] = 123;
       unset($form['field_fsdate_of_birth']['und'][0]['#theme_wrappers'][0]);         
       //ajax
       $form['field_fsfirst_name']['und'][0]['value']['#ajax'] = array(
