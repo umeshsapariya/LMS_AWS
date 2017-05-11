@@ -257,7 +257,12 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       //$form['actions']['submit']['#submit'][] = 'input_node_submit_page_ezone';
       dsm($form);
       break;
+      //add popup calender in views for lead search
       
+      case 'views_exposed_form':
+      dsm($form);
+      break;
+
   }
 
 
