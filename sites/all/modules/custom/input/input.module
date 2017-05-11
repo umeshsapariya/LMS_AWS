@@ -261,7 +261,7 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       
       case 'views_exposed_form':
       if ($form['#id'] == 'views-exposed-form-future-services-leads-page') {
-        dsm($form);
+        //dsm($form);
         $form['created']['min']['#type'] = 'date_popup';
         $form['created']['min']['#date_format'] = 'Y-m-d';
         $form['created']['max']['#type'] = 'date_popup';
