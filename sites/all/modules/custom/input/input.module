@@ -260,7 +260,13 @@ function input_form_alter(&$form, &$form_state, $form_id) {
       //add popup calender in views for lead search
       
       case 'views_exposed_form':
-      dsm($form);
+      if ($form['#id'] == 'views-exposed-form-future-services-leads-page') {
+        dsm($form);
+        $form['created']['min']['#type'] = 'date_popup';
+        $form['created']['min']['#date_format'] = 'Y-m-d';
+        $form['created']['max']['#type'] = 'date_popup';
+        $form['created']['max']['#date_format'] = 'Y-m-d';
+      }
       break;
 
   }
