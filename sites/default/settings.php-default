@@ -649,4 +649,4 @@ if($_ENV['AH_SITE_ENVIRONMENT'] == 'prod'){
   $conf['views_data_export_directory'] = 'alt-temp://';
 }
 
-ini_set('session.cookie_domain', '127.0.0.1');
+
