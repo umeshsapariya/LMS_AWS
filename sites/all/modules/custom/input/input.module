@@ -322,7 +322,7 @@ function fslast_callback($form, $form_state) {
 function input_menu_alter(&$items) {
    // Example - disable the page at node/add
    //dsm($items);
-   $items['user/password']['access callback'] = FALSE;
+   //$items['user/password']['access callback'] = FALSE;
 }
 function input_page_alter(&$page) {
 //dsm($page);
